@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest Files</title>
+    <link rel="stylesheet" href="../common-styles.css">
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --border: #333;
+            --text: #eee;
+            --muted: #aaa;
+            --accent: #9f4bff;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .page-description {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 50px;
+            font-size: 1.15rem;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 28px;
+        }
+
+        .file-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .file-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 35px -10px rgba(159, 75, 255, 0.25);
+        }
+
+        .category {
+            display: inline-block;
+            background: #1f2a3a;
+            color: #6cb0ff;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            margin-bottom: 16px;
+            align-self: flex-start;
+        }
+
+        .file-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+.file-name {
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer; 
+}
+
+
+.file-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+    box-shadow: 0 15px 35px -10px rgba(159, 75, 255, 0.25);
+}
+
+
+.file-name:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+        .file-date {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .file-card:hover .file-name {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../menu.js"></script>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">BIPH Tech Theater</div>
+            </div>
+        </header>
+
+        <h1>Latest Files</h1>
+        <p class="page-description">Most recent versions — click any card to download</p>
+
+        <div class="files-grid">
+            <a href="files/Blank (May 16, 2026).qlab5template" 
+               download="Blank (May 16, 2026).qlab5template"
+               class="file-card">
+                <div class="category">QLab Template</div>
+                <div class="file-icon">📄</div>
+                <div class="file-name">Blank (May 16, 2026).qlab5template</div>
+                <div class="file-date">May 16, 2026</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        console.log('%cLatest Files site loaded', 'color: #9f4bff; font-size: 13px;');
+    </script>
+</body>
+</html>
