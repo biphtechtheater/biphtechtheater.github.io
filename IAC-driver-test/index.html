@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IAC Driver Bus 1 Status</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      transition: all 0.8s ease;
+      text-align: center;
+    }
+    h1 { 
+      font-size: 4rem; 
+      margin: 0 0 20px 0; 
+    }
+    p { 
+      font-size: 1.5rem; 
+      max-width: 700px;
+      margin: 10px 0;
+    }
+    .active {
+      background-color: #006600;
+      color: white;
+    }
+    .inactive {
+      background-color: #f8f8f8;
+      color: black;
+    }
+    .small {
+      font-size: 1rem;
+      opacity: 0.7;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body class="inactive">
+  <h1 id="title">IAC Driver Bus 1</h1>
+  <p id="status">Requesting MIDI access...</p>
+
+  <script>
+    let checkInterval;
+
+    async function checkIAC() {
+      const body = document.body;
+      const title = document.getElementById('title');
+      const status = document.getElementById('status');
+      const lastChecked = document.getElementById('lastChecked');
+
+      if (!navigator.requestMIDIAccess) {
+        status.textContent = "Web MIDI API not supported in this browser";
+        return;
+      }
+
+      try {
+        const midi = await navigator.requestMIDIAccess({ sysex: false });
+
+        let found = false;
+
+        // Check both inputs and outputs for "IAC Driver Bus 1"
+        midi.outputs.forEach(port => {
+          if (port.name.includes("IAC Driver Bus 1")) found = true;
+        });
+
+        midi.inputs.forEach(port => {
+          if (port.name.includes("IAC Driver Bus 1")) found = true;
+        });
+
+        const now = new Date().toLocaleTimeString();
+
+        if (found) {
+          body.classList.remove('inactive');
+          body.classList.add('active');
+          title.textContent = "ACTIVE";
+          status.textContent = "IAC Driver Bus 1 is enabled and available ✓";
+        } else {
+          body.classList.remove('active');
+          body.classList.add('inactive');
+          title.textContent = "INACTIVE";
+          status.textContent = "IAC Driver Bus 1 is not active";
+        }
+
+      } catch (err) {
+        status.textContent = "Permission denied or MIDI access error";
+        console.error(err);
+      }
+    }
+
+    // Initial check
+    window.onload = () => {
+      checkIAC();
+      
+      // Check every 5 seconds
+      checkInterval = setInterval(checkIAC, 5000);
+    };
+  </script>
+</body>
+</html>

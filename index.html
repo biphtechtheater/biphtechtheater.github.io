@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIPH Tech Theater</title>
+    <link rel="stylesheet" href="common-styles.css">
+    <style>
+        :root {
+            --accent: #4bdbff;
+            --accent-dark: #3b7ccc;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #eee;
+        }
+
+        .hero {
+            height: 520px;
+            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), 
+                        url('images/backstage.jpg') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            margin: -20px -20px 60px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-content {
+            max-width: 720px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 4.2rem;
+            font-weight: 200;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .hero p {
+            font-size: 1.35rem;
+            color: #ccc;
+            margin-bottom: 32px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+
+        .btn-secondary:hover {
+            border-color: white;
+            transform: translateY(-1px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Logo */
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 80px;
+        }
+
+        .link-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: inherit;
+            overflow: hidden;
+            box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.133);
+        }
+
+        .link-card:hover {
+            box-shadow: 0 2px 50px 5px rgba(75, 204, 255, 0.3);
+            border-color: var(--accent);
+        }
+
+        .link-card .icon {
+            font-size: 3.8rem;
+            margin-bottom: 20px;
+            transition: all 0.4s ease;
+            display: block;
+        }
+
+        .link-card:hover .icon {
+            transform: translateY(7px) rotate(2deg);
+            color: var(--accent);
+        }
+
+        .link-card h3 {
+            font-size: 1.65rem;
+            margin-bottom: 12px;
+            color: white;
+            transition: color 0.3s ease;
+        }
+
+        .link-card:hover h3 {
+            color: var(--accent);
+        }
+
+        .link-card p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            margin: 60px 0;
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 200;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Menu -->
+    <div id="shared-menu"></div>
+    <script src="menu.js"></script>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon" style="width: 68px; height: 68px; border-radius: 12px; overflow: hidden; background: #111;">
+                <img src="icons/TTlogo.png" alt="BIPH Tech Theater Logo">
+            </div>
+            <div>
+                <div class="logo">BIPH Technical Theatre</div>
+                <div class="subtitle">2026-2027</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Tech Theater</h1>
+            <p>Lighting • Sound • Video • Stage Automation • Event Design</p>
+            <div class="cta-buttons">
+                <a href="tutorials.html" class="btn btn-primary">Browse Tutorials</a>
+                <a href="latest-files.html" class="btn btn-secondary">Latest Files</a>
+            </div>
+        </div>
+    </section>
+
+    <main style="max-width: 1280px; margin: 0 auto; padding: 0 20px;">
+        
+        <div class="quick-links">
+            <a href="events.html" class="link-card">
+                <div class="icon">📅</div>
+                <h3>Upcoming Events</h3>
+                <p>Main calendar events, club outputs, concerts, drama performances, and tech showcases.</p>
+            </a>
+            
+            <!-- You can add more cards here easily -->
+        </div>
+
+    </main>
+</body>
+</html>

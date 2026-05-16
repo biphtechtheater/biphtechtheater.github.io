@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditorium • Tutorials</title>
+    <link rel="icon" href="../icons/auditoriumicon2.png">
+    <link rel="stylesheet" href="../../common-styles.css">
+    
+    <style>
+        :root {
+            --bg: #111111;
+            --card: #1a1a1a;
+            --accent: #00cc99;
+            --accent2: #00e6b0;
+            --text: #eeeeee;
+            --muted: #888888;
+            --border: #333333;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        
+        .logo {
+            color: var(--accent);
+        }
+
+        .logo-icon {
+            margin-top: 12px;
+            margin-right: -15px;
+            width: 121px;
+            height: 98px;
+            object-fit: contain;
+        }
+        
+        #search:focus {
+            border-color: var(--accent);
+        }
+        
+        .category-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+        
+        .video-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .play-overlay {
+            background: rgba(0, 204, 153, 0.85);
+        }
+        
+        .video-card:hover .play-overlay {
+            background: rgba(0, 230, 176, 0.95);
+        }
+        
+        .modal-content {
+            border: 2px solid var(--accent);
+        }
+        
+        #modal-title {
+            color: var(--accent);
+        }
+        
+        .tag {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../../menu.js"></script>
+
+    <header>
+        <div class="logo-container">
+            <img src="../icons/auditoriumicon2.png" alt="Auditorium" class="logo-icon">
+            <div>
+                <div class="logo">Auditorium</div>
+                <div class="subtitle">Tutorial Gallery</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search" placeholder="Search tutorials... (press / to focus)" autocomplete="off">
+        </div>
+        
+        <div class="filter-group">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="audio">Audio Mixer</button>
+            <button class="category-btn" data-category="mics">Wireless Microphones</button>
+            <button class="category-btn" data-category="lighting">Lighting</button>
+            <button class="category-btn" data-category="led">LED Screen</button>
+            <button class="category-btn" data-category="podium">Podium Setup</button>
+            <button class="category-btn" data-category="advanced">Advanced</button>
+        </div>
+    </div>
+
+    <div class="gallery" id="gallery">
+        <!-- Populated by JS -->
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <span class="close-btn" id="close-modal">×</span>
+            </div>
+            <div id="modal-video" style="position:relative;padding-top:56.25%;background:#000;">
+                <!-- YouTube iframe injected here -->
+            </div>
+            <div style="padding:24px;">
+                <div id="modal-description" style="color:#ddd; line-height:1.6;"></div>
+                <div id="modal-tags" class="tags" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Auditorium Tutorial Gallery • Hotkeys: <strong>/</strong> Search • <strong>Esc</strong> Close or Reset
+    </footer>
+
+    <script>
+        // Auditorium Tutorials
+        const videos = [
+            {
+                id: "dQw4w9wgxcq",   // ← Replace with real YouTube IDs
+                title: "Auditorium Audio Mixer - Basic Setup & Routing",
+                category: "audio",
+                duration: "23:15",
+                keywords: ["mixer", "routing", "inputs", "outputs"],
+                description: "Complete walkthrough of the auditorium's audio mixer, channel setup, and routing."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Wireless Microphone Setup and Troubleshooting",
+                category: "mics",
+                duration: "17:40",
+                keywords: ["wireless", "microphones", "rf", "troubleshooting"],
+                description: "How to properly set up, frequency coordinate, and troubleshoot wireless mics."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "LED Screen Operation in the Auditorium",
+                category: "led",
+                duration: "20:25",
+                keywords: ["led", "screen", "video", "processor"],
+                description: "Operating the large LED screen, switching sources, and basic troubleshooting."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Podium Setup - Audio, Video, and Lighting",
+                category: "podium",
+                duration: "14:50",
+                keywords: ["podium", "presentation", "confidence monitor"],
+                description: "Full podium setup including microphone, laptop connection, and confidence monitor."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Lighting Console Basics for the Auditorium",
+                category: "lighting",
+                duration: "19:30",
+                keywords: ["lighting", "console", "cues"],
+                description: "Introduction to the auditorium lighting console and creating basic looks."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Advanced Audio - EQ, Compression, and Effects",
+                category: "audio",
+                duration: "22:10",
+                keywords: ["eq", "compression", "effects", "mixing"],
+                description: "Advanced mixing techniques using EQ, compression, and built-in effects."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Full Auditorium Strike & Reset Procedure",
+                category: "advanced",
+                duration: "12:45",
+                keywords: ["strike", "reset", "shutdown"],
+                description: "Standard procedure for safely shutting down and resetting the auditorium."
+            }
+        ];
+
+        function renderGallery(filteredVideos) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            if (filteredVideos.length === 0) {
+                gallery.innerHTML = `<div class="no-results">No tutorials found.<br>Try different keywords or filters.</div>`;
+                return;
+            }
+            
+            filteredVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="thumbnail">
+                        <div class="play-overlay">▶</div>
+                        <div class="duration">${video.duration}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${video.title}</div>
+                        <div class="card-meta">
+                            <span>${video.category.toUpperCase()}</span>
+                        </div>
+                        <div class="tags">
+                            ${video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openVideoModal(video));
+                gallery.appendChild(card);
+            });
+        }
+
+        function openVideoModal(video) {
+            const modal = document.getElementById('modal');
+            const modalVideoContainer = document.getElementById('modal-video');
+            
+            modalVideoContainer.innerHTML = `
+                <iframe width="100%" height="100%" 
+                        style="position:absolute;top:0;left:0;" 
+                        src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" 
+                        title="${video.title}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+            `;
+            
+            document.getElementById('modal-title').textContent = video.title;
+            document.getElementById('modal-description').textContent = video.description;
+            
+            const tagsContainer = document.getElementById('modal-tags');
+            tagsContainer.innerHTML = video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('');
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function filterVideos() {
+            const searchTerm = document.getElementById('search').value.toLowerCase().trim();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            
+            const filtered = videos.filter(video => {
+                const matchesSearch = !searchTerm || 
+                    video.title.toLowerCase().includes(searchTerm) ||
+                    video.description.toLowerCase().includes(searchTerm) ||
+                    video.keywords.some(kw => kw.toLowerCase().includes(searchTerm));
+                
+                const matchesCategory = activeCategory === 'all' || video.category === activeCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderGallery(filtered);
+        }
+
+        // Event Listeners
+        document.getElementById('search').addEventListener('input', filterVideos);
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterVideos();
+            });
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+            document.getElementById('modal-video').innerHTML = '';
+            document.body.style.overflow = 'visible';
+        });
+        
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('close-modal').click();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.getElementById('search') !== document.activeElement) {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+            
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('modal');
+                if (modal.style.display === 'flex') {
+                    document.getElementById('close-modal').click();
+                } else {
+                    document.getElementById('search').value = '';
+                    document.querySelector('[data-category="all"]').click();
+                }
+            }
+        });
+        
+        // Initialize
+        renderGallery(videos);
+    </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Setup • Tutorials</title>
+    <link rel="icon" href="../icons/mobileicon.png">
+    <link rel="stylesheet" href="../../common-styles.css">
+    
+    <style>
+        :root {
+            --bg: #111111;
+            --card: #1a1a1a;
+            --accent: #ef6b5c;
+            --accent2: #ff8a7a;
+            --text: #eeeeee;
+            --muted: #888888;
+            --border: #333333;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        
+        .logo {
+            color: var(--accent);
+        }
+
+        .logo-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    object-fit: contain;     /* Prevents stretching */
+    background: #a2a2a2;     /* Optional: gives a clean background if image has transparency */
+}
+        
+        #search:focus {
+            border-color: var(--accent);
+        }
+        
+        .category-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+        
+        .video-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .play-overlay {
+            background: rgba(239, 107, 92, 0.85);
+        }
+        
+        .video-card:hover .play-overlay {
+            background: rgba(255, 138, 122, 0.95);
+        }
+        
+        .modal-content {
+            border: 2px solid var(--accent);
+        }
+        
+        #modal-title {
+            color: var(--accent);
+        }
+        
+        .tag {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../../menu.js"></script>
+    <header>
+        <div class="logo-container">
+            <img src="../icons/mobileicon.png" alt="Mobile Setup" class="logo-icon">
+            <div>
+                <div class="logo">Mobile Setup</div>
+                <div class="subtitle">Tutorial Gallery</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search" placeholder="Search tutorials... (press / to focus)" autocomplete="off">
+        </div>
+        
+        <div class="filter-group">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="lighting">Lighting Trees & Spotlight</button>
+            <button class="category-btn" data-category="audio">Speakers & Amplifiers</button>
+            <button class="category-btn" data-category="transport">Transport & Loading</button>
+            <button class="category-btn" data-category="setup">Setup & Strike</button>
+            <button class="category-btn" data-category="safety">Safety & Best Practices</button>
+        </div>
+    </div>
+
+    <div class="gallery" id="gallery">
+        <!-- Populated by JS -->
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <span class="close-btn" id="close-modal">×</span>
+            </div>
+            <div id="modal-video" style="position:relative;padding-top:56.25%;background:#000;">
+                <!-- YouTube iframe injected here -->
+            </div>
+            <div style="padding:24px;">
+                <div id="modal-description" style="color:#ddd; line-height:1.6;"></div>
+                <div id="modal-tags" class="tags" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Setup Tutorials
+        const videos = [
+            {
+                id: "dQw4w9wgxcq",   // Replace with real YouTube IDs
+                title: "Lighting Trees Setup & Safety",
+                category: "lighting",
+                duration: "15:40",
+                keywords: ["lighting trees", "setup", "safety"],
+                description: "How to properly set up, secure, and cable lighting trees for mobile events."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Spotlight Operation and Follow Spot Techniques",
+                category: "lighting",
+                duration: "18:25",
+                keywords: ["spotlight", "follow spot", "operation"],
+                description: "Basic and advanced techniques for operating a follow spotlight."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Speakers & Amplifier Setup for Mobile Gigs",
+                category: "audio",
+                duration: "20:10",
+                keywords: ["speakers", "amplifiers", "audio setup"],
+                description: "How to set up powered speakers, amplifiers, and basic PA systems."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Loading, Transport, and Equipment Protection",
+                category: "transport",
+                duration: "14:50",
+                keywords: ["transport", "loading", "truck pack"],
+                description: "Best practices for safely loading, transporting, and protecting equipment."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Full Mobile Setup & Strike Workflow",
+                category: "setup",
+                duration: "22:30",
+                keywords: ["setup", "strike", "workflow"],
+                description: "Complete step-by-step process for setting up and tearing down a mobile production."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Electrical Safety for Mobile Events",
+                category: "safety",
+                duration: "13:15",
+                keywords: ["safety", "electrical", "power"],
+                description: "Important safety considerations when working with power outdoors and on location."
+            },
+            {
+                id: "dQw4w9wgxcq",
+                title: "Quick Cable Management for Mobile Shows",
+                category: "setup",
+                duration: "11:45",
+                keywords: ["cables", "management", "organization"],
+                description: "Fast and clean cable runs that save time during mobile setups."
+            }
+        ];
+
+        function renderGallery(filteredVideos) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            if (filteredVideos.length === 0) {
+                gallery.innerHTML = `<div class="no-results">No tutorials found.<br>Try different keywords or filters.</div>`;
+                return;
+            }
+            
+            filteredVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="thumbnail">
+                        <div class="play-overlay">▶</div>
+                        <div class="duration">${video.duration}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${video.title}</div>
+                        <div class="card-meta">
+                            <span>${video.category.toUpperCase()}</span>
+                        </div>
+                        <div class="tags">
+                            ${video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openVideoModal(video));
+                gallery.appendChild(card);
+            });
+        }
+
+        function openVideoModal(video) {
+            const modal = document.getElementById('modal');
+            const modalVideoContainer = document.getElementById('modal-video');
+            
+            modalVideoContainer.innerHTML = `
+                <iframe width="100%" height="100%" 
+                        style="position:absolute;top:0;left:0;" 
+                        src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" 
+                        title="${video.title}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+            `;
+            
+            document.getElementById('modal-title').textContent = video.title;
+            document.getElementById('modal-description').textContent = video.description;
+            
+            const tagsContainer = document.getElementById('modal-tags');
+            tagsContainer.innerHTML = video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('');
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function filterVideos() {
+            const searchTerm = document.getElementById('search').value.toLowerCase().trim();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            
+            const filtered = videos.filter(video => {
+                const matchesSearch = !searchTerm || 
+                    video.title.toLowerCase().includes(searchTerm) ||
+                    video.description.toLowerCase().includes(searchTerm) ||
+                    video.keywords.some(kw => kw.toLowerCase().includes(searchTerm));
+                
+                const matchesCategory = activeCategory === 'all' || video.category === activeCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderGallery(filtered);
+        }
+
+        // Event Listeners
+        document.getElementById('search').addEventListener('input', filterVideos);
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterVideos();
+            });
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+            document.getElementById('modal-video').innerHTML = '';
+            document.body.style.overflow = 'visible';
+        });
+        
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('close-modal').click();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.getElementById('search') !== document.activeElement) {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+            
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('modal');
+                if (modal.style.display === 'flex') {
+                    document.getElementById('close-modal').click();
+                } else {
+                    document.getElementById('search').value = '';
+                    document.querySelector('[data-category="all"]').click();
+                }
+            }
+        });
+        
+        // Initialize
+        renderGallery(videos);
+    </script>
+</body>
+</html>

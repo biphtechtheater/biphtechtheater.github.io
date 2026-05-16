@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MIDI Note Listener</title>
+<style>
+  body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f0f0; }
+  #status { margin-top: 20px; font-size: 1.2em; color: #333; }
+  #connectButton { padding: 10px 20px; font-size: 1em; cursor: pointer; margin-top: 20px; }
+  #noteDisplay { font-size: 3em; font-weight: bold; margin-top: 30px; color: #007bff; }
+  #devices { margin-top: 10px; font-size: 0.9em; color: #555; }
+</style>
+</head>
+<body>
+
+<h1>MIDI Note Listener</h1>
+<div id="status">MIDI Status: Disconnected</div>
+<div id="devices">Connected Devices: None</div>
+<button id="connectButton">Connect MIDI</button>
+<div id="noteDisplay">--</div>
+
+<script>
+const statusDiv = document.getElementById('status');
+const devicesDiv = document.getElementById('devices');
+const connectButton = document.getElementById('connectButton');
+const noteDisplay = document.getElementById('noteDisplay');
+let midiAccess = null;
+
+function onMIDIMessage(event) {
+  const data = event.data;
+  const command = data[0] & 0xf0;
+  const note = data[1];
+  const velocity = data[2];
+
+  if (command === 0x90 && velocity > 0) {
+    noteDisplay.textContent = note;
+  } else if (command === 0x80 || (command === 0x90 && velocity === 0)) {
+    noteDisplay.textContent = '--';
+  }
+}
+
+function onMIDIFailure() {
+  statusDiv.textContent = 'MIDI Status: Error - Could not access MIDI devices.';
+}
+
+function updateDevices(inputs) {
+  let deviceNames = [];
+  inputs.forEach(input => deviceNames.push(input.name));
+  devicesDiv.textContent = 'Connected Devices: ' + (deviceNames.length > 0 ? deviceNames.join(', ') : 'None');
+}
+
+function onMIDISuccess(midi) {
+  midiAccess = midi;
+  statusDiv.textContent = 'MIDI Status: Connected';
+  connectButton.disabled = true;
+
+  midiAccess.onstatechange = (event) => {
+    updateDevices(midiAccess.inputs);
+  };
+
+  updateDevices(midiAccess.inputs);
+
+  midiAccess.inputs.forEach(input => {
+    input.onmidimessage = onMIDIMessage;
+  });
+}
+
+connectButton.addEventListener('click', () => {
+  if (navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess()
+      .then(onMIDISuccess, onMIDIFailure);
+  } else {
+    statusDiv.textContent = 'MIDI Status: Error - Web MIDI API is not supported in this browser.';
+  }
+});
+
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess()
+    .then(onMIDISuccess, onMIDIFailure);
+} else {
+  statusDiv.textContent = 'MIDI Status: Error - Web MIDI API is not supported in this browser.';
+}
+</script>
+
+</body>
+</html>

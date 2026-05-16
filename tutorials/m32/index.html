@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midas M32 Tutorials • Gallery</title>
+    <link rel="icon" href="../icons/m32icon.png">
+    
+    <!-- Common styles -->
+    <link rel="stylesheet" href="../../common-styles.css">
+    
+    <style>
+        :root {
+            --bg: #111111;
+            --card: #1a1a1a;
+            --accent: #ffdf61;      /* M32 Gold */
+            --accent2: #ffe38f;
+            --text: #eeeeee;
+            --muted: #888888;
+            --border: #333333;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        
+        .logo {
+            color: var(--accent);
+        }
+        
+        #search:focus {
+            border-color: var(--accent);
+        }
+        
+        .category-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+        
+        .video-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .play-overlay {
+            background: rgba(255, 223, 97, 0.85);
+        }
+        
+        .video-card:hover .play-overlay {
+            background: rgba(255, 227, 143, 0.95);
+        }
+        
+        .modal-content {
+            border: 2px solid var(--accent);
+        }
+        
+        #modal-title {
+            color: var(--accent);
+        }
+        
+        .tag {
+            color: var(--accent);
+        }
+
+   .logo-icon {
+    margin-top: 8px;
+    width: 81px;
+    height: 81px;
+    object-fit: contain;
+}
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../../menu.js"></script>
+    <header>
+        <div class="logo-container">
+            <img src="../icons/m32icon.png" alt="Midas M32" class="logo-icon">
+            <div>
+                <div class="logo">Midas M32</div>
+                <div class="subtitle">Tutorial Gallery</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search" placeholder="Search tutorials... (press / to focus)" autocomplete="off">
+        </div>
+        
+        <div class="filter-group">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="basics">Basics</button>
+            <button class="category-btn" data-category="routing">Routing</button>
+            <button class="category-btn" data-category="effects">Effects</button>
+            <button class="category-btn" data-category="mixing">Mixing</button>
+            <button class="category-btn" data-category="scenes">Scenes & Snaps</button>
+            <button class="category-btn" data-category="advanced">Advanced</button>
+        </div>
+    </div>
+
+    <div class="gallery" id="gallery">
+        <!-- Populated by JS -->
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <span class="close-btn" id="close-modal">×</span>
+            </div>
+            <div id="modal-video" style="position:relative;padding-top:56.25%;background:#000;">
+                <!-- YouTube iframe injected here -->
+            </div>
+            <div style="padding:24px;">
+                <div id="modal-description" style="color:#ddd; line-height:1.6;"></div>
+                <div id="modal-tags" class="tags" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Midas M32 Tutorial Videos
+        const videos = [
+            {
+                id: "example12345",
+                title: "M32 Basics - Getting Started & Interface Tour",
+                category: "basics",
+                duration: "24:10",
+                keywords: ["interface", "setup", "beginner", "overview"],
+                description: "Complete beginner walkthrough of the Midas M32 interface, layers, and basic navigation."
+            },
+            {
+                id: "example67890",
+                title: "Channel Routing & Signal Flow on M32",
+                category: "routing",
+                duration: "19:45",
+                keywords: ["routing", "signal flow", "inputs", "buses"],
+                description: "Understanding signal flow, input routing, and bus configuration on the Midas M32."
+            },
+            {
+                id: "example54321",
+                title: "Using Effects Racks & Premium Plugins",
+                category: "effects",
+                duration: "22:30",
+                keywords: ["effects", "reverb", "delay", "plugins"],
+                description: "How to use the onboard effects, insert effects, and make the most of the M32 processing."
+            },
+            {
+                id: "example11223",
+                title: "Scene Management & Show File Best Practices",
+                category: "scenes",
+                duration: "16:55",
+                keywords: ["scenes", "safes", "showfile", "recall"],
+                description: "Best practices for organizing scenes, using safes, and managing show files."
+            },
+            {
+                id: "example99887",
+                title: "Live Mixing Techniques on the M32",
+                category: "mixing",
+                duration: "27:20",
+                keywords: ["mixing", "eq", "compression", "live"],
+                description: "Practical live mixing workflow, EQ, compression, and monitoring tips."
+            },
+            // Add more M32 tutorials here
+        ];
+
+        function renderGallery(filteredVideos) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            if (filteredVideos.length === 0) {
+                gallery.innerHTML = `<div class="no-results">No tutorials found.<br>Try different keywords or filters.</div>`;
+                return;
+            }
+            
+            filteredVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="thumbnail">
+                        <div class="play-overlay">▶</div>
+                        <div class="duration">${video.duration}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${video.title}</div>
+                        <div class="card-meta">
+                            <span>${video.category.toUpperCase()}</span>
+                        </div>
+                        <div class="tags">
+                            ${video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openVideoModal(video));
+                gallery.appendChild(card);
+            });
+        }
+
+        function openVideoModal(video) {
+            const modal = document.getElementById('modal');
+            const modalVideoContainer = document.getElementById('modal-video');
+            
+            modalVideoContainer.innerHTML = `
+                <iframe width="100%" height="100%" 
+                        style="position:absolute;top:0;left:0;" 
+                        src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" 
+                        title="${video.title}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+            `;
+            
+            document.getElementById('modal-title').textContent = video.title;
+            document.getElementById('modal-description').textContent = video.description;
+            
+            const tagsContainer = document.getElementById('modal-tags');
+            tagsContainer.innerHTML = video.keywords.map(kw => `<span class="tag">${kw}</span>`).join('');
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function filterVideos() {
+            const searchTerm = document.getElementById('search').value.toLowerCase().trim();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            
+            const filtered = videos.filter(video => {
+                const matchesSearch = !searchTerm || 
+                    video.title.toLowerCase().includes(searchTerm) ||
+                    video.description.toLowerCase().includes(searchTerm) ||
+                    video.keywords.some(kw => kw.toLowerCase().includes(searchTerm));
+                
+                const matchesCategory = activeCategory === 'all' || video.category === activeCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderGallery(filtered);
+        }
+
+        // Event Listeners (same as QLab)
+        document.getElementById('search').addEventListener('input', filterVideos);
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterVideos();
+            });
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+            document.getElementById('modal-video').innerHTML = '';
+            document.body.style.overflow = 'visible';
+        });
+        
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('close-modal').click();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.getElementById('search') !== document.activeElement) {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+            
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('modal');
+                if (modal.style.display === 'flex') {
+                    document.getElementById('close-modal').click();
+                } else {
+                    document.getElementById('search').value = '';
+                    document.querySelector('[data-category="all"]').click();
+                }
+            }
+        });
+        
+        // Initialize
+        renderGallery(videos);
+    </script>
+</body>
+</html>
