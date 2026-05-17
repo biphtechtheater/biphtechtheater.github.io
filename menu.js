@@ -8,17 +8,20 @@
                 <div class="menu-title">BIPH Tech Theater</div>
                 
                 <a href="https://biphtechtheater.github.io/">Home</a>
+
+                <a href="https://biphtechtheater.github.io/files/">📄   Files</a>
+                <a href="https://biphtechtheater.github.io/events/">📅   Events</a>
                 
-                <a href="https://biphtechtheater.github.io/tutorials/">Tutorials</a>
+                <a href="https://biphtechtheater.github.io/tutorials/">⏯   Tutorials</a>
                 <a href="https://biphtechtheater.github.io/tutorials/qlab/">     • QLab</a>
                 <a href="https://biphtechtheater.github.io/tutorials/m32/">     • Midas M32</a>
                 <a href="https://biphtechtheater.github.io/tutorials/blackbox/">     • Black Box Theater</a>
                 <a href="https://biphtechtheater.github.io/tutorials/auditorium/">     • Auditorium</a>
                 <a href="https://biphtechtheater.github.io/tutorials/mobile/">     • Mobile Setup</a>
                 
-                <a href="https://biphtechtheater.github.io/dmxis/">DMXIS Remote</a>
+                <a href="https://biphtechtheater.github.io/dmxis/">🎚   DMXIS Remote</a>
                 
-                <a href="mailto:garrison.tubbs-biph@basischina.com">Contact</a>
+                <a href="mailto:garrison.tubbs-biph@basischina.com">✉️   Contact</a>
             </div>
         </div>
     `;
