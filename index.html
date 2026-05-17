@@ -146,7 +146,6 @@
             transition: color 0.3s ease;
         }
 
-
         .link-card:hover h3 {
             color: var(--accent);
         }
@@ -165,7 +164,7 @@
             height: 1.5px;
             background: var(--accent);
             opacity: 0;
-            transform: scaleX(0.6); 
+            transform: scaleX(0.95); 
             transition: all 0.35s ease;
         }
 
@@ -178,35 +177,31 @@
             color: var(--muted);
             line-height: 1.6;
         }
-
-
     </style>
 </head>
 <body>
-    <!-- Shared Menu -->
     <div id="shared-menu"></div>
     <script src="menu.js"></script>
 
-    <header>
-        <div class="logo-container">
-            <div class="logo-icon" style="width: 90px; height: 90px; margin-top: 5px; margin-right: -18px;">
-                <img src="icons/TechTheaterLogo.png" alt="BIPH Tech Theater Logo">
-            </div>
-            <div>
-                <div class="logo" style="line-height: 85%; margin-bottom: 18px; margin-left: -1px;">BIPH Technical Theatre</div>
-                <div class="subtitle">2026-2027</div>
-            </div>
+<header>
+    <div class="logo-container">
+        <div class="logo-icon" style="width: 90px; height: 78px; margin-top: 5px; margin-right: -18px;">
+            <img src="icons/TechTheaterLogo.png" style="height: 80px;" alt="BIPH Tech Theater Logo">
         </div>
-    </header>
+        <div>
+            <div class="logo" style="line-height: 85%; margin-bottom: 18px; margin-left: -1px;">BIPH Technical Theatre</div>
+            <div class="subtitle">2026-2027</div>
+        </div>
+    </div>
+</header>
 
-    <!-- Hero -->
     <section class="hero">
         <div class="hero-content">
             <h1>Find your crew</h1>
             <p>Lighting • Sound • Video • Programming • Event Design</p>
             <div class="cta-buttons">
-                <a href="tutorials.html" class="btn btn-primary">Browse Tutorials</a>
-                <a href="latest-files.html" class="btn btn-secondary">Latest Files</a>
+                <a href="https://biphtechtheater.github.io/tutorials/" class="btn btn-primary">Browse Tutorials</a>
+                <a href="https://biphtechtheater.github.io/latestfiles/" class="btn btn-secondary">Latest Files</a>
             </div>
         </div>
     </section>
@@ -219,12 +214,11 @@
                 <h3>Upcoming Events</h3>
                 <p>Main calendar events, concerts, drama performances, club outputs, tech showcases, you name it!</p>
             </a>
-            
-            <!-- You can add more cards here easily -->
         </div>
-    <div class="biph-logocontainer">        
-        <img src="icons/Full Logo White on Transparent.png" class="biph-logo">
-    </div>
+        
+        <div class="biph-logocontainer">        
+            <img src="icons/Full Logo White on Transparent.png" class="biph-logo">
+        </div>
     </main>
 </body>
 </html>
