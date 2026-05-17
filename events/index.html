@@ -151,6 +151,25 @@
             margin-bottom: 0;
         }
 
+        .day.today {
+            background: rgba(159, 75, 255, 0.109) !important;
+            border: 2px solid var(--accent) !important;
+            position: relative;
+        }
+
+        .day.today::after {
+            content: "Today";
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 0.65rem;
+            color: var(--accent);
+            font-weight: 600;
+            background: rgba(0,0,0,0.4);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
         .special { color: #ff4d4d; font-weight: 600; }
         .party { color: #ffd700; font-weight: 600; }
 
