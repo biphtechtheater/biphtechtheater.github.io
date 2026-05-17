@@ -270,3 +270,27 @@ footer {
     color: var(--muted);
     font-size: 0.9rem;
 }
+
+.biph-logo-container {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    padding: 0 25px 35px 0;     /* Fine-tune spacing here */
+    opacity: 0;
+    transition: opacity 2s ease;
+    pointer-events: none;
+}
+
+.biph-logo-container.visible {
+    opacity: 1;
+}
+
+.biph-logo {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 25vh;
+    height: auto;
+    z-index: -1;
+}

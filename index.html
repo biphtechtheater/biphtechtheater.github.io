@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIPH Tech Theater</title>
+    <link rel="icon" href="icons/light-icon.png">
     <link rel="stylesheet" href="common-styles.css">
     <style>
         :root {
@@ -36,6 +37,7 @@
 
         .hero h1 {
             font-size: 4.2rem;
+            line-height: 75%;
             font-weight: 200;
             letter-spacing: -2px;
             margin-bottom: 12px;
@@ -96,26 +98,18 @@
             object-fit: contain;
         }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .section-header h2 {
-            font-size: 2rem;
-            font-weight: 300;
-        }
-
         .quick-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
             margin-bottom: 80px;
+            justify-items: center;
         }
 
         .link-card {
+            width: 70%;
+            max-width: 1000px;
+            margin: 0 auto;
             background: var(--card);
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 16px;
@@ -124,7 +118,7 @@
             text-decoration: none;
             color: inherit;
             overflow: hidden;
-            box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.133);
+            box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.10);
         }
 
         .link-card:hover {
@@ -134,13 +128,14 @@
 
         .link-card .icon {
             font-size: 3.8rem;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+            margin-top: -20px;
             transition: all 0.4s ease;
             display: block;
         }
 
         .link-card:hover .icon {
-            transform: translateY(7px) rotate(2deg);
+            transform: rotate(0.2deg);
             color: var(--accent);
         }
 
@@ -151,8 +146,32 @@
             transition: color 0.3s ease;
         }
 
+
         .link-card:hover h3 {
             color: var(--accent);
+        }
+
+        .link-card h3 {
+            position: relative;
+            display: inline-block;
+        }
+
+        .link-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: 6px; 
+            left: 0;
+            width: 100%;
+            height: 1.5px;
+            background: var(--accent);
+            opacity: 0;
+            transform: scaleX(0.6); 
+            transition: all 0.35s ease;
+        }
+
+        .link-card h3:hover::after {
+            opacity: 1;
+            transform: scaleX(1);
         }
 
         .link-card p {
@@ -160,28 +179,7 @@
             line-height: 1.6;
         }
 
-        .featured-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
 
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 60px;
-            flex-wrap: wrap;
-            margin: 60px 0;
-            padding: 30px 0;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .stat-number {
-            font-size: 2.8rem;
-            font-weight: 200;
-            color: var(--accent);
-        }
     </style>
 </head>
 <body>
@@ -191,11 +189,11 @@
 
     <header>
         <div class="logo-container">
-            <div class="logo-icon" style="width: 68px; height: 68px; border-radius: 12px; overflow: hidden; background: #111;">
-                <img src="icons/TTlogo.png" alt="BIPH Tech Theater Logo">
+            <div class="logo-icon" style="width: 90px; height: 90px; margin-top: 5px; margin-right: -18px;">
+                <img src="icons/TechTheaterLogo.png" alt="BIPH Tech Theater Logo">
             </div>
             <div>
-                <div class="logo">BIPH Technical Theatre</div>
+                <div class="logo" style="line-height: 85%; margin-bottom: 18px; margin-left: -1px;">BIPH Technical Theatre</div>
                 <div class="subtitle">2026-2027</div>
             </div>
         </div>
@@ -204,8 +202,8 @@
     <!-- Hero -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Tech Theater</h1>
-            <p>Lighting • Sound • Video • Stage Automation • Event Design</p>
+            <h1>Find your crew</h1>
+            <p>Lighting • Sound • Video • Programming • Event Design</p>
             <div class="cta-buttons">
                 <a href="tutorials.html" class="btn btn-primary">Browse Tutorials</a>
                 <a href="latest-files.html" class="btn btn-secondary">Latest Files</a>
@@ -219,12 +217,14 @@
             <a href="events.html" class="link-card">
                 <div class="icon">📅</div>
                 <h3>Upcoming Events</h3>
-                <p>Main calendar events, club outputs, concerts, drama performances, and tech showcases.</p>
+                <p>Main calendar events, concerts, drama performances, club outputs, tech showcases, you name it!</p>
             </a>
             
             <!-- You can add more cards here easily -->
         </div>
-
+    <div class="biph-logocontainer">        
+        <img src="icons/Full Logo White on Transparent.png" class="biph-logo">
+    </div>
     </main>
 </body>
 </html>
