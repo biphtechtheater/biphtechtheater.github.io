@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokeball Challenge - Leaderboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23ffffff'/%3E%3Cpath d='M5 50h90a45 45 0 0 0-90 0z' fill='%23ff0000'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%23000000'/%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='5' y1='50' x2='95' y2='50' stroke='%23000000' stroke-width='3'/%3E%3C/svg%3E">
+    <style>
+        @font-face {
+            font-family: 'Zapfino';
+            src: url('../fonts/Zapfino.ttf') format('truetype');
+        }
+        body {
+            background-color: rgb(45, 70, 119);
+            font-family: 'Andika', sans-serif;
+            color: #ffffff;
+            margin: 0;
+            padding: 15px;
+            line-height: 1.5;
+            text-align: center;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .background {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgb(45, 70, 119), rgb(9, 32, 79));
+            opacity: 0.8;
+            z-index: -2;
+        }
+        .overlay, .overlay2 {
+            position: fixed;
+            inset: 0;
+            mix-blend-mode: overlay;
+            opacity: 0.5;
+            z-index: -1;
+            animation: pulse 1.5s infinite alternate;
+        }
+        .overlay {
+            background: radial-gradient(circle at 30% 70%, #303f6c 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, #236693 0%, transparent 50%);
+        }
+        .overlay2 {
+            background: radial-gradient(circle at 70% 70%, #ffffff 0%, transparent 50%),
+                        radial-gradient(circle at 30% 30%, #b8b8b8 0%, transparent 50%);
+            animation-duration: 2s;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .Subtitle {
+            font-family: 'Zapfino', cursive;
+            color: white;
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .mode-toggle {
+            font-size: 1.1rem;
+            color: #ddd;
+            margin: 6px 0 16px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mode-toggle:hover {
+            color: white;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            margin-bottom: 50px;
+        }
+
+        #leaderboard {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0px 14px;
+            margin: 3px 0;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.18);
+            transition: transform 0.9s cubic-bezier(0.22, 0.81, 0.35, 1), opacity 0.9s ease-out;
+            position: relative;
+            overflow: hidden;
+            min-height: 48px;
+        }
+
+        /* Shine Effect */
+        .entry.gold::before,
+        .entry.silver::before,
+        .entry.bronze::before {
+            content: '';
+            position: absolute;
+            inset: 50% -150% -50% -10%;   /* better coverage */
+            background: linear-gradient(120deg, 
+                transparent 30%, 
+                rgba(255,255,255,0.2) 50%, 
+                transparent 70%);
+            animation: shine 5.5s linear infinite;
+            pointer-events: none;
+            will-change: transform;
+            opacity: 0.5;
+        }
+
+
+        @keyframes shine {
+            0%   { transform: translateX(-150%) translateY(-50%); }
+            100% { transform: translateX(450%) translateY(-50%); }
+        }
+
+        .entry.gold {
+            background: linear-gradient(45deg, #d4af37b4, #ffd9008f, #b8870b8f);
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.5);
+        }
+        .entry.silver {
+            background: linear-gradient(45deg, #c0c0c0b9, #e5e5e5a9, #a8a8a89d);
+            border: 2px solid #c0c0c0;
+            box-shadow: 0 0 18px rgba(192, 192, 192, 0.5);
+        }
+        .entry.bronze {
+            background: linear-gradient(45deg, #cd8032af, #e8b5889f, #b36b24b4);
+            border: 2px solid #cd7f32;
+            box-shadow: 0 0 18px rgba(205, 127, 50, 0.5);
+        }
+
+        .rank {
+            font-weight: bold;
+            width: 26px;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .name {
+            flex: 1;
+            text-align: left;
+        }
+        .name .grade {
+            font-weight: normal;
+            color: #ddd;
+            margin-left: 0.5em;
+        }
+        .weight {
+            width: 135px;
+            text-align: right;
+            font-weight: 500;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="overlay"></div>
+    <div class="overlay2"></div>
+    
+    <div class="container">
+        <div class="header">
+            <svg class="w-8 h-8 mr-2" viewBox="0 0 100 100" width="42" height="42">
+                <circle cx="50" cy="50" r="45" fill="white"/>
+                <path d="M5 50h90a45 45 0 0 0-90 0z" fill="red"/>
+                <circle cx="50" cy="50" r="10" fill="black"/>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2"/>
+                <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="3"/>
+            </svg>
+            <h1>Pokeball Challenge</h1>
+        </div>
+        
+        <h2 class="Subtitle">Leaderboard</h2>
+        <div id="modeToggle" class="mode-toggle">Single Player</div>
+        
+        <ul id="leaderboard"></ul>
+    </div>
+
+    <script>
+        const channel = new BroadcastChannel('pokeball_leaderboard');
+
+        let currentMode = "single";
+        let singleLeaderboard = [];
+        let coopLeaderboard = [];
+        let previousLeaderboard = [];
+        const ROW_HEIGHT = 54;
+
+        function calculateRankings(entries) {
+            if (!entries.length) return [];
+            const ranked = [];
+            let rank = 1;
+            ranked.push({ ...entries[0], place: 1 });
+            for (let i = 1; i < entries.length; i++) {
+                const current = entries[i];
+                const previous = entries[i - 1];
+                if (current.weight < previous.weight) rank += 1;
+                ranked.push({ ...current, place: rank });
+            }
+            return ranked;
+        }
+
+        function triggerConfetti() {
+            confetti({ particleCount: 280, spread: 100, origin: { y: 0.6 } });
+        }
+
+        function getMedalClass(place) {
+            if (place === 1) return 'gold';
+            if (place === 2) return 'silver';
+            if (place === 3) return 'bronze';
+            return '';
+        }
+
+        function getDisplayName(entry) {
+            if (entry.player1 && entry.player2) return `${entry.player1} & ${entry.player2}`;
+            return entry.grade ? `${entry.name} <span class="grade">(${entry.grade})</span>` : entry.name;
+        }
+
+        function renderLeaderboard(animate = false) {
+            const ul = document.getElementById('leaderboard');
+            ul.innerHTML = '';
+            
+            const activeBoard = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+            const rankedLeaderboard = calculateRankings(activeBoard);
+            
+            let nextRank = 1;
+            if (rankedLeaderboard.length > 0) {
+                nextRank = rankedLeaderboard[rankedLeaderboard.length - 1].place + 1;
+            }
+            const displayCount = Math.max(10, rankedLeaderboard.length);
+            const itemsToShow = Math.min(displayCount, 20);
+
+            const prevPos = new Map();
+            previousLeaderboard.forEach((e, i) => {
+                if (e?.id) prevPos.set(e.id, i);
+            });
+
+            let newEntryId = null;
+            if (animate) {
+                const prevIds = new Set(previousLeaderboard.map(e => e?.id).filter(Boolean));
+                newEntryId = activeBoard.find(e => !prevIds.has(e.id))?.id;
+            }
+
+            const elements = [];
+            for (let i = 0; i < itemsToShow; i++) {
+                const entry = rankedLeaderboard[i];
+                const li = document.createElement('li');
+                li.className = 'entry';
+
+                if (entry) {
+                    const medal = getMedalClass(entry.place);
+                    if (medal) li.classList.add(medal);
+                    li.dataset.id = entry.id;
+                    li.innerHTML = `
+                        <span class="rank">${entry.place}.</span>
+                        <span class="name">${getDisplayName(entry)}</span>
+                        <span class="weight">${entry.weight} collected</span>
+                    `;
+
+                    if (animate) {
+                        const oldIndex = prevPos.get(entry.id);
+                        if (oldIndex === undefined) {
+                            li.classList.add('new-entry');
+                            newEntryId = entry.id;
+                        } else if (oldIndex !== i) {
+                            li.classList.add('moving');
+                            const diff = i - oldIndex;
+                            li.style.transform = `translateY(${diff * -ROW_HEIGHT}px)`;
+                        }
+                    }
+                } else {
+                    li.classList.add('placeholder');
+                    li.innerHTML = `
+                        <span class="rank">${nextRank}.</span>
+                        <span class="name">--</span>
+                        <span class="weight">-- </span>
+                    `;
+                    nextRank++;
+                }
+                elements.push(li);
+            }
+
+        // Append all elements
+        elements.forEach(el => ul.appendChild(el));
+
+        // Only keep this small part for smooth rank movement
+        if (animate) {
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.entry.moving').forEach(el => {
+                    el.style.transform = '';   // Reset position after slide
+                });
+            });
+        }
+
+            previousLeaderboard = [...activeBoard];
+        }
+
+        const modeToggle = document.getElementById('modeToggle');
+        function updateModeUI() {
+            modeToggle.textContent = currentMode === "single" ? "Single Player" : "Co-op";
+        }
+
+        // Main listener from control page
+        channel.onmessage = (event) => {
+            const { mode, leaderboard } = event.data;
+
+            if (mode !== currentMode) {
+                currentMode = mode;
+                updateModeUI();
+            }
+
+            const oldBoard = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+            const oldTopIds = oldBoard.slice(0, 10).map(e => e.id);
+
+            if (currentMode === "single") singleLeaderboard = leaderboard;
+            else coopLeaderboard = leaderboard;
+
+            const hasNewTopEntry = leaderboard.slice(0, 10).some(e => !oldTopIds.includes(e.id));
+
+            renderLeaderboard(true);
+
+            if (hasNewTopEntry) triggerConfetti();
+        };
+
+        // Fallback polling
+        function loadData() {
+            const savedSingle = localStorage.getItem('singleLeaderboard');
+            const savedCoop = localStorage.getItem('coopLeaderboard');
+            if (savedSingle) singleLeaderboard = JSON.parse(savedSingle);
+            if (savedCoop) coopLeaderboard = JSON.parse(savedCoop);
+            renderLeaderboard(false);
+        }
+
+        loadData();
+        setInterval(loadData, 1500);
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                loadData();
+            }
+        });
+
+        updateModeUI();
+    </script>
+</body>
+</html>
