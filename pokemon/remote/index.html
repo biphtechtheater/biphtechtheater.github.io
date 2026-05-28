@@ -237,6 +237,20 @@
             border-radius: 6px;
             cursor: pointer;
         }
+
+        .midi-status {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 10000;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .midi-status.connected { color: #4CAF50; }
+        .midi-status.error { color: #ff5252; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -282,7 +296,87 @@
         </div>
     </div>
 
+    <div id="midiStatus" class="midi-status">Waiting for MIDI...</div>
+
     <script>
+        // ====================== MIDI SUPPORT ======================
+        let pendingPokeballs = 0;
+        let midiAccess = null;
+
+        const midiStatusEl = document.getElementById('midiStatus');
+
+        async function initMIDI() {
+            try {
+                midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+                midiAccess.onstatechange = updateMIDIStatus;
+                updateMIDIStatus();
+                setupMIDIListeners();
+            } catch (err) {
+                console.error("MIDI access denied:", err);
+                midiStatusEl.textContent = "MIDI Access Denied";
+                midiStatusEl.classList.add('error');
+            }
+        }
+
+        function updateMIDIStatus() {
+            if (!midiAccess) return;
+            const inputs = Array.from(midiAccess.inputs.values());
+            if (inputs.length > 0) {
+                midiStatusEl.textContent = `MIDI Connected (${inputs.length} device${inputs.length > 1 ? 's' : ''})`;
+                midiStatusEl.classList.add('connected');
+            } else {
+                midiStatusEl.textContent = "No MIDI devices found";
+                midiStatusEl.classList.remove('connected');
+            }
+        }
+
+        function setupMIDIListeners() {
+            if (!midiAccess) return;
+            midiAccess.inputs.forEach(input => {
+                input.onmidimessage = handleMIDIMessage;
+            });
+        }
+
+        function handleMIDIMessage(message) {
+            const data = message.data;
+            const status = data[0];
+            const note = data[1];
+            const velocity = data[2];
+
+            const channel = status & 0x0F;
+            if (channel !== 13) return; // Channel 14 (0-based = 13)
+
+            if ((status & 0xF0) === 0x90 && velocity > 0) {
+                if (note === 127) {
+                    // SUBMIT
+                    if (pendingPokeballs >= 1) {
+                        submitViaMIDI(pendingPokeballs);
+                    }
+                } else if (note >= 1 && note <= 126) {
+                    // SET PENDING
+                    pendingPokeballs = note;
+                    midiStatusEl.textContent = `Pending: ${pendingPokeballs} Pokeballs`;
+                    setTimeout(updateMIDIStatus, 1500);
+                }
+            }
+        }
+
+        function submitViaMIDI(score) {
+            const weightInput = document.getElementById('weight');
+            weightInput.value = score;
+
+            const modal = document.getElementById('entryModal');
+            if (modal.style.display !== 'flex') {
+                openModal();
+            }
+
+            setTimeout(() => {
+                const form = document.getElementById('entryForm');
+                form.dispatchEvent(new Event('submit'));
+            }, 250);
+        }
+
+        // ====================== ORIGINAL CODE ======================
         const channel = new BroadcastChannel('pokeball_leaderboard');
 
         let currentMode = "single";
@@ -663,16 +757,21 @@
             broadcastUpdate();
         });
 
-        fetch('../students.json')
-            .then(r => r.json())
-            .then(students => {
-                all_entrants = [...students, ...additional_entrants];
-                renderLeaderboard(false);
-            })
-            .catch(() => {
-                all_entrants = [...additional_entrants];
-                renderLeaderboard(false);
-            });
+        // Initialize everything
+        window.addEventListener('load', () => {
+            initMIDI();
+            
+            fetch('../students.json')
+                .then(r => r.json())
+                .then(students => {
+                    all_entrants = [...students, ...additional_entrants];
+                    renderLeaderboard(false);
+                })
+                .catch(() => {
+                    all_entrants = [...additional_entrants];
+                    renderLeaderboard(false);
+                });
+        });
     </script>
 </body>
 </html>
