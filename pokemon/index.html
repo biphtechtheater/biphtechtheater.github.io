@@ -821,6 +821,19 @@ player2Input.addEventListener('keydown', e => {
         }
     });
 
+    document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const menu = document.getElementById('hamburgerMenu');
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+            e.preventDefault();
+        } 
+        else if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+        }
+    }
+});
+
     // Trigger start when Enter is pressed while player2 field is focused
 document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
@@ -838,10 +851,14 @@ document.addEventListener('keydown', (e) => {
     if (p1 && p2) triggerStart();
 });
 
-document.getElementById('hamburger').addEventListener('click', () => {
+document.getElementById('hamburger').addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent immediate close from window.onclick
     const menu = document.getElementById('hamburgerMenu');
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    if (menu.style.display === 'block') updateMIDIDiagnostics();
+    
+    if (menu.style.display === 'block') {
+        updateMIDIDiagnostics();
+    }
 });
 
     let resetConfirm = false;
@@ -861,13 +878,22 @@ document.getElementById('hamburger').addEventListener('click', () => {
         }
     };
 
-    window.onclick = e => {
-        if (e.target === modal) modal.style.display = 'none';
-        const resetMenu = document.getElementById('resetMenu');
-        if (e.target.id !== 'hamburger' && !resetMenu.contains(e.target)) {
-            resetMenu.style.display = 'none';
-        }
-    };
+window.onclick = e => {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+        return;
+    }
+
+    const menu = document.getElementById('hamburgerMenu');
+    const hamburger = document.getElementById('hamburger');
+
+    // Close menu when clicking outside
+    if (menu.style.display === 'block' && 
+        !hamburger.contains(e.target) && 
+        !menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+};
 
     // Initialize
     window.addEventListener('load', () => {
