@@ -184,8 +184,10 @@
             inset: 0; 
             background: rgba(0,0,0,0.78); 
             z-index: 1000; 
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            padding-top: 250px; 
+            overflow-y: auto;
         }
 
         .modal-content {
@@ -901,31 +903,47 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('hamburger').addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent immediate close from window.onclick
+    e.stopPropagation();
     const menu = document.getElementById('hamburgerMenu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    const wasOpen = menu.style.display === 'block';
     
-    if (menu.style.display === 'block') {
+    menu.style.display = wasOpen ? 'none' : 'block';
+    
+    if (!wasOpen) {
         updateMIDIDiagnostics();
+        // Reset confirm state when reopening
+        resetConfirm = false;
+        document.getElementById('resetBtn').textContent = "Reset Leaderboard";
     }
 });
 
-    let resetConfirm = false;
-    document.getElementById('resetBtn').onclick = () => {
-        const resetBtn = document.getElementById('resetBtn');
-        if (!resetConfirm) {
-            resetConfirm = true;
-            resetBtn.textContent = "Confirm Reset?";
+let resetConfirm = false;
+
+document.getElementById('resetBtn').onclick = () => {
+    const resetBtn = document.getElementById('resetBtn');
+    const menu = document.getElementById('hamburgerMenu');
+
+    if (!resetConfirm) {
+        resetConfirm = true;
+        resetBtn.textContent = "Confirm Reset?";
+    } else {
+        // Perform the reset
+        if (currentMode === "single") {
+            singleLeaderboard = [];
         } else {
-            if (currentMode === "single") singleLeaderboard = [];
-            else coopLeaderboard = [];
-            saveLeaderboard();
-            renderLeaderboard();
-            document.getElementById('resetMenu').style.display = 'none';
-            resetConfirm = false;
-            resetBtn.textContent = "Reset Leaderboard";
+            coopLeaderboard = [];
         }
-    };
+        saveLeaderboard();
+        renderLeaderboard();
+
+        // Close the menu after successful reset
+        menu.style.display = 'none';
+
+        // Reset button state
+        resetConfirm = false;
+        resetBtn.textContent = "Reset Leaderboard";
+    }
+};
 
 window.onclick = e => {
     if (e.target === modal) {
