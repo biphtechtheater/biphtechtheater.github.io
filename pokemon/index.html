@@ -309,7 +309,7 @@
     </div>
 
 <!-- Hamburger Menu -->
-<div id="hamburgerMenu" style="display:none; position:fixed; top:75px; left:20px; background:rgba(0,0,0,0.92); border-radius:10px; padding:12px; z-index:1100; box-shadow: 0 4px 20px rgba(0,0,0,0.6); min-width:260px;">
+<div id="hamburgerMenu" style="display:none; position:fixed; top:75px; left:20px; background:rgba(0,0,0,0.92); border-radius:10px; padding:12px; z-index:1100; box-shadow: 0 4px 20px rgba(0,0,0,0.6); min-width:260px; width:300px;">
     <div style="margin-bottom:12px; font-size:1.1rem; color:#ddd; padding:4px 8px;">Menu</div>
     
     <button id="resetBtn" style="width:100%; background:rgba(180,40,40,0.9); border:none; color:white; padding:12px; border-radius:6px; cursor:pointer; font-size:1.05rem; margin-bottom:12px;">
@@ -394,7 +394,7 @@
 
     async function initMIDI() {
         try {
-            midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+            midiAccess = await navigator.requestMIDIAccess();
             setupMIDI();
         } catch (e) {
             console.error("MIDI init failed", e);
@@ -568,34 +568,94 @@ document.getElementById('midiReceiveChannel').addEventListener('change', (e) => 
         return '';
     }
 
-    function renderLeaderboard() {
-        const ul = document.getElementById('leaderboard');
-        ul.innerHTML = '';
-        const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
-        const ranked = calculateRankings(board);
-        
-        let nextRank = ranked.length ? ranked[ranked.length-1].place + 1 : 1;
-        const itemsToShow = Math.min(Math.max(10, ranked.length), 20);
+    function renderLeaderboard(animate = false) {
+    const ul = document.getElementById('leaderboard');
+    ul.innerHTML = '';
+    
+    const activeBoard = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+    const rankedLeaderboard = calculateRankings(activeBoard);
+    
+    let nextRank = 1;
+    if (rankedLeaderboard.length > 0) {
+        nextRank = rankedLeaderboard[rankedLeaderboard.length - 1].place + 1;
+    }
+    const displayCount = Math.max(10, rankedLeaderboard.length);
+    const itemsToShow = Math.min(displayCount, 20);
 
-        for (let i = 0; i < itemsToShow; i++) {
-            const entry = ranked[i];
-            const li = document.createElement('li');
-            li.className = 'entry';
-            if (entry) {
-                const medal = getMedalClass(entry.place);
-                if (medal) li.classList.add(medal);
-                li.innerHTML = `
-                    <span class="rank">${entry.place}.</span>
-                    <span class="name">${getDisplayName(entry)}</span>
-                    <span class="weight">${entry.weight} collected</span>
-                `;
-            } else {
-                li.innerHTML = `<span class="rank">${nextRank}.</span><span class="name">--</span><span class="weight">--</span>`;
-                nextRank++;
+    const prevPos = new Map();
+    previousLeaderboard.forEach((e, i) => {
+        if (e?.id) prevPos.set(e.id, i);
+    });
+
+    let newEntryId = null;
+    if (animate) {
+        const prevIds = new Set(previousLeaderboard.map(e => e?.id).filter(Boolean));
+        newEntryId = activeBoard.find(e => !prevIds.has(e.id))?.id;
+    }
+
+    const elements = [];
+    for (let i = 0; i < itemsToShow; i++) {
+        const entry = rankedLeaderboard[i];
+        const li = document.createElement('li');
+        li.className = 'entry';
+
+        if (entry) {
+            const medal = getMedalClass(entry.place);
+            if (medal) li.classList.add(medal);
+            li.dataset.id = entry.id;
+            li.innerHTML = `
+                <span class="rank">${entry.place}.</span>
+                <span class="name">${getDisplayName(entry)}</span>
+                <span class="weight">${entry.weight} collected</span>
+            `;
+
+            if (animate) {
+                const oldIndex = prevPos.get(entry.id);
+                if (oldIndex === undefined) {
+                    li.classList.add('new-entry');
+                    newEntryId = entry.id;
+                } else if (oldIndex !== i) {
+                    li.classList.add('moving');
+                    const diff = i - oldIndex;
+                    li.style.transform = `translateY(${diff * -ROW_HEIGHT}px)`;
+                }
             }
-            ul.appendChild(li);
+        } else {
+            li.classList.add('placeholder');
+            li.innerHTML = `
+                <span class="rank">${nextRank}.</span>
+                <span class="name">--</span>
+                <span class="weight">--</span>
+            `;
+            nextRank++;
+        }
+        elements.push(li);
+    }
+
+    elements.forEach(el => ul.appendChild(el));
+
+    if (animate) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.entry.moving').forEach(el => {
+                    el.style.transform = '';
+                });
+            });
+        });
+
+        if (newEntryId) {
+            setTimeout(() => {
+                document.querySelectorAll('.entry').forEach(el => {
+                    if (el.dataset.id === newEntryId) {
+                        el.classList.remove('new-entry');
+                    }
+                });
+            }, 950);
         }
     }
+
+    previousLeaderboard = [...activeBoard];
+}
 
     // ====================== MODAL ======================
     const modal = document.getElementById('entryModal');
@@ -630,51 +690,91 @@ document.getElementById('midiReceiveChannel').addEventListener('change', (e) => 
         currentHighlightIndex = -1;
     }
 
-    function triggerStart() {
-        if (document.getElementById('startBtn').disabled) return;
-        sendMIDINote(0);
+function triggerStart() {
+    if (document.getElementById('startBtn').disabled) return;
+    sendMIDINote(0);
 
-        if (currentMode === "single") {
-            const val = document.getElementById('entrantInput').value.trim();
-            if (!val) return;
-            currentSelectedEntry = { name: val, id: document.getElementById('entrantInput').dataset.id || null };
-        } else {
-            const p1 = document.getElementById('player1Input').value.trim();
-            const p2 = document.getElementById('player2Input').value.trim();
-            if (!p1 || !p2) return;
-            currentSelectedEntry = { player1: p1, player2: p2, name: `${p1} & ${p2}` };
-        }
-
-        document.getElementById('selectedNameDisplay').innerHTML = `<strong>${currentSelectedEntry.name}</strong>`;
-        document.getElementById('stage1').classList.remove('active');
-        document.getElementById('stage2').classList.add('active');
-        setTimeout(() => document.getElementById('weight').focus(), 80);
+    if (currentMode === "single") {
+        const input = document.getElementById('entrantInput');
+        const val = input.value.trim();
+        
+        if (!val) return;
+        
+        const existingId = input.dataset.id || null;
+        
+        currentSelectedEntry = { 
+            name: val, 
+            id: existingId 
+        };
+    } 
+    else {
+        // Co-op mode
+        const p1 = document.getElementById('player1Input').value.trim();
+        const p2 = document.getElementById('player2Input').value.trim();
+        
+        if (!p1 || !p2) return;
+        
+        currentSelectedEntry = { 
+            player1: p1, 
+            player2: p2, 
+            name: `${p1} & ${p2}` 
+        };
     }
 
+    document.getElementById('selectedNameDisplay').innerHTML = `<strong>${currentSelectedEntry.name}</strong>`;
+    
+    document.getElementById('stage1').classList.remove('active');
+    document.getElementById('stage2').classList.add('active');
+    
+    setTimeout(() => document.getElementById('weight').focus(), 80);
+}
+
     function submitEntry() {
-        const weightVal = parseInt(document.getElementById('weight').value);
-        if (!weightVal || weightVal < 1) return;
+    const weightVal = parseInt(document.getElementById('weight').value);
+    if (!weightVal || weightVal < 1) return;
 
-        if (window.lastSubmitTime && Date.now() - window.lastSubmitTime < 300) return;
-        window.lastSubmitTime = Date.now();
+    if (window.lastSubmitTime && Date.now() - window.lastSubmitTime < 300) return;
+    window.lastSubmitTime = Date.now();
 
-        sendMIDINote(127);
+    sendMIDINote(127);
 
-        const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
-        let shouldCelebrate = false;
+    const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+    let shouldCelebrate = false;
 
-        if (currentMode === "single") {
-            let { name, id } = currentSelectedEntry;
-            if (!id) {
-                const match = all_entrants.find(e => e.name.toLowerCase() === name.toLowerCase());
-                id = match ? match.id : 'CUST-' + Date.now().toString(36).slice(-6).toUpperCase();
-                if (!match) {
-                    additional_entrants.push({id, name});
-                    all_entrants.push({id, name});
-                    saveAdditionalEntrants();
+    if (currentMode === "single") {
+        let { name, id } = currentSelectedEntry;
+        if (!name) return;
+
+        name = name.trim();
+
+        if (!id) {
+            // === CUSTOM NAME ===
+            // Check if this exact custom name already exists on the leaderboard
+            const existingCustom = board.find(e => 
+                e.id && e.id.startsWith('CUST-') && 
+                e.name.toLowerCase() === name.toLowerCase()
+            );
+
+            if (existingCustom) {
+                // Update existing custom entry
+                if (weightVal > existingCustom.weight) {
+                    existingCustom.weight = weightVal;
+                    shouldCelebrate = true;
                 }
+            } else {
+                // Create NEW custom entry with unique ID
+                const newId = 'CUST-' + Date.now().toString(36).slice(-8).toUpperCase();
+                const entry = { 
+                    id: newId, 
+                    name: name, 
+                    weight: weightVal 
+                };
+                board.push(entry);
+                shouldCelebrate = true;
             }
-
+        } 
+        else {
+            // === EXISTING STUDENT (from suggestions) ===
             const idx = board.findIndex(e => e.id === id);
             if (idx >= 0) {
                 if (weightVal > board[idx].weight) {
@@ -688,26 +788,29 @@ document.getElementById('midiReceiveChannel').addEventListener('change', (e) => 
                 board.push(entry);
                 shouldCelebrate = true;
             }
-        } else {
-            const id = 'COOP-' + Date.now().toString(36).slice(-8).toUpperCase();
-            board.push({
-                id,
-                player1: currentSelectedEntry.player1,
-                player2: currentSelectedEntry.player2,
-                name: currentSelectedEntry.name,
-                weight: weightVal
-            });
-            shouldCelebrate = true;
         }
-
-        board.sort((a,b) => b.weight - a.weight);
-        saveLeaderboard();
-        renderLeaderboard();
-
-        if (shouldCelebrate) confetti({particleCount: 300, spread: 110, origin: {y: 0.55}});
-
-        modal.style.display = 'none';
+    } 
+    else {
+        // Co-op (unchanged)
+        const id = 'COOP-' + Date.now().toString(36).slice(-8).toUpperCase();
+        board.push({
+            id,
+            player1: currentSelectedEntry.player1,
+            player2: currentSelectedEntry.player2,
+            name: currentSelectedEntry.name,
+            weight: weightVal
+        });
+        shouldCelebrate = true;
     }
+
+    board.sort((a,b) => b.weight - a.weight);
+    saveLeaderboard();
+    renderLeaderboard(true);
+
+    if (shouldCelebrate) confetti({particleCount: 300, spread: 110, origin: {y: 0.55}});
+
+    modal.style.display = 'none';
+}
 
     // ====================== SUGGESTIONS ======================
     function showSuggestions(inputId, listId) {
@@ -743,15 +846,34 @@ document.getElementById('midiReceiveChannel').addEventListener('change', (e) => 
         checkStartEnabled();
     }
 
-    function highlightSuggestion(index, listId) {
-        const ul = document.getElementById(listId);
-        const items = ul.children;
-        if (!items.length) return;
-        currentHighlightIndex = Math.max(0, Math.min(index, items.length - 1));
-        Array.from(items).forEach((item, i) => {
-            item.classList.toggle('highlighted', i === currentHighlightIndex);
-        });
+function highlightSuggestion(index, listId) {
+    const ul = document.getElementById(listId);
+    const items = ul.children;
+    if (!items.length) return;
+
+    currentHighlightIndex = Math.max(0, Math.min(index, items.length - 1));
+
+    Array.from(items).forEach((item, i) => {
+        item.classList.toggle('highlighted', i === currentHighlightIndex);
+    });
+
+    scrollToHighlighted(listId); 
+}
+
+    function scrollToHighlighted(listId) {
+    const ul = document.getElementById(listId);
+    const highlighted = ul.querySelector('.highlighted');
+    if (!highlighted) return;
+
+    const ulRect = ul.getBoundingClientRect();
+    const itemRect = highlighted.getBoundingClientRect();
+
+    if (itemRect.top < ulRect.top) {
+        highlighted.scrollIntoView({ block: "nearest" });
+    } else if (itemRect.bottom > ulRect.bottom) {
+        highlighted.scrollIntoView({ block: "nearest" });
     }
+}
 
     function checkStartEnabled() {
         const btn = document.getElementById('startBtn');
@@ -851,12 +973,14 @@ player2Input.addEventListener('keydown', e => {
         }
     });
 
+    let clearCustomConfirm = false;
+
     // Mode Toggle
     const modeToggle = document.getElementById('modeToggle');
     function toggleMode() {
         currentMode = currentMode === "single" ? "coop" : "single";
         modeToggle.textContent = currentMode === "single" ? "Single Player" : "Co-op";
-        renderLeaderboard();
+        renderLeaderboard(true);
     }
     modeToggle.addEventListener('click', toggleMode);
 
@@ -934,7 +1058,7 @@ document.getElementById('resetBtn').onclick = () => {
             coopLeaderboard = [];
         }
         saveLeaderboard();
-        renderLeaderboard();
+        renderLeaderboard(true);
 
         // Close the menu after successful reset
         menu.style.display = 'none';
@@ -971,11 +1095,11 @@ window.onclick = e => {
             .then(r => r.json())
             .then(students => {
                 all_entrants = [...students, ...additional_entrants];
-                renderLeaderboard();
+                renderLeaderboard(false);
             })
             .catch(() => {
                 all_entrants = [...additional_entrants];
-                renderLeaderboard();
+                renderLeaderboard(false);
             });
     });
 </script>
