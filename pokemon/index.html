@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gotta Catch 'em All</title>
+    <title>Gotta Catch 'em All - Remote</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23ffffff'/%3E%3Cpath d='M5 50h90a45 45 0 0 0-90 0z' fill='%23ff0000'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%23000000'/%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='5' y1='50' x2='95' y2='50' stroke='%23000000' stroke-width='3'/%3E%3C/svg%3E">
     <style>
         @font-face {
             font-family: 'Zapfino';
@@ -30,34 +31,35 @@
             opacity: 0.8;
             z-index: -2;
         }
-        .overlay, .overlay2 {
-            position: fixed;
-            inset: 0;
-            mix-blend-mode: overlay;
-            opacity: 0.5;
-            z-index: -1;
-            animation: pulse 1.5s infinite alternate;
-        }
-        .overlay {
-            background: radial-gradient(circle at 30% 70%, #303f6c 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, #236693 0%, transparent 50%);
-        }
-        .overlay2 {
-            background: radial-gradient(circle at 70% 70%, #ffffff 0%, transparent 50%),
-                        radial-gradient(circle at 30% 30%, #b8b8b8 0%, transparent 50%);
-            animation-duration: 2s;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.3; transform: scale(1); }
-            100% { opacity: 0.7; transform: scale(1.1); }
-        }
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.hamburger {
+    font-size: 34px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 6px;
+    position: fixed;           /* Changed to fixed */
+    left: 18px;
+    top: 18px;
+    z-index: 1200;
+}
+.hamburger:hover { 
+    background: rgba(255,255,255,0.12); 
+}
 
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            margin-bottom: 8px;
+            flex: 1;
+            justify-content: center;
         }
 
         .Subtitle {
@@ -65,6 +67,17 @@
             color: white;
             font-size: 32px;
             margin: 0;
+        }
+
+        .mode-toggle {
+            font-size: 1.1rem;
+            color: #ddd;
+            margin: 6px 0 16px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mode-toggle:hover {
+            color: white;
         }
 
         .container {
@@ -75,13 +88,6 @@
             margin: 0 auto;
             width: 100%;
             margin-bottom: 50px;
-        }
-
-        h1 {
-            font-size: 2.1rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-            margin: 0;
         }
 
         #addEntryBtn {
@@ -97,7 +103,6 @@
             background: #45a049;
         }
 
-        /* Compact Leaderboard */
         #leaderboard {
             list-style: none;
             padding: 0;
@@ -123,12 +128,6 @@
             min-height: 48px;
         }
 
-        .entry.placeholder .rank,
-        .entry.placeholder .name,
-        .entry.placeholder .weight {
-            color: rgba(255, 255, 255, 0.7) !important;
-        }
-
         .entry.gold::before,
         .entry.silver::before,
         .entry.bronze::before {
@@ -138,8 +137,8 @@
             left: -150%;
             width: 60%;
             height: 300%;
-            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-            animation: shine 3.2s linear infinite;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+            animation: shine 2.8s linear infinite;
             pointer-events: none;
         }
 
@@ -147,21 +146,16 @@
             background: linear-gradient(45deg, #d4af37b4, #ffd9008f, #b8870b8f);
             border: 2px solid #ffd700;
             box-shadow: 0 0 18px rgba(255, 215, 0, 0.75);
-            font-weight: bold;
         }
-
         .entry.silver {
             background: linear-gradient(45deg, #c0c0c0b9, #e5e5e5a9, #a8a8a89d);
             border: 2px solid #c0c0c0;
             box-shadow: 0 0 18px rgba(192, 192, 192, 0.65);
-            font-weight: bold;
         }
-
         .entry.bronze {
             background: linear-gradient(45deg, #cd8032af, #e8b5889f, #b36b24b4);
             border: 2px solid #cd7f32;
             box-shadow: 0 0 18px rgba(205, 127, 50, 0.65);
-            font-weight: bold;
         }
 
         @keyframes shine {
@@ -169,188 +163,238 @@
             100% { transform: translateX(420%) translateY(-50%); }
         }
 
-        .rank {
-            font-weight: bold;
-            width: 26px;
-            text-align: right;
-            padding-right: 10px;
+        .rank { font-weight: bold; width: 26px; text-align: right; padding-right: 10px; }
+        .name { flex: 1; text-align: left; }
+        .name .grade { font-weight: normal; color: #ddd; margin-left: 0.5em; }
+        .weight { width: 135px; text-align: right; font-weight: 500; }
+
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.78); 
+            z-index: 1000; 
+            align-items: center;
+            justify-content: center;
         }
-        .name {
-            flex: 1;
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(45,70,119,0.98), rgba(25,45,85,0.98));
+            margin: 20px;
+            padding: 28px 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 460px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .modal-stage {
+            display: none;
+        }
+        .modal-stage.active {
+            display: block;
+        }
+
+        #entryForm input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 1.05rem;
+            box-sizing: border-box;
+        }
+
+        #suggestions, .suggestions-coop {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 14px 0;
+            max-height: 240px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        #suggestions li, .suggestions-coop li {
+            padding: 12px 16px;
             text-align: left;
-        }
-        .name .grade {
-            font-weight: normal;
-            color: #ddd;
-            margin-left: 0.5em;
-        }
-        .weight {
-            width: 135px;
-            text-align: right;
-            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-  /* Enhanced Modal */
-.modal { 
-    display: none; 
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0,0,0,0.75); 
-    z-index: 1000; 
-    align-items: center;
-    justify-content: center;
-}
+        #suggestions li:last-child, .suggestions-coop li:last-child {
+            border-bottom: none;
+        }
 
-.modal-content {
-    background: linear-gradient(145deg, rgba(45,70,119,0.98), rgba(25,45,85,0.98));
-    margin: 20px;
-    padding: 32px 28px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 480px;
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-    box-sizing: border-box;
-}
+        #suggestions li:hover,
+        #suggestions li.highlighted,
+        .suggestions-coop li:hover,
+        .suggestions-coop li.highlighted {
+            background: rgba(255,255,255,0.18);
+        }
 
-/* Inputs */
-#entryForm input {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    color: white;
-    font-size: 1.05rem;
-    box-sizing: border-box;
-}
+        #selectedNameDisplay {
+            font-size: 1.4rem;
+            margin: 12px 0 16px 0;
+            padding: 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            min-height: 32px;
+        }
 
-#entryForm input::placeholder {
-    color: rgba(255, 255, 255, 0.45); /* Much lighter placeholder text */
-}
-
-#entryForm input:focus {
-    outline: none;
-    border-color: rgba(255,255,255,0.5);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
-}
-
-/* Remove divider line between inputs (by tightening spacing) */
-#suggestions {
-    list-style: none;
-    padding: 0;
-    margin: 2px 0 14px 0; /* Reduced vertical spacing */
-    max-height: 260px;
-    overflow-y: auto;
-    background: rgba(0,0,0,0.35);
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.12);
-}
-
-#suggestions li {
-    padding: 12px 16px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-#suggestions li:last-child {
-    border-bottom: none;
-}
-
-#suggestions li:hover,
-#suggestions li.highlighted {
-    background: rgba(255,255,255,0.15);
-    color: white;
-}
-
-/* Buttons */
-.modal-content button[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    background: rgba(255,255,255,0.15);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 6px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.modal-content button[type="submit"]:hover {
-    background: rgba(255,255,255,0.25);
-    border-color: rgba(255,255,255,0.4);
-}
-
-/* Reset button - small and aligned to the right */
-#resetBtn {
-    color: rgba(255, 255, 255, 0.749);
-    width: auto !important; 
-    padding: 10px 18px !important;
-    font-size: 1rem !important;
-    margin-top: 16px !important;
-    margin-left: auto !important;
-    display: block;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: rgba(180, 40, 40, 0.8) !important;
-}
-#resetBtn:hover {
-    background: rgba(200, 50, 50, 0.9) !important;
-}
+        #startBtn, #submitBtn {
+            background: linear-gradient(90deg, #ffcc00, #ff9900);
+            color: #000;
+            font-weight: bold;
+            font-size: 1.35rem;
+            padding: 16px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 #cc7700;
+            width: 100%;
+            margin-top: 8px;
+        }
+        #startBtn:hover, #submitBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #cc7700; }
+        #startBtn:active, #submitBtn:active { transform: translateY(3px); box-shadow: 0 3px 0 #cc7700; }
+        #startBtn:disabled, #submitBtn:disabled {
+            background: #555;
+            color: #aaa;
+            box-shadow: 0 4px 0 #333;
+            cursor: not-allowed;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <div class="background"></div>
-    <div class="overlay"></div>
-    <div class="overlay2"></div>
     
     <div class="container">
-        <div class="header">
-            <svg class="w-8 h-8 mr-2" viewBox="0 0 100 100" width="42" height="42">
-                <circle cx="50" cy="50" r="45" fill="white"/>
-                <path d="M5 50h90a45 45 0 0 0-90 0z" fill="red"/>
-                <circle cx="50" cy="50" r="10" fill="black"/>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2"/>
-                <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="3"/>
-            </svg>
-            <h1>Pokeball Challenge</h1>
+        <div class="top-bar">
+            <span class="hamburger" id="hamburger">☰</span>
+            <div class="header">
+                <svg viewBox="0 0 100 100" width="42" height="42">
+                    <circle cx="50" cy="50" r="45" fill="white"/>
+                    <path d="M5 50h90a45 45 0 0 0-90 0z" fill="red"/>
+                    <circle cx="50" cy="50" r="10" fill="black"/>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2"/>
+                    <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="3"/>
+                </svg>
+                <h1>Pokeball Challenge</h1>
+            </div>
         </div>
         
         <h2 class="Subtitle">Leaderboard</h2>
+        <div id="modeToggle" class="mode-toggle">Single Player</div>
         
         <ul id="leaderboard"></ul>
         <button id="addEntryBtn">Add New Entry</button>
     </div>
 
+    <!-- Reset Menu -->
+    <div id="resetMenu" style="display:none; position:fixed; top:75px; left:20px; background:rgba(0,0,0,0.85); border-radius:8px; padding:12px; z-index:1100; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        <button id="resetBtn" style="background:rgba(180,40,40,0.9); border:none; color:white; padding:12px 24px; border-radius:6px; cursor:pointer; font-size:1.05rem;">
+            Reset Leaderboard
+        </button>
+    </div>
+
     <div id="entryModal" class="modal">
         <div class="modal-content">
             <form id="entryForm">
-                <input type="text" id="entrantInput" placeholder="Enter name or ID" required autocomplete="off">
-                <input type="number" id="weight" placeholder="Pokeballs collected" required min="1">
-                <button type="submit">Submit Entry</button>
+                <!-- Stage 1 -->
+                <div id="stage1" class="modal-stage active">
+                    <div id="singleInputs">
+                        <input type="text" id="entrantInput" placeholder="Enter name or ID" autocomplete="off">
+                        <ul id="suggestions"></ul>
+                    </div>
+                    
+                    <div id="coopInputs" style="display: none;">
+                        <input type="text" id="player1Input" placeholder="Player 1 Name" autocomplete="off">
+                        <ul id="suggestions1" class="suggestions-coop"></ul>
+                        <input type="text" id="player2Input" placeholder="Player 2 Name" autocomplete="off">
+                        <ul id="suggestions2" class="suggestions-coop"></ul>
+                    </div>
+
+                    <button type="button" id="startBtn" disabled>Start</button>
+                </div>
+
+                <!-- Stage 2 -->
+                <div id="stage2" class="modal-stage">
+                    <div id="selectedNameDisplay"></div>
+                    <input type="number" id="weight" placeholder="Pokeballs collected" required min="1" style="font-size: 1.45rem; padding: 18px 16px; text-align:center;">
+                    <button type="button" id="submitBtn">Submit Entry</button>
+                </div>
             </form>
-            <button id="resetBtn">Reset</button>
         </div>
     </div>
 
     <script>
-        let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+        // ====================== MIDI ======================
+        let midiAccess = null;
+        let midiOutput = null;
+
+        function sendMIDINote(note, velocity = 127, channel = 13) {
+            if (!midiOutput) return;
+            const status = 0x90 | (channel & 0x0F);
+            midiOutput.send([status, note, velocity]);
+            setTimeout(() => midiOutput.send([0x80 | (channel & 0x0F), note, 0]), 80);
+        }
+
+        async function initMIDI() {
+            try {
+                midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+                setupMIDI();
+            } catch (e) {
+                console.error("MIDI init failed", e);
+            }
+        }
+
+        function setupMIDI() {
+            if (!midiAccess) return;
+            const outputs = Array.from(midiAccess.outputs.values());
+            if (outputs.length > 0) midiOutput = outputs[0];
+            midiAccess.inputs.forEach(input => input.onmidimessage = handleMIDIMessage);
+            midiAccess.onstatechange = setupMIDI;
+        }
+
+function handleMIDIMessage(msg) {
+    const data = msg.data;
+    const status = data[0];
+    const note = data[1];
+    const vel = data[2];
+
+    if ((status & 0xF0) !== 0x90 || vel === 0) return;
+    if ((status & 0x0F) !== 13) return;
+
+    if (note === 0 && document.getElementById('stage1').classList.contains('active')) {
+        triggerStart();
+    } 
+    else if (note === 127 && document.getElementById('stage2').classList.contains('active')) {
+        submitEntry();                    // Only 127 submits
+    } 
+    else if (note >= 1 && note <= 126 && document.getElementById('stage2').classList.contains('active')) {
+        document.getElementById('weight').value = note;   // External MIDI can still set value
+    }
+}
+
+        // ====================== DATA ======================
+        let currentMode = "single";
+        let singleLeaderboard = JSON.parse(localStorage.getItem('singleLeaderboard')) || [];
+        let coopLeaderboard = JSON.parse(localStorage.getItem('coopLeaderboard')) || [];
         let additional_entrants = JSON.parse(localStorage.getItem('additional_entrants')) || [];
         let all_entrants = [];
         let previousLeaderboard = [];
         const ROW_HEIGHT = 54;
-
         let currentHighlightIndex = -1;
 
         function saveLeaderboard() {
-            localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+            localStorage.setItem(currentMode === "single" ? 'singleLeaderboard' : 'coopLeaderboard', 
+                JSON.stringify(currentMode === "single" ? singleLeaderboard : coopLeaderboard));
         }
 
         function saveAdditionalEntrants() {
@@ -358,6 +402,7 @@
         }
 
         function getDisplayName(entry) {
+            if (entry.player1 && entry.player2) return `${entry.player1} & ${entry.player2}`;
             return entry.grade ? `${entry.name} <span class="grade">(${entry.grade})</span>` : entry.name;
         }
 
@@ -367,363 +412,342 @@
             let rank = 1;
             ranked.push({ ...entries[0], place: 1 });
             for (let i = 1; i < entries.length; i++) {
-                const current = entries[i];
-                const previous = entries[i - 1];
-                if (current.weight < previous.weight) {
-                    rank += 1;
-                }
-                ranked.push({ ...current, place: rank });
+                if (entries[i].weight < entries[i-1].weight) rank++;
+                ranked.push({ ...entries[i], place: rank });
             }
             return ranked;
         }
 
-        function getMedalClass(place) {
-            if (place === 1) return 'gold';
-            if (place === 2) return 'silver';
-            if (place === 3) return 'bronze';
+        function getMedalClass(p) {
+            if (p===1) return 'gold';
+            if (p===2) return 'silver';
+            if (p===3) return 'bronze';
             return '';
         }
 
-        function renderLeaderboard(animate = false) {
+        function renderLeaderboard() {
             const ul = document.getElementById('leaderboard');
             ul.innerHTML = '';
-            const rankedLeaderboard = calculateRankings(leaderboard);
+            const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+            const ranked = calculateRankings(board);
             
-            let nextRank = 1;
-            if (rankedLeaderboard.length > 0) {
-                nextRank = rankedLeaderboard[rankedLeaderboard.length - 1].place + 1;
-            }
-            const displayCount = Math.max(10, rankedLeaderboard.length);
-            const itemsToShow = Math.min(displayCount, 20);
+            let nextRank = ranked.length ? ranked[ranked.length-1].place + 1 : 1;
+            const itemsToShow = Math.min(Math.max(10, ranked.length), 20);
 
-            const prevPos = new Map();
-            previousLeaderboard.forEach((e, i) => {
-                if (e?.id) prevPos.set(e.id, i);
-            });
-
-            let newEntryId = null;
-            if (animate) {
-                const prevIds = new Set(previousLeaderboard.map(e => e?.id).filter(Boolean));
-                newEntryId = leaderboard.find(e => !prevIds.has(e.id))?.id;
-            }
-
-            const elements = [];
             for (let i = 0; i < itemsToShow; i++) {
-                const entry = rankedLeaderboard[i];
+                const entry = ranked[i];
                 const li = document.createElement('li');
                 li.className = 'entry';
-
                 if (entry) {
                     const medal = getMedalClass(entry.place);
                     if (medal) li.classList.add(medal);
-                }
-
-                if (i < 10) {
-                    li.classList.add('top10');
-                }
-
-                if (!entry) {
-                    li.classList.add('placeholder');
-                    li.innerHTML = `
-                        <span class="rank">${nextRank}.</span>
-                        <span class="name">--</span>
-                        <span class="weight">-- </span>
-                    `;
-                    nextRank++;
-                } else {
-                    li.dataset.id = entry.id;
                     li.innerHTML = `
                         <span class="rank">${entry.place}.</span>
                         <span class="name">${getDisplayName(entry)}</span>
                         <span class="weight">${entry.weight} collected</span>
                     `;
-                    if (animate) {
-                        const oldIndex = prevPos.get(entry.id);
-                        if (oldIndex === undefined) {
-                            li.classList.add('new-entry');
-                            newEntryId = entry.id;
-                        } else if (oldIndex !== i) {
-                            li.classList.add('moving');
-                            const diff = i - oldIndex;
-                            li.style.transform = `translateY(${diff * -ROW_HEIGHT}px)`;
-                        }
+                } else {
+                    li.innerHTML = `<span class="rank">${nextRank}.</span><span class="name">--</span><span class="weight">--</span>`;
+                    nextRank++;
+                }
+                ul.appendChild(li);
+            }
+            previousLeaderboard = [...board];
+        }
+
+        // ====================== MODAL ======================
+        const modal = document.getElementById('entryModal');
+        let currentSelectedEntry = null;
+
+        function openModal() {
+            modal.style.display = 'flex';
+            resetToStage1();
+            // Auto-focus name input
+            setTimeout(() => {
+                if (currentMode === "single") {
+                    document.getElementById('entrantInput').focus();
+                } else {
+                    document.getElementById('player1Input').focus();
+                }
+            }, 100);
+        }
+
+        function resetToStage1() {
+            document.getElementById('stage1').classList.add('active');
+            document.getElementById('stage2').classList.remove('active');
+
+            document.getElementById('singleInputs').style.display = currentMode === "single" ? "block" : "none";
+            document.getElementById('coopInputs').style.display = currentMode === "coop" ? "block" : "none";
+
+            document.getElementById('entrantInput').value = '';
+            document.getElementById('player1Input').value = '';
+            document.getElementById('player2Input').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('suggestions').innerHTML = '';
+            document.getElementById('suggestions1').innerHTML = '';
+            document.getElementById('suggestions2').innerHTML = '';
+
+            document.getElementById('startBtn').disabled = true;
+            currentSelectedEntry = null;
+            currentHighlightIndex = -1;
+        }
+
+        function triggerStart() {
+            if (document.getElementById('startBtn').disabled) return;
+
+            sendMIDINote(0);   // Start note
+
+            if (currentMode === "single") {
+                const val = document.getElementById('entrantInput').value.trim();
+                if (!val) return;
+                currentSelectedEntry = { name: val, id: document.getElementById('entrantInput').dataset.id || null };
+            } else {
+                const p1 = document.getElementById('player1Input').value.trim();
+                const p2 = document.getElementById('player2Input').value.trim();
+                if (!p1 || !p2) return;
+                currentSelectedEntry = { player1: p1, player2: p2, name: `${p1} & ${p2}` };
+            }
+
+            document.getElementById('selectedNameDisplay').innerHTML = `<strong>${currentSelectedEntry.name}</strong>`;
+            document.getElementById('stage1').classList.remove('active');
+            document.getElementById('stage2').classList.add('active');
+            setTimeout(() => document.getElementById('weight').focus(), 80);
+        }
+
+function submitEntry() {
+    const weightVal = parseInt(document.getElementById('weight').value);
+    if (!weightVal || weightVal < 1) return;
+
+    if (window.lastSubmitTime && Date.now() - window.lastSubmitTime < 300) return;
+    window.lastSubmitTime = Date.now();
+
+    sendMIDINote(127);
+
+            const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+            let shouldCelebrate = false;
+
+            if (currentMode === "single") {
+                let { name, id } = currentSelectedEntry;
+                if (!id) {
+                    const match = all_entrants.find(e => e.name.toLowerCase() === name.toLowerCase());
+                    id = match ? match.id : 'CUST-' + Date.now().toString(36).slice(-6).toUpperCase();
+                    if (!match) {
+                        additional_entrants.push({id, name});
+                        all_entrants.push({id, name});
+                        saveAdditionalEntrants();
                     }
                 }
-                elements.push(li);
-            }
 
-            elements.forEach(el => ul.appendChild(el));
-
-            if (animate) {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        document.querySelectorAll('.entry.moving').forEach(el => {
-                            el.style.transform = '';
-                        });
-                    });
-                });
-                if (newEntryId) {
-                    setTimeout(() => {
-                        document.querySelectorAll('.entry').forEach(el => {
-                            if (el.dataset.id === newEntryId) {
-                                el.classList.remove('new-entry');
-                            }
-                        });
-                    }, 950);
+                const idx = board.findIndex(e => e.id === id);
+                if (idx >= 0) {
+                    if (weightVal > board[idx].weight) {
+                        board[idx].weight = weightVal;
+                        shouldCelebrate = true;
+                    }
+                } else {
+                    const entry = {id, name, weight: weightVal};
+                    const src = all_entrants.find(e => e.id === id);
+                    if (src?.grade) entry.grade = src.grade;
+                    board.push(entry);
+                    shouldCelebrate = true;
                 }
+            } else {
+                const id = 'COOP-' + Date.now().toString(36).slice(-8).toUpperCase();
+                board.push({
+                    id,
+                    player1: currentSelectedEntry.player1,
+                    player2: currentSelectedEntry.player2,
+                    name: currentSelectedEntry.name,
+                    weight: weightVal
+                });
+                shouldCelebrate = true;
             }
 
-            previousLeaderboard = [...leaderboard];
+            board.sort((a,b) => b.weight - a.weight);
+            saveLeaderboard();
+            renderLeaderboard();
+
+            if (shouldCelebrate) confetti({particleCount: 300, spread: 110, origin: {y: 0.55}});
+
+            modal.style.display = 'none';
         }
 
-        function capitalizeName(name) {
-            return name.trim().split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ');
-        }
-
-        function showSuggestions() {
-            const input = document.getElementById('entrantInput');
-            const value = input.value.trim().toLowerCase();
-            const ul = document.getElementById('suggestions');
+        // ====================== SUGGESTIONS ======================
+        function showSuggestions(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const val = input.value.trim().toLowerCase();
+            const ul = document.getElementById(listId);
             ul.innerHTML = '';
             currentHighlightIndex = -1;
 
-            if (!value) return;
+            if (!val) {
+                checkStartEnabled();
+                return;
+            }
 
-            const matches = all_entrants.filter(e =>
-                e.name.toLowerCase().includes(value) ||
-                (e.id && e.id.toLowerCase().startsWith(value))
-            ).sort((a, b) => {
-                const aName = a.name.toLowerCase();
-                const bName = b.name.toLowerCase();
-                const aStart = aName.startsWith(value) ? -2 : 0;
-                const bStart = bName.startsWith(value) ? -2 : 0;
-                const aContain = aName.includes(value) ? -1 : 0;
-                const bContain = bName.includes(value) ? -1 : 0;
-                if (aStart !== bStart) return aStart - bStart;
-                if (aContain !== bContain) return aContain - bContain;
-                return aName.localeCompare(bName);
-            });
+            const matches = all_entrants.filter(e => 
+                e.name.toLowerCase().includes(val) || (e.id && e.id.toLowerCase().startsWith(val))
+            ).sort((a,b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
-            matches.forEach((e, i) => {
+            matches.forEach((entry, i) => {
                 const li = document.createElement('li');
-                let txt = e.name;
-                if (e.id) txt += ` <span class="id">(${e.id})</span>`;
-                if (e.grade) txt += ` <span class="grade">${e.grade}</span>`;
-                li.innerHTML = txt;
+                li.innerHTML = entry.name + (entry.id ? ` <span class="id">(${entry.id})</span>` : '');
                 li.dataset.index = i;
-                li.addEventListener('click', () => selectSuggestion(e));
+                li.onclick = () => {
+                    input.value = entry.name;
+                    if (inputId === 'entrantInput') input.dataset.id = entry.id || '';
+                    ul.innerHTML = '';
+                    checkStartEnabled();
+                };
                 ul.appendChild(li);
             });
 
-            const isExact = all_entrants.some(e =>
-                e.name.toLowerCase() === value ||
-                (e.id && e.id.toLowerCase() === value)
-            );
-
-            if (value.length > 1 && !isExact) {
-                const customName = capitalizeName(value);
-                const li = document.createElement('li');
-                li.innerHTML = `${customName} <span class="custom-label">(new)</span>`;
-                li.addEventListener('click', () => {
-                    input.value = customName;
-                    delete input.dataset.id;
-                    ul.innerHTML = '';
-                    document.getElementById('weight').focus();
-                });
-                ul.appendChild(li);
+            if (matches.length > 0) {
+                highlightSuggestion(0, listId);
             }
-
-            if (ul.children.length > 0) {
-                highlightSuggestion(0);
-            }
+            checkStartEnabled();
         }
 
-        function highlightSuggestion(index) {
-            const ul = document.getElementById('suggestions');
+        function highlightSuggestion(index, listId) {
+            const ul = document.getElementById(listId);
             const items = ul.children;
             if (!items.length) return;
-
             currentHighlightIndex = Math.max(0, Math.min(index, items.length - 1));
-
             Array.from(items).forEach((item, i) => {
                 item.classList.toggle('highlighted', i === currentHighlightIndex);
             });
         }
 
-        function selectSuggestion(entry) {
-            const input = document.getElementById('entrantInput');
-            input.value = entry.name;
-            if (entry.id) input.dataset.id = entry.id;
-            document.getElementById('suggestions').innerHTML = '';
-            document.getElementById('weight').focus();
+        function checkStartEnabled() {
+            const btn = document.getElementById('startBtn');
+            if (currentMode === "single") {
+                btn.disabled = !document.getElementById('entrantInput').value.trim();
+            } else {
+                const p1 = document.getElementById('player1Input').value.trim();
+                const p2 = document.getElementById('player2Input').value.trim();
+                btn.disabled = !(p1 && p2);
+            }
         }
 
-        const modal = document.getElementById('entryModal');
-        const addBtn = document.getElementById('addEntryBtn');
-        const input = document.getElementById('entrantInput');
-        const form = document.getElementById('entryForm');
+        // ====================== EVENTS ======================
+        document.getElementById('addEntryBtn').onclick = openModal;
+        document.getElementById('startBtn').onclick = triggerStart;
+        document.getElementById('submitBtn').onclick = submitEntry;
 
-        function openModal() {
-            modal.style.display = 'flex';
-            setTimeout(() => input.focus(), 100);
-        }
-
-        addBtn.onclick = openModal;
-
-        window.onclick = e => {
-            if (e.target === modal) modal.style.display = 'none';
-        };
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            }
-            
-            if ((e.key === 'n' || e.key === '+') && 
-                modal.style.display !== 'flex' && 
-                !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-                e.preventDefault();
-                openModal();
-            }
-        });
-
-        input.addEventListener('input', showSuggestions);
-
-        input.addEventListener('keydown', e => {
+        // Single player suggestions + keyboard
+        const entrantInput = document.getElementById('entrantInput');
+        entrantInput.addEventListener('input', () => showSuggestions('entrantInput', 'suggestions'));
+        entrantInput.addEventListener('keydown', e => {
             const ul = document.getElementById('suggestions');
-            const items = ul.children;
-
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                highlightSuggestion(currentHighlightIndex + 1);
+                highlightSuggestion(currentHighlightIndex + 1, 'suggestions');
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                highlightSuggestion(currentHighlightIndex - 1);
+                highlightSuggestion(currentHighlightIndex - 1, 'suggestions');
             } else if (e.key === 'Enter') {
                 e.preventDefault();
+                const items = ul.children;
                 if (currentHighlightIndex >= 0 && items[currentHighlightIndex]) {
                     items[currentHighlightIndex].click();
                 } else if (items.length > 0) {
                     items[0].click();
                 } else {
-                    document.getElementById('weight').focus();
+                    triggerStart();
                 }
             }
         });
 
-        form.onsubmit = e => {
-            e.preventDefault();
-            const nameVal = input.value.trim();
-            const weightVal = document.getElementById('weight').value.trim();
-            if (!nameVal || !weightVal) return;
+        // Co-op
+        document.getElementById('player1Input').addEventListener('input', () => showSuggestions('player1Input', 'suggestions1'));
+        document.getElementById('player2Input').addEventListener('input', () => showSuggestions('player2Input', 'suggestions2'));
 
-            let id = input.dataset.id;
-            let finalName = capitalizeName(nameVal);
+// Weight field behavior
+const weightInput = document.getElementById('weight');
+weightInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitEntry();
+    } 
+    else if (e.key === ' ') {
+        e.preventDefault();
+        
+        let current = parseInt(weightInput.value) || 0;
+        const newValue = current + 1;
+        weightInput.value = newValue;
+        
+        sendMIDINote(newValue);   // Send note = current pokeballs count (1, 2, 3...)
+    }
+});
 
-            if (!id) {
-                const match = all_entrants.find(e =>
-                    e.name.toLowerCase() === nameVal.toLowerCase() ||
-                    (e.id && e.id.toLowerCase() === nameVal.toLowerCase())
-                );
-                if (match) {
-                    id = match.id;
-                    finalName = match.name;
-                } else {
-                    id = 'CUST-' + Date.now().toString(36).slice(-6).toUpperCase();
-                    const newEntrant = { id, name: finalName };
-                    additional_entrants.push(newEntrant);
-                    all_entrants.push(newEntrant);
-                    saveAdditionalEntrants();
-                }
-            }
+        // Hamburger + Reset
+        document.getElementById('hamburger').addEventListener('click', () => {
+            const menu = document.getElementById('resetMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
 
-            const weightNum = parseInt(weightVal);
-            const existingIdx = leaderboard.findIndex(e => e.id === id);
-            let shouldCelebrate = false;
-
-            if (existingIdx >= 0) {
-                if (weightNum > leaderboard[existingIdx].weight) {
-                    leaderboard[existingIdx].weight = weightNum;
-                    shouldCelebrate = true;
-                }
-            } else {
-                const entry = { id, name: finalName, weight: weightNum };
-                const source = all_entrants.find(e => e.id === id);
-                if (source?.grade) entry.grade = source.grade;
-                leaderboard.push(entry);
-                shouldCelebrate = true;
-            }
-
-            leaderboard.sort((a, b) => b.weight - a.weight);
-            saveLeaderboard();
-            renderLeaderboard(true);
-
-            if (shouldCelebrate && leaderboard.findIndex(e => e.id === id) < 10) {
-                confetti({
-                    particleCount: 300,
-                    spread: 110,
-                    origin: { y: 0.55 }
-                });
-            }
-
-            input.value = '';
-            delete input.dataset.id;
-            document.getElementById('weight').value = '';
-            modal.style.display = 'none';
-        };
-
-        let resetConfirmMode = false;
-
+let resetConfirm = false;
 document.getElementById('resetBtn').onclick = () => {
     const resetBtn = document.getElementById('resetBtn');
     
-    if (!resetConfirmMode) {
-        // First click - show confirmation
-        resetConfirmMode = true;
-        resetBtn.textContent = "Confirm?";
-        resetBtn.style.background = 'rgba(200, 50, 50, 0.9)';
-        
-        // Reset back after 5 seconds if not confirmed
-        setTimeout(() => {
-            if (resetConfirmMode) {
-                resetConfirmMode = false;
-                resetBtn.textContent = "Reset";
-                resetBtn.style.background = 'rgba(255,255,255,0.12)';
-            }
-        }, 5000);
+    if (!resetConfirm) {
+        resetConfirm = true;
+        resetBtn.textContent = "Confirm Reset?";
     } else {
-        // Second click - confirmed
-        leaderboard = [];
-        saveLeaderboard();
-        renderLeaderboard(true);
-        modal.style.display = 'none';
+        // Actual reset
+        if (currentMode === "single") singleLeaderboard = [];
+        else coopLeaderboard = [];
         
-        // Reset button state
-        resetConfirmMode = false;
-        resetBtn.textContent = "Reset";
-        resetBtn.style.background = 'rgba(255,255,255,0.12)';
+        saveLeaderboard();
+        renderLeaderboard();
+        
+        // Close menu only after successful reset
+        document.getElementById('resetMenu').style.display = 'none';
+        resetConfirm = false;
+        resetBtn.textContent = "Reset Leaderboard";
     }
 };
 
-        // Initial load
-        fetch('students.json')
-            .then(r => r.json())
-            .then(students => {
-                all_entrants = [...students, ...additional_entrants];
-                leaderboard.forEach(e => {
-                    const match = all_entrants.find(s => s.id === e.id);
-                    if (match?.grade) e.grade = match.grade;
+        document.getElementById('modeToggle').addEventListener('click', () => {
+            currentMode = currentMode === "single" ? "coop" : "single";
+            document.getElementById('modeToggle').textContent = currentMode === "single" ? "Single Player" : "Co-op";
+            renderLeaderboard();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') modal.style.display = 'none';
+            if ((e.key === 'n' || e.key === '+') && modal.style.display !== 'flex' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+                e.preventDefault();
+                openModal();
+            }
+        });
+
+window.onclick = e => {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Only close reset menu if clicking outside BOTH hamburger AND the menu itself
+    const resetMenu = document.getElementById('resetMenu');
+    if (e.target.id !== 'hamburger' && !resetMenu.contains(e.target)) {
+        resetMenu.style.display = 'none';
+    }
+};
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initMIDI();
+            fetch('students.json')
+                .then(r => r.json())
+                .then(students => {
+                    all_entrants = [...students, ...additional_entrants];
+                    renderLeaderboard();
+                })
+                .catch(() => {
+                    all_entrants = [...additional_entrants];
+                    renderLeaderboard();
                 });
-                renderLeaderboard(false);
-                previousLeaderboard = [...leaderboard];
-            })
-            .catch(() => {
-                all_entrants = [...additional_entrants];
-                renderLeaderboard(false);
-                previousLeaderboard = [...leaderboard];
-            });
+        });
     </script>
 </body>
 </html>
