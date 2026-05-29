@@ -65,20 +65,25 @@
         .Subtitle {
             font-family: 'Zapfino', cursive;
             color: white;
-            font-size: 32px;
-            margin: 0;
+            font-size: 30px;
+            margin: -18px;
         }
 
-        .mode-toggle {
-            font-size: 1.1rem;
-            color: #ddd;
-            margin: 6px 0 16px 0;
-            cursor: pointer;
-            user-select: none;
-        }
-        .mode-toggle:hover {
-            color: white;
-        }
+.mode-toggle {
+    font-size: 1.1rem;
+    color: #ddd;
+    margin: 14px auto 2px auto;
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;        /* Critical fix */
+    padding: 6px 16px;
+    border-radius: 6px;
+    text-align: center;
+}
+.mode-toggle:hover {
+    color: white;
+    background: rgba(255,255,255,0.12);
+}
 
         .container {
             flex: 1;
@@ -180,7 +185,7 @@
 
         .modal-content {
             background: linear-gradient(145deg, rgba(45,70,119,0.98), rgba(25,45,85,0.98));
-            margin: 20px;
+            margin: 15px;
             padding: 28px 24px;
             border-radius: 12px;
             width: 90%;
@@ -199,7 +204,7 @@
         #entryForm input {
             width: 100%;
             padding: 14px 16px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 6px;
@@ -334,420 +339,463 @@
     </div>
 
     <script>
-        // ====================== MIDI ======================
-        let midiAccess = null;
-        let midiOutput = null;
+    // ====================== MIDI ======================
+    let midiAccess = null;
+    let midiOutput = null;
 
-        function sendMIDINote(note, velocity = 127, channel = 13) {
-            if (!midiOutput) return;
-            const status = 0x90 | (channel & 0x0F);
-            midiOutput.send([status, note, velocity]);
-            setTimeout(() => midiOutput.send([0x80 | (channel & 0x0F), note, 0]), 80);
-        }
-
-        async function initMIDI() {
-            try {
-                midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-                setupMIDI();
-            } catch (e) {
-                console.error("MIDI init failed", e);
-            }
-        }
-
-        function setupMIDI() {
-            if (!midiAccess) return;
-            const outputs = Array.from(midiAccess.outputs.values());
-            if (outputs.length > 0) midiOutput = outputs[0];
-            midiAccess.inputs.forEach(input => input.onmidimessage = handleMIDIMessage);
-            midiAccess.onstatechange = setupMIDI;
-        }
-
-function handleMIDIMessage(msg) {
-    const data = msg.data;
-    const status = data[0];
-    const note = data[1];
-    const vel = data[2];
-
-    if ((status & 0xF0) !== 0x90 || vel === 0) return;
-    if ((status & 0x0F) !== 13) return;
-
-    if (note === 0 && document.getElementById('stage1').classList.contains('active')) {
-        triggerStart();
-    } 
-    else if (note === 127 && document.getElementById('stage2').classList.contains('active')) {
-        submitEntry();                    // Only 127 submits
-    } 
-    else if (note >= 1 && note <= 126 && document.getElementById('stage2').classList.contains('active')) {
-        document.getElementById('weight').value = note;   // External MIDI can still set value
+    function sendMIDINote(note, velocity = 127, channel = 13) {
+        if (!midiOutput) return;
+        const status = 0x90 | (channel & 0x0F);
+        midiOutput.send([status, note, velocity]);
+        setTimeout(() => midiOutput.send([0x80 | (channel & 0x0F), note, 0]), 80);
     }
-}
 
-        // ====================== DATA ======================
-        let currentMode = "single";
-        let singleLeaderboard = JSON.parse(localStorage.getItem('singleLeaderboard')) || [];
-        let coopLeaderboard = JSON.parse(localStorage.getItem('coopLeaderboard')) || [];
-        let additional_entrants = JSON.parse(localStorage.getItem('additional_entrants')) || [];
-        let all_entrants = [];
-        let previousLeaderboard = [];
-        const ROW_HEIGHT = 54;
-        let currentHighlightIndex = -1;
-
-        function saveLeaderboard() {
-            localStorage.setItem(currentMode === "single" ? 'singleLeaderboard' : 'coopLeaderboard', 
-                JSON.stringify(currentMode === "single" ? singleLeaderboard : coopLeaderboard));
+    async function initMIDI() {
+        try {
+            midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+            setupMIDI();
+        } catch (e) {
+            console.error("MIDI init failed", e);
         }
+    }
 
-        function saveAdditionalEntrants() {
-            localStorage.setItem('additional_entrants', JSON.stringify(additional_entrants));
+    function setupMIDI() {
+        if (!midiAccess) return;
+        const outputs = Array.from(midiAccess.outputs.values());
+        if (outputs.length > 0) midiOutput = outputs[0];
+        midiAccess.inputs.forEach(input => input.onmidimessage = handleMIDIMessage);
+        midiAccess.onstatechange = setupMIDI;
+    }
+
+    function handleMIDIMessage(msg) {
+        const data = msg.data;
+        const status = data[0];
+        const note = data[1];
+        const vel = data[2];
+
+        if ((status & 0xF0) !== 0x90 || vel === 0) return;
+        if ((status & 0x0F) !== 13) return;
+
+        if (note === 0 && document.getElementById('stage1').classList.contains('active')) {
+            triggerStart();
+        } 
+        else if (note === 127 && document.getElementById('stage2').classList.contains('active')) {
+            submitEntry();
+        } 
+        else if (note >= 1 && note <= 126 && document.getElementById('stage2').classList.contains('active')) {
+            document.getElementById('weight').value = note;
         }
+    }
 
-        function getDisplayName(entry) {
-            if (entry.player1 && entry.player2) return `${entry.player1} & ${entry.player2}`;
-            return entry.grade ? `${entry.name} <span class="grade">(${entry.grade})</span>` : entry.name;
+    // ====================== DATA ======================
+    let currentMode = "single";
+    let singleLeaderboard = JSON.parse(localStorage.getItem('singleLeaderboard')) || [];
+    let coopLeaderboard = JSON.parse(localStorage.getItem('coopLeaderboard')) || [];
+    let additional_entrants = JSON.parse(localStorage.getItem('additional_entrants')) || [];
+    let all_entrants = [];
+    let previousLeaderboard = [];
+    const ROW_HEIGHT = 54;
+    let currentHighlightIndex = -1;
+
+    function saveLeaderboard() {
+        localStorage.setItem(currentMode === "single" ? 'singleLeaderboard' : 'coopLeaderboard', 
+            JSON.stringify(currentMode === "single" ? singleLeaderboard : coopLeaderboard));
+    }
+
+    function saveAdditionalEntrants() {
+        localStorage.setItem('additional_entrants', JSON.stringify(additional_entrants));
+    }
+
+    function getDisplayName(entry) {
+        if (entry.player1 && entry.player2) return `${entry.player1} & ${entry.player2}`;
+        return entry.grade ? `${entry.name} <span class="grade">(${entry.grade})</span>` : entry.name;
+    }
+
+    function calculateRankings(entries) {
+        if (!entries.length) return [];
+        const ranked = [];
+        let rank = 1;
+        ranked.push({ ...entries[0], place: 1 });
+        for (let i = 1; i < entries.length; i++) {
+            if (entries[i].weight < entries[i-1].weight) rank++;
+            ranked.push({ ...entries[i], place: rank });
         }
+        return ranked;
+    }
 
-        function calculateRankings(entries) {
-            if (!entries.length) return [];
-            const ranked = [];
-            let rank = 1;
-            ranked.push({ ...entries[0], place: 1 });
-            for (let i = 1; i < entries.length; i++) {
-                if (entries[i].weight < entries[i-1].weight) rank++;
-                ranked.push({ ...entries[i], place: rank });
-            }
-            return ranked;
-        }
+    function getMedalClass(p) {
+        if (p===1) return 'gold';
+        if (p===2) return 'silver';
+        if (p===3) return 'bronze';
+        return '';
+    }
 
-        function getMedalClass(p) {
-            if (p===1) return 'gold';
-            if (p===2) return 'silver';
-            if (p===3) return 'bronze';
-            return '';
-        }
+    function renderLeaderboard() {
+        const ul = document.getElementById('leaderboard');
+        ul.innerHTML = '';
+        const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+        const ranked = calculateRankings(board);
+        
+        let nextRank = ranked.length ? ranked[ranked.length-1].place + 1 : 1;
+        const itemsToShow = Math.min(Math.max(10, ranked.length), 20);
 
-        function renderLeaderboard() {
-            const ul = document.getElementById('leaderboard');
-            ul.innerHTML = '';
-            const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
-            const ranked = calculateRankings(board);
-            
-            let nextRank = ranked.length ? ranked[ranked.length-1].place + 1 : 1;
-            const itemsToShow = Math.min(Math.max(10, ranked.length), 20);
-
-            for (let i = 0; i < itemsToShow; i++) {
-                const entry = ranked[i];
-                const li = document.createElement('li');
-                li.className = 'entry';
-                if (entry) {
-                    const medal = getMedalClass(entry.place);
-                    if (medal) li.classList.add(medal);
-                    li.innerHTML = `
-                        <span class="rank">${entry.place}.</span>
-                        <span class="name">${getDisplayName(entry)}</span>
-                        <span class="weight">${entry.weight} collected</span>
-                    `;
-                } else {
-                    li.innerHTML = `<span class="rank">${nextRank}.</span><span class="name">--</span><span class="weight">--</span>`;
-                    nextRank++;
-                }
-                ul.appendChild(li);
-            }
-            previousLeaderboard = [...board];
-        }
-
-        // ====================== MODAL ======================
-        const modal = document.getElementById('entryModal');
-        let currentSelectedEntry = null;
-
-        function openModal() {
-            modal.style.display = 'flex';
-            resetToStage1();
-            // Auto-focus name input
-            setTimeout(() => {
-                if (currentMode === "single") {
-                    document.getElementById('entrantInput').focus();
-                } else {
-                    document.getElementById('player1Input').focus();
-                }
-            }, 100);
-        }
-
-        function resetToStage1() {
-            document.getElementById('stage1').classList.add('active');
-            document.getElementById('stage2').classList.remove('active');
-
-            document.getElementById('singleInputs').style.display = currentMode === "single" ? "block" : "none";
-            document.getElementById('coopInputs').style.display = currentMode === "coop" ? "block" : "none";
-
-            document.getElementById('entrantInput').value = '';
-            document.getElementById('player1Input').value = '';
-            document.getElementById('player2Input').value = '';
-            document.getElementById('weight').value = '';
-            document.getElementById('suggestions').innerHTML = '';
-            document.getElementById('suggestions1').innerHTML = '';
-            document.getElementById('suggestions2').innerHTML = '';
-
-            document.getElementById('startBtn').disabled = true;
-            currentSelectedEntry = null;
-            currentHighlightIndex = -1;
-        }
-
-        function triggerStart() {
-            if (document.getElementById('startBtn').disabled) return;
-
-            sendMIDINote(0);   // Start note
-
-            if (currentMode === "single") {
-                const val = document.getElementById('entrantInput').value.trim();
-                if (!val) return;
-                currentSelectedEntry = { name: val, id: document.getElementById('entrantInput').dataset.id || null };
+        for (let i = 0; i < itemsToShow; i++) {
+            const entry = ranked[i];
+            const li = document.createElement('li');
+            li.className = 'entry';
+            if (entry) {
+                const medal = getMedalClass(entry.place);
+                if (medal) li.classList.add(medal);
+                li.innerHTML = `
+                    <span class="rank">${entry.place}.</span>
+                    <span class="name">${getDisplayName(entry)}</span>
+                    <span class="weight">${entry.weight} collected</span>
+                `;
             } else {
-                const p1 = document.getElementById('player1Input').value.trim();
-                const p2 = document.getElementById('player2Input').value.trim();
-                if (!p1 || !p2) return;
-                currentSelectedEntry = { player1: p1, player2: p2, name: `${p1} & ${p2}` };
+                li.innerHTML = `<span class="rank">${nextRank}.</span><span class="name">--</span><span class="weight">--</span>`;
+                nextRank++;
             }
+            ul.appendChild(li);
+        }
+    }
 
-            document.getElementById('selectedNameDisplay').innerHTML = `<strong>${currentSelectedEntry.name}</strong>`;
-            document.getElementById('stage1').classList.remove('active');
-            document.getElementById('stage2').classList.add('active');
-            setTimeout(() => document.getElementById('weight').focus(), 80);
+    // ====================== MODAL ======================
+    const modal = document.getElementById('entryModal');
+    let currentSelectedEntry = null;
+
+    function openModal() {
+        modal.style.display = 'flex';
+        resetToStage1();
+        setTimeout(() => {
+            if (currentMode === "single") document.getElementById('entrantInput').focus();
+            else document.getElementById('player1Input').focus();
+        }, 100);
+    }
+
+    function resetToStage1() {
+        document.getElementById('stage1').classList.add('active');
+        document.getElementById('stage2').classList.remove('active');
+
+        document.getElementById('singleInputs').style.display = currentMode === "single" ? "block" : "none";
+        document.getElementById('coopInputs').style.display = currentMode === "coop" ? "block" : "none";
+
+        document.getElementById('entrantInput').value = '';
+        document.getElementById('player1Input').value = '';
+        document.getElementById('player2Input').value = '';
+        document.getElementById('weight').value = '';
+        document.getElementById('suggestions').innerHTML = '';
+        document.getElementById('suggestions1').innerHTML = '';
+        document.getElementById('suggestions2').innerHTML = '';
+
+        document.getElementById('startBtn').disabled = true;
+        currentSelectedEntry = null;
+        currentHighlightIndex = -1;
+    }
+
+    function triggerStart() {
+        if (document.getElementById('startBtn').disabled) return;
+        sendMIDINote(0);
+
+        if (currentMode === "single") {
+            const val = document.getElementById('entrantInput').value.trim();
+            if (!val) return;
+            currentSelectedEntry = { name: val, id: document.getElementById('entrantInput').dataset.id || null };
+        } else {
+            const p1 = document.getElementById('player1Input').value.trim();
+            const p2 = document.getElementById('player2Input').value.trim();
+            if (!p1 || !p2) return;
+            currentSelectedEntry = { player1: p1, player2: p2, name: `${p1} & ${p2}` };
         }
 
-function submitEntry() {
-    const weightVal = parseInt(document.getElementById('weight').value);
-    if (!weightVal || weightVal < 1) return;
+        document.getElementById('selectedNameDisplay').innerHTML = `<strong>${currentSelectedEntry.name}</strong>`;
+        document.getElementById('stage1').classList.remove('active');
+        document.getElementById('stage2').classList.add('active');
+        setTimeout(() => document.getElementById('weight').focus(), 80);
+    }
 
-    if (window.lastSubmitTime && Date.now() - window.lastSubmitTime < 300) return;
-    window.lastSubmitTime = Date.now();
+    function submitEntry() {
+        const weightVal = parseInt(document.getElementById('weight').value);
+        if (!weightVal || weightVal < 1) return;
 
-    sendMIDINote(127);
+        if (window.lastSubmitTime && Date.now() - window.lastSubmitTime < 300) return;
+        window.lastSubmitTime = Date.now();
 
-            const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
-            let shouldCelebrate = false;
+        sendMIDINote(127);
 
-            if (currentMode === "single") {
-                let { name, id } = currentSelectedEntry;
-                if (!id) {
-                    const match = all_entrants.find(e => e.name.toLowerCase() === name.toLowerCase());
-                    id = match ? match.id : 'CUST-' + Date.now().toString(36).slice(-6).toUpperCase();
-                    if (!match) {
-                        additional_entrants.push({id, name});
-                        all_entrants.push({id, name});
-                        saveAdditionalEntrants();
-                    }
+        const board = currentMode === "single" ? singleLeaderboard : coopLeaderboard;
+        let shouldCelebrate = false;
+
+        if (currentMode === "single") {
+            let { name, id } = currentSelectedEntry;
+            if (!id) {
+                const match = all_entrants.find(e => e.name.toLowerCase() === name.toLowerCase());
+                id = match ? match.id : 'CUST-' + Date.now().toString(36).slice(-6).toUpperCase();
+                if (!match) {
+                    additional_entrants.push({id, name});
+                    all_entrants.push({id, name});
+                    saveAdditionalEntrants();
                 }
+            }
 
-                const idx = board.findIndex(e => e.id === id);
-                if (idx >= 0) {
-                    if (weightVal > board[idx].weight) {
-                        board[idx].weight = weightVal;
-                        shouldCelebrate = true;
-                    }
-                } else {
-                    const entry = {id, name, weight: weightVal};
-                    const src = all_entrants.find(e => e.id === id);
-                    if (src?.grade) entry.grade = src.grade;
-                    board.push(entry);
+            const idx = board.findIndex(e => e.id === id);
+            if (idx >= 0) {
+                if (weightVal > board[idx].weight) {
+                    board[idx].weight = weightVal;
                     shouldCelebrate = true;
                 }
             } else {
-                const id = 'COOP-' + Date.now().toString(36).slice(-8).toUpperCase();
-                board.push({
-                    id,
-                    player1: currentSelectedEntry.player1,
-                    player2: currentSelectedEntry.player2,
-                    name: currentSelectedEntry.name,
-                    weight: weightVal
-                });
+                const entry = {id, name, weight: weightVal};
+                const src = all_entrants.find(e => e.id === id);
+                if (src?.grade) entry.grade = src.grade;
+                board.push(entry);
                 shouldCelebrate = true;
             }
-
-            board.sort((a,b) => b.weight - a.weight);
-            saveLeaderboard();
-            renderLeaderboard();
-
-            if (shouldCelebrate) confetti({particleCount: 300, spread: 110, origin: {y: 0.55}});
-
-            modal.style.display = 'none';
+        } else {
+            const id = 'COOP-' + Date.now().toString(36).slice(-8).toUpperCase();
+            board.push({
+                id,
+                player1: currentSelectedEntry.player1,
+                player2: currentSelectedEntry.player2,
+                name: currentSelectedEntry.name,
+                weight: weightVal
+            });
+            shouldCelebrate = true;
         }
 
-        // ====================== SUGGESTIONS ======================
-        function showSuggestions(inputId, listId) {
-            const input = document.getElementById(inputId);
-            const val = input.value.trim().toLowerCase();
-            const ul = document.getElementById(listId);
-            ul.innerHTML = '';
-            currentHighlightIndex = -1;
+        board.sort((a,b) => b.weight - a.weight);
+        saveLeaderboard();
+        renderLeaderboard();
 
-            if (!val) {
-                checkStartEnabled();
-                return;
-            }
+        if (shouldCelebrate) confetti({particleCount: 300, spread: 110, origin: {y: 0.55}});
 
-            const matches = all_entrants.filter(e => 
-                e.name.toLowerCase().includes(val) || (e.id && e.id.toLowerCase().startsWith(val))
-            ).sort((a,b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        modal.style.display = 'none';
+    }
 
-            matches.forEach((entry, i) => {
-                const li = document.createElement('li');
-                li.innerHTML = entry.name + (entry.id ? ` <span class="id">(${entry.id})</span>` : '');
-                li.dataset.index = i;
-                li.onclick = () => {
-                    input.value = entry.name;
-                    if (inputId === 'entrantInput') input.dataset.id = entry.id || '';
-                    ul.innerHTML = '';
-                    checkStartEnabled();
-                };
-                ul.appendChild(li);
-            });
+    // ====================== SUGGESTIONS ======================
+    function showSuggestions(inputId, listId) {
+        const input = document.getElementById(inputId);
+        const val = input.value.trim().toLowerCase();
+        const ul = document.getElementById(listId);
+        ul.innerHTML = '';
+        currentHighlightIndex = -1;
 
-            if (matches.length > 0) {
-                highlightSuggestion(0, listId);
-            }
+        if (!val) {
             checkStartEnabled();
+            return;
         }
 
-        function highlightSuggestion(index, listId) {
-            const ul = document.getElementById(listId);
-            const items = ul.children;
-            if (!items.length) return;
-            currentHighlightIndex = Math.max(0, Math.min(index, items.length - 1));
-            Array.from(items).forEach((item, i) => {
-                item.classList.toggle('highlighted', i === currentHighlightIndex);
-            });
-        }
+        const matches = all_entrants.filter(e => 
+            e.name.toLowerCase().includes(val) || (e.id && e.id.toLowerCase().startsWith(val))
+        ).sort((a,b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
-        function checkStartEnabled() {
-            const btn = document.getElementById('startBtn');
-            if (currentMode === "single") {
-                btn.disabled = !document.getElementById('entrantInput').value.trim();
-            } else {
-                const p1 = document.getElementById('player1Input').value.trim();
-                const p2 = document.getElementById('player2Input').value.trim();
-                btn.disabled = !(p1 && p2);
-            }
-        }
-
-        // ====================== EVENTS ======================
-        document.getElementById('addEntryBtn').onclick = openModal;
-        document.getElementById('startBtn').onclick = triggerStart;
-        document.getElementById('submitBtn').onclick = submitEntry;
-
-        // Single player suggestions + keyboard
-        const entrantInput = document.getElementById('entrantInput');
-        entrantInput.addEventListener('input', () => showSuggestions('entrantInput', 'suggestions'));
-        entrantInput.addEventListener('keydown', e => {
-            const ul = document.getElementById('suggestions');
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                highlightSuggestion(currentHighlightIndex + 1, 'suggestions');
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                highlightSuggestion(currentHighlightIndex - 1, 'suggestions');
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                const items = ul.children;
-                if (currentHighlightIndex >= 0 && items[currentHighlightIndex]) {
-                    items[currentHighlightIndex].click();
-                } else if (items.length > 0) {
-                    items[0].click();
-                } else {
-                    triggerStart();
-                }
-            }
+        matches.forEach((entry, i) => {
+            const li = document.createElement('li');
+            li.innerHTML = entry.name + (entry.id ? ` <span class="id">(${entry.id})</span>` : '');
+            li.dataset.index = i;
+            li.onclick = () => {
+                input.value = entry.name;
+                if (inputId === 'entrantInput') input.dataset.id = entry.id || '';
+                ul.innerHTML = '';
+                checkStartEnabled();
+            };
+            ul.appendChild(li);
         });
 
-        // Co-op
-        document.getElementById('player1Input').addEventListener('input', () => showSuggestions('player1Input', 'suggestions1'));
-        document.getElementById('player2Input').addEventListener('input', () => showSuggestions('player2Input', 'suggestions2'));
+        if (matches.length > 0) highlightSuggestion(0, listId);
+        checkStartEnabled();
+    }
 
-// Weight field behavior
-const weightInput = document.getElementById('weight');
-weightInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
+    function highlightSuggestion(index, listId) {
+        const ul = document.getElementById(listId);
+        const items = ul.children;
+        if (!items.length) return;
+        currentHighlightIndex = Math.max(0, Math.min(index, items.length - 1));
+        Array.from(items).forEach((item, i) => {
+            item.classList.toggle('highlighted', i === currentHighlightIndex);
+        });
+    }
+
+    function checkStartEnabled() {
+        const btn = document.getElementById('startBtn');
+        if (currentMode === "single") {
+            btn.disabled = !document.getElementById('entrantInput').value.trim();
+        } else {
+            const p1 = document.getElementById('player1Input').value.trim();
+            const p2 = document.getElementById('player2Input').value.trim();
+            btn.disabled = !(p1 && p2);
+        }
+    }
+
+    // ====================== EVENTS ======================
+    document.getElementById('addEntryBtn').onclick = openModal;
+    document.getElementById('startBtn').onclick = triggerStart;
+    document.getElementById('submitBtn').onclick = submitEntry;
+
+    // Single Player
+    const entrantInput = document.getElementById('entrantInput');
+    entrantInput.addEventListener('input', () => showSuggestions('entrantInput', 'suggestions'));
+    entrantInput.addEventListener('keydown', e => {
+        const ul = document.getElementById('suggestions');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            highlightSuggestion(currentHighlightIndex + 1, 'suggestions');
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            highlightSuggestion(currentHighlightIndex - 1, 'suggestions');
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const items = ul.children;
+            if (currentHighlightIndex >= 0 && items[currentHighlightIndex]) {
+                items[currentHighlightIndex].click();
+            } else if (items.length > 0) {
+                items[0].click();
+            } else {
+                triggerStart();
+            }
+        }
+    });
+
+    // Co-op with auto-focus
+    const player1Input = document.getElementById('player1Input');
+    const player2Input = document.getElementById('player2Input');
+
+    player1Input.addEventListener('input', () => showSuggestions('player1Input', 'suggestions1'));
+    player1Input.addEventListener('keydown', e => {
+        const ul = document.getElementById('suggestions1');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            highlightSuggestion(currentHighlightIndex + 1, 'suggestions1');
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            highlightSuggestion(currentHighlightIndex - 1, 'suggestions1');
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const items = ul.children;
+            if (currentHighlightIndex >= 0 && items[currentHighlightIndex]) items[currentHighlightIndex].click();
+            else if (items.length > 0) items[0].click();
+            setTimeout(() => player2Input.focus(), 60);
+        }
+    });
+
+player2Input.addEventListener('input', () => showSuggestions('player2Input', 'suggestions2'));
+player2Input.addEventListener('keydown', e => {
+    const ul = document.getElementById('suggestions2');
+    if (e.key === 'ArrowDown') {
         e.preventDefault();
-        submitEntry();
-    } 
-    else if (e.key === ' ') {
+        highlightSuggestion(currentHighlightIndex + 1, 'suggestions2');
+    } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        
-        let current = parseInt(weightInput.value) || 0;
-        const newValue = current + 1;
-        weightInput.value = newValue;
-        
-        sendMIDINote(newValue);   // Send note = current pokeballs count (1, 2, 3...)
+        highlightSuggestion(currentHighlightIndex - 1, 'suggestions2');
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const items = ul.children;
+        if (currentHighlightIndex >= 0 && items[currentHighlightIndex]) {
+            items[currentHighlightIndex].click();
+        } else if (items.length > 0) {
+            items[0].click();
+        }
+        // Just enable the Start button — do NOT auto-start
+        checkStartEnabled();
     }
 });
 
-        // Hamburger + Reset
-        document.getElementById('hamburger').addEventListener('click', () => {
-            const menu = document.getElementById('resetMenu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        });
+    // Weight field
+    const weightInput = document.getElementById('weight');
+    weightInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitEntry();
+        } else if (e.key === ' ') {
+            e.preventDefault();
+            let current = parseInt(weightInput.value) || 0;
+            weightInput.value = current + 1;
+            sendMIDINote(current + 1);
+        }
+    });
 
-let resetConfirm = false;
-document.getElementById('resetBtn').onclick = () => {
-    const resetBtn = document.getElementById('resetBtn');
-    
-    if (!resetConfirm) {
-        resetConfirm = true;
-        resetBtn.textContent = "Confirm Reset?";
-    } else {
-        // Actual reset
-        if (currentMode === "single") singleLeaderboard = [];
-        else coopLeaderboard = [];
-        
-        saveLeaderboard();
+    // Mode Toggle
+    const modeToggle = document.getElementById('modeToggle');
+    function toggleMode() {
+        currentMode = currentMode === "single" ? "coop" : "single";
+        modeToggle.textContent = currentMode === "single" ? "Single Player" : "Co-op";
         renderLeaderboard();
-        
-        // Close menu only after successful reset
-        document.getElementById('resetMenu').style.display = 'none';
-        resetConfirm = false;
-        resetBtn.textContent = "Reset Leaderboard";
     }
-};
+    modeToggle.addEventListener('click', toggleMode);
 
-        document.getElementById('modeToggle').addEventListener('click', () => {
-            currentMode = currentMode === "single" ? "coop" : "single";
-            document.getElementById('modeToggle').textContent = currentMode === "single" ? "Single Player" : "Co-op";
+    document.addEventListener('keydown', e => {
+        if (e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+            e.preventDefault();
+            toggleMode();
+        }
+        if (e.key === 'Escape' && modal.style.display === 'flex') modal.style.display = 'none';
+        if ((e.key === 'n' || e.key === '+') && modal.style.display !== 'flex' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            openModal();
+        }
+    });
+
+    // Trigger start when Enter is pressed while player2 field is focused
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+
+    const active = document.activeElement;
+    if (!active || active !== player2Input) return; // only when player2 is focused
+
+    // prevent your existing Enter behavior from interfering
+    e.preventDefault();
+    e.stopPropagation();
+
+    // only start if both players are filled
+    const p1 = player1Input.value.trim();
+    const p2 = player2Input.value.trim();
+    if (p1 && p2) triggerStart();
+});
+
+    // Hamburger + Reset
+    document.getElementById('hamburger').addEventListener('click', () => {
+        const menu = document.getElementById('resetMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+
+    let resetConfirm = false;
+    document.getElementById('resetBtn').onclick = () => {
+        const resetBtn = document.getElementById('resetBtn');
+        if (!resetConfirm) {
+            resetConfirm = true;
+            resetBtn.textContent = "Confirm Reset?";
+        } else {
+            if (currentMode === "single") singleLeaderboard = [];
+            else coopLeaderboard = [];
+            saveLeaderboard();
             renderLeaderboard();
-        });
+            document.getElementById('resetMenu').style.display = 'none';
+            resetConfirm = false;
+            resetBtn.textContent = "Reset Leaderboard";
+        }
+    };
 
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') modal.style.display = 'none';
-            if ((e.key === 'n' || e.key === '+') && modal.style.display !== 'flex' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-                e.preventDefault();
-                openModal();
-            }
-        });
+    window.onclick = e => {
+        if (e.target === modal) modal.style.display = 'none';
+        const resetMenu = document.getElementById('resetMenu');
+        if (e.target.id !== 'hamburger' && !resetMenu.contains(e.target)) {
+            resetMenu.style.display = 'none';
+        }
+    };
 
-window.onclick = e => {
-    if (e.target === modal) {
-        modal.style.display = 'none';
-    }
-    
-    // Only close reset menu if clicking outside BOTH hamburger AND the menu itself
-    const resetMenu = document.getElementById('resetMenu');
-    if (e.target.id !== 'hamburger' && !resetMenu.contains(e.target)) {
-        resetMenu.style.display = 'none';
-    }
-};
-
-        // Initialize
-        window.addEventListener('load', () => {
-            initMIDI();
-            fetch('students.json')
-                .then(r => r.json())
-                .then(students => {
-                    all_entrants = [...students, ...additional_entrants];
-                    renderLeaderboard();
-                })
-                .catch(() => {
-                    all_entrants = [...additional_entrants];
-                    renderLeaderboard();
-                });
-        });
-    </script>
+    // Initialize
+    window.addEventListener('load', () => {
+        initMIDI();
+        fetch('students.json')
+            .then(r => r.json())
+            .then(students => {
+                all_entrants = [...students, ...additional_entrants];
+                renderLeaderboard();
+            })
+            .catch(() => {
+                all_entrants = [...additional_entrants];
+                renderLeaderboard();
+            });
+    });
+</script>
 </body>
 </html>
