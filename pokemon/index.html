@@ -314,11 +314,26 @@
         Reset Leaderboard
     </button>
 
-    <div style="border-top:1px solid rgba(255,255,255,0.15); padding-top:12px;">
+        <div style="border-top:1px solid rgba(255,255,255,0.15); padding-top:12px;">
         <div style="margin-bottom:8px; font-size:1.05rem; color:#ddd; padding:4px 8px;">MIDI Diagnostics</div>
         
-        <div id="midiStatus" style="padding:10px 12px; background:rgba(255,255,255,0.08); border-radius:6px; margin-bottom:10px; font-size:0.95rem; text-align:left;">
+        <div id="midiStatus" style="padding:10px 12px; background:rgba(255,255,255,0.08); border-radius:6px; margin-bottom:12px; font-size:0.95rem; text-align:left;">
             Initializing...
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div>
+                <label style="font-size:0.85rem; color:#bbb; display:block; margin-bottom:4px;">Send Channel</label>
+                <select id="midiSendChannel" style="width:100%; padding:9px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2); border-radius:6px;">
+                    <!-- populated by JS -->
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.85rem; color:#bbb; display:block; margin-bottom:4px;">Receive Channel</label>
+                <select id="midiReceiveChannel" style="width:100%; padding:9px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2); border-radius:6px;">
+                    <!-- populated by JS -->
+                </select>
+            </div>
         </div>
 
         <select id="midiDeviceSelect" style="width:100%; padding:10px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2); border-radius:6px; margin-bottom:8px;">
@@ -327,6 +342,7 @@
         <button id="refreshMidiBtn" style="width:100%; padding:10px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:6px; cursor:pointer;">
             Refresh MIDI Devices
         </button>
+    </div>
     </div>
 </div>
 
@@ -364,12 +380,14 @@
     // ====================== MIDI ======================
     let midiAccess = null;
     let midiOutput = null;
+    let midiSendChannel = 13;
+    let midiReceiveChannel = 13;
 
-    function sendMIDINote(note, velocity = 127, channel = 13) {
+    function sendMIDINote(note, velocity = 127) {
         if (!midiOutput) return;
-        const status = 0x90 | (channel & 0x0F);
+        const status = 0x90 | ((midiSendChannel - 1) & 0x0F);
         midiOutput.send([status, note, velocity]);
-        setTimeout(() => midiOutput.send([0x80 | (channel & 0x0F), note, 0]), 80);
+        setTimeout(() => midiOutput.send([0x80 | ((midiSendChannel - 1) & 0x0F), note, 0]), 80);
     }
 
     async function initMIDI() {
@@ -406,7 +424,7 @@ function setupMIDI() {
         const vel = data[2];
 
         if ((status & 0xF0) !== 0x90 || vel === 0) return;
-        if ((status & 0x0F) !== 13) return;
+        if ((status & 0x0F) !== (midiReceiveChannel - 1)) return;
 
         if (note === 0 && document.getElementById('stage1').classList.contains('active')) {
             triggerStart();
@@ -435,24 +453,44 @@ function updateMIDIDiagnostics() {
         ? `<span style="color:#66ff99;">✅ Connected (${outputs.length} output${outputs.length>1?'s':''})</span>`
         : `<span style="color:#ffcc66;">⚠️ No MIDI outputs found</span>`;
 
+    // Populate device select
     select.innerHTML = '';
-    
     outputs.forEach(output => {
         const option = document.createElement('option');
         option.value = output.id;
         option.textContent = output.name;
-        if (output.name.includes('IAC Driver Bus 1') || 
-            (midiOutput && midiOutput.id === output.id)) {
-            option.selected = true;
-        }
+        if (midiOutput && midiOutput.id === output.id) option.selected = true;
         select.appendChild(option);
     });
 
-    // Auto-select IAC if available
-    if (!midiOutput && outputs.length > 0) {
-        const iac = outputs.find(o => o.name.includes('IAC Driver Bus 1'));
-        if (iac) midiOutput = iac;
+    populateChannelSelectors();
+}
+
+function populateChannelSelectors() {
+    const sendSelect = document.getElementById('midiSendChannel');
+    const receiveSelect = document.getElementById('midiReceiveChannel');
+    
+    sendSelect.innerHTML = '';
+    receiveSelect.innerHTML = '';
+    
+    for (let i = 1; i <= 16; i++) {
+        const opt1 = document.createElement('option');
+        opt1.value = i;
+        opt1.textContent = `Channel ${i}`;
+        if (i === midiSendChannel) opt1.selected = true;
+        sendSelect.appendChild(opt1);
+        
+        const opt2 = document.createElement('option');
+        opt2.value = i;
+        opt2.textContent = `Channel ${i}`;
+        if (i === midiReceiveChannel) opt2.selected = true;
+        receiveSelect.appendChild(opt2);
     }
+}
+
+function saveMidiSettings() {
+    localStorage.setItem('midiSendChannel', midiSendChannel);
+    localStorage.setItem('midiReceiveChannel', midiReceiveChannel);
 }
 
 // Handle device selection
@@ -472,6 +510,17 @@ document.getElementById('refreshMidiBtn').addEventListener('click', () => {
         setupMIDI();           // Refresh list
         updateMIDIDiagnostics();
     }
+});
+
+// Channel selectors
+document.getElementById('midiSendChannel').addEventListener('change', (e) => {
+    midiSendChannel = parseInt(e.target.value);
+    saveMidiSettings();
+});
+
+document.getElementById('midiReceiveChannel').addEventListener('change', (e) => {
+    midiReceiveChannel = parseInt(e.target.value);
+    saveMidiSettings();
 });
 
     // ====================== DATA ======================
@@ -898,6 +947,8 @@ window.onclick = e => {
     // Initialize
     window.addEventListener('load', () => {
         initMIDI();
+        midiSendChannel = parseInt(localStorage.getItem('midiSendChannel')) || 13;
+        midiReceiveChannel = parseInt(localStorage.getItem('midiReceiveChannel')) || 13;
         fetch('students.json')
             .then(r => r.json())
             .then(students => {
