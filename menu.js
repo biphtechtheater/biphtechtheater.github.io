@@ -20,6 +20,7 @@
                 <a href="https://biphtechtheater.github.io/tutorials/mobile/">          • Mobile Setup</a>
                 
                 <a href="https://biphtechtheater.github.io/dmxis/">🎚   DMXIS Remote</a>
+                <a href="https://biphtechtheater.github.io/launchpad/">Launchpad Customizer</a>
                 
                 <a href="mailto:garrison.tubbs-biph@basischina.com">📩   Contact</a>
             </div>
