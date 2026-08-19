@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Groups</title>
+       
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BIPH Tech Theater">
+    <link rel="apple-touch-icon" href="https://cdn.glitch.global/bed65df6-4eb8-4247-853c-e198a6399561/icons%2FBGicon.png">
+    
+    <link rel="icon" href="../icons/BGicon.png">
+    <link rel="stylesheet" href="../common-styles.css">
+    <script src="../ttstudents.js"></script>
+    <style>
+        :root {
+            --accent: #4bdbff;
+            --accent-dark: #3b7ccc;
+            --bg: #0a0a0a;
+            --card: #161616;
+            --border: rgba(255, 255, 255, 0.15);
+            --muted: #a0a0a0;
+            --text: #eee;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Hide old Music-site layers */
+        .background,
+        .overlay,
+        .overlay2 {
+            display: none !important;
+        }
+
+        /* Page header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 200;
+            letter-spacing: -0.5px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 400;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            margin-bottom: 18px;
+            align-items: center;
+            white-space: nowrap;
+            gap: 0;
+        }
+
+        .group-display {
+            width: 150px;
+            text-align: center;
+            font-size: 1.25em;
+            padding: 9.7px 10px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            color: white;
+        }
+
+        .controls button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            transition: all 0.25s;
+            cursor: pointer;
+            font-size: 1.6em;
+            padding: 10px 22px;
+            color: var(--text);
+        }
+
+        .controls button:first-child {
+            border-radius: 12px 0 0 12px;
+            border-right: none;
+        }
+
+        .controls button:last-child {
+            border-radius: 0 12px 12px 0;
+            border-left: none;
+        }
+
+        .controls button:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .shuffle-btn {
+            font-size: 1.7em;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.25s;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .shuffle-btn:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: scale(1.08);
+        }
+
+        /* Groups */
+        .groups {
+            position: relative;
+            top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 22px;
+            width: 100%;
+            max-width: 1100px;
+            padding-bottom: 60px;
+        }
+
+        .group {
+            background: var(--card);
+            position: relative;
+            display: flex;
+            min-width: 140px;
+            font-size: 1.15rem;
+            padding: 18px 28px;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .group:hover {
+            border-color: rgba(75, 219, 255, 0.35);
+        }
+
+        .student {
+            margin-bottom: 8px;
+            text-align: center;
+            color: var(--text);
+            border-radius: 8px;
+            padding: 4px 8px;
+            /* outline does not affect layout / size */
+            outline: 2px solid transparent;
+            outline-offset: 0;
+            background: transparent;
+            transition: all 0.25s;
+        }
+
+        .student:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Leader highlight – only visual, zero layout impact */
+        .student.leader {
+            background: rgba(75, 219, 255, 0.18);
+            outline-color: var(--accent);
+            box-shadow: 0 0 14px rgba(75, 219, 255, 0.35);
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Sheen animation – subtle cyan version */
+        .sheen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            background-image: linear-gradient(
+                45deg,
+                rgba(75, 219, 255, 0.25),
+                rgba(75, 219, 255, 0.08),
+                rgba(255, 255, 255, 0.12),
+                rgba(75, 219, 255, 0.15)
+            );
+            background-size: 800% 800%;
+            animation: sheenAnimation 0.9s linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes sheenAnimation {
+            0%   { background-position: 0% 50%; opacity: 0.6; }
+            50%  { background-position: 100% 50%; opacity: 1; }
+            100% { background-position: 0% 50%; opacity: 0; }
+        }
+
+        /* Edit button */
+        .edit-btn {
+            position: fixed;
+            top: 55px;
+            left: 19px;
+            font-size: 1.15em;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Edit panel */
+        #editPanel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #141414;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 30px;
+            width: 92%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        #editPanel h3 {
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 500;
+            color: white;
+        }
+
+        .student-list {
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.2s;
+        }
+
+        .student-item span {
+            color: var(--text);
+            font-size: 1.05em;
+        }
+
+        .student-item:hover {
+            background: #1c1c1c;
+            border-color: rgba(75, 219, 255, 0.25);
+        }
+
+        .remove-btn {
+            background: rgba(255, 70, 70, 0.15);
+            color: #ff8a8a;
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 70, 70, 0.35);
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 13px;
+            font-size: 1.05em;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.25s;
+            font-weight: 500;
+        }
+
+        .modal-buttons button:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Logo */
+        .biph-logocontainer {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .biph-logo {
+            width: 22vh;
+            height: auto;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../menu.js"></script> 
+
+    <!-- Edit Button -->
+    <button onclick="toggleEditPanel()" class="edit-btn" title="Edit roster">✏️</button>
+
+    <div class="page-header">
+        <div class="page-title">BIPH Tech Theater</div>
+        <div class="page-subtitle">Student Groups</div>
+    </div>
+
+    <h2>Divide into groups of</h2>
+    <div class="controls">
+        <button onclick="decrement()">−</button>
+        <div class="group-display" id="groupDisplay">3~4 students</div>
+        <button onclick="increment()">+</button>
+    </div>
+    
+    <button onclick="shuffleStudents()" class="shuffle-btn" title="Shuffle groups">🔀</button>
+
+    <div class="groups"></div>
+
+    <!-- Edit Panel -->
+    <div id="editPanel">
+        <h3>Edit Roster</h3>
+        <div class="student-list" id="studentList"></div>
+        
+        <div class="modal-buttons">
+            <button onclick="toggleEditPanel()">Done</button>
+            <button onclick="resetToFullRoster()">Reset Full Roster</button>
+        </div>
+    </div>
+
+    <audio id="chime" src="audio/barchimes.mp3"></audio>
+
+    <div class="biph-logocontainer">        
+        <img src="../icons/Full Logo White on Transparent.png" alt="BASIS Logo" class="biph-logo">
+    </div>
+
+    <script>
+        let currentStudents = [];
+
+        const groupOptions = [
+            { text: "Partners", size: 2 },
+            { text: "3~4 students", size: 3 },
+            { text: "4~5 students", size: 4 },
+            { text: "7 students", size: 7 }
+        ];
+        let currentIndex = 1;
+
+        function updateDisplay() {
+            document.getElementById('groupDisplay').textContent = groupOptions[currentIndex].text;
+        }
+
+        function decrement() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateDisplay();
+            }
+        }
+
+        function increment() {
+            if (currentIndex < groupOptions.length - 1) {
+                currentIndex++;
+                updateDisplay();
+            }
+        }
+
+        function shuffleStudents() {
+            const groupsContainer = document.querySelector('.groups');
+            groupsContainer.innerHTML = '';
+
+            const groupSize = groupOptions[currentIndex].size;
+            const shuffled = currentStudents.slice().sort(() => Math.random() - 0.5);
+
+            const totalStudents = shuffled.length;
+            const idealNumGroups = Math.floor(totalStudents / groupSize);
+            const remaining = totalStudents % groupSize;
+
+            playChime();
+
+            for (let i = 0; i < idealNumGroups; i++) {
+                const groupDiv = createGroupElement();
+                for (let j = 0; j < groupSize; j++) {
+                    const idx = i * groupSize + j;
+                    if (idx < totalStudents) {
+                        addStudentToGroup(groupDiv, shuffled[idx].name);
+                    }
+                }
+                groupsContainer.appendChild(groupDiv);
+            }
+
+            for (let i = 0; i < remaining; i++) {
+                const groupIndex = i % idealNumGroups;
+                const studentDiv = document.createElement('div');
+                studentDiv.className = 'student';
+                studentDiv.textContent = shuffled[idealNumGroups * groupSize + i].name;
+                groupsContainer.children[groupIndex].appendChild(studentDiv);
+            }
+        }
+
+        function createGroupElement() {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'group';
+            const sheenDiv = document.createElement('div');
+            sheenDiv.className = 'sheen';
+            groupDiv.appendChild(sheenDiv);
+            return groupDiv;
+        }
+
+        function addStudentToGroup(groupDiv, name) {
+            const studentDiv = document.createElement('div');
+            studentDiv.className = 'student';
+            studentDiv.textContent = name;
+            groupDiv.appendChild(studentDiv);
+        }
+
+        function playChime() {
+            const chime = new Audio('audio/barchimes.mp3');
+            chime.volume = 0.3;
+            chime.play().catch(() => {});
+        }
+
+        // ===== Leader selection (press L) =====
+        function clearLeaders() {
+            document.querySelectorAll('.student.leader').forEach(el => el.classList.remove('leader'));
+        }
+
+        function selectLeaders() {
+            clearLeaders();
+            document.querySelectorAll('.group').forEach(group => {
+                const students = group.querySelectorAll('.student');
+                if (students.length === 0) return;
+                const leader = students[Math.floor(Math.random() * students.length)];
+                leader.classList.add('leader');
+            });
+        }
+
+        // ==================== EDIT PANEL ====================
+        function toggleEditPanel() {
+            const panel = document.getElementById('editPanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                refreshStudentList();
+                panel.style.display = 'block';
+            }
+        }
+
+        // Escape key: close panel → clear leaders → clear groups (back to initial empty state)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const panel = document.getElementById('editPanel');
+                if (panel.style.display === 'block') {
+                    toggleEditPanel();
+                    return;
+                }
+                // No panel open
+                if (document.querySelector('.student.leader')) {
+                    clearLeaders();
+                } else {
+                    // Revert to initial state (no names shown)
+                    document.querySelector('.groups').innerHTML = '';
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('editPanel');
+            if (panel.style.display === 'block' && 
+                !panel.contains(event.target) && 
+                event.target.closest('.edit-btn') === null) {
+                toggleEditPanel();
+            }
+        });
+
+        function removeStudent(index) {
+            if (index < 0 || index >= currentStudents.length) return;
+            currentStudents.splice(index, 1);
+            refreshStudentList();
+        }
+
+        function resetToFullRoster() {
+            currentStudents = ttStudents.slice();
+            refreshStudentList();
+        }
+
+        function refreshStudentList() {
+            const list = document.getElementById('studentList');
+            list.innerHTML = '';
+            
+            currentStudents.forEach((student, index) => {
+                const div = document.createElement('div');
+                div.className = 'student-item';
+                
+                const span = document.createElement('span');
+                span.textContent = student.name;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = 'Remove';
+                
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopImmediatePropagation();
+                    removeStudent(index);
+                });
+                
+                div.appendChild(span);
+                div.appendChild(removeBtn);
+                list.appendChild(div);
+            });
+        }
+
+        // Keyboard Controls
+        document.addEventListener('keydown', function(event) {
+            switch (event.key) {
+                case 'ArrowLeft': case 'ArrowDown': case '-': case '_':
+                    event.preventDefault(); decrement(); break;
+                case 'ArrowRight': case 'ArrowUp': case '=': case '+':
+                    event.preventDefault(); increment(); break;
+                case ' ': case 'Enter':
+                    event.preventDefault(); shuffleStudents(); break;
+                case '2': currentIndex = 0; updateDisplay(); break;
+                case '3': currentIndex = 1; updateDisplay(); break;
+                case '4': case '5': currentIndex = 2; updateDisplay(); break;
+                case '6': case '7': currentIndex = 3; updateDisplay(); break;
+                // Press 'l' / 'L' to pick a random leader in each group
+                case 'l': case 'L':
+                    event.preventDefault();
+                    selectLeaders();
+                    break;
+            }
+        });
+
+        function init() {
+            if (typeof ttStudents !== 'undefined' && ttStudents.length > 0) {
+                currentStudents = ttStudents.slice();
+            } else {
+                console.error("ttStudents not found!");
+            }
+            updateDisplay();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
