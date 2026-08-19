@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completion Board</title>
+       
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BIPH Tech Theater">
+    <link rel="apple-touch-icon" href="https://cdn.glitch.global/bed65df6-4eb8-4247-853c-e198a6399561/icons%2FBGicon.png">
+    
+    <link rel="icon" href="../icons/BGicon.png">
+    <link rel="stylesheet" href="../common-styles.css">
+    <script src="../ttstudents.js"></script>
+    <style>
+        :root {
+            --accent: #4bdbff;
+            --accent-dark: #3b7ccc;
+            --bg: #0a0a0a;
+            --card: #161616;
+            --border: rgba(255, 255, 255, 0.15);
+            --muted: #a0a0a0;
+            --text: #eee;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            user-select: none;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Hide old Music-site decorative layers if present */
+        .background,
+        .overlay,
+        .overlay2 {
+            display: none !important;
+        }
+
+        /* Header / Title area */
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-title {
+            font-size: 2.6rem;
+            font-weight: 200;
+            letter-spacing: -0.5px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        /* Search */
+        .search-container {
+            position: relative;
+            margin: 0 auto 28px;
+            width: 100%;
+            max-width: 560px;
+        }
+
+        #search-bar {
+            width: 100%;
+            padding: 14px 44px 14px 18px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            background: var(--card);
+            color: var(--text);
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        #search-bar:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(75, 219, 255, 0.18);
+        }
+
+        #search-bar::placeholder {
+            color: var(--muted);
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 18px;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        .clear-button:hover {
+            color: white;
+        }
+
+        /* Student grid */
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            padding: 8px 0 40px;
+        }
+
+        .student {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: var(--text);
+        }
+
+        .student:hover {
+            border-color: rgba(75, 219, 255, 0.35);
+            background: #1c1c1c;
+        }
+
+        .student.found {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(75, 219, 255, 0.18);
+            color: white;
+        }
+
+        .student.absent {
+            opacity: 0.4;
+            text-decoration: line-through;
+            color: #777;
+        }
+
+        .student.highlight {
+            border-color: var(--accent);
+            background: rgba(75, 219, 255, 0.18);
+            transform: scale(1.03);
+            box-shadow: 0 0 18px rgba(75, 219, 255, 0.25);
+        }
+
+        .check-circle {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0);
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex-shrink: 0;
+        }
+
+        .found .check-circle {
+            transform: scale(1);
+        }
+
+        .check-mark {
+            color: #0a0a0a;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Dropzone */
+        .dropzone {
+            position: fixed;
+            inset: 0;
+            background: rgba(75, 219, 255, 0.1);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            color: var(--accent);
+            z-index: 1000;
+            backdrop-filter: blur(6px);
+        }
+
+        .dropzone.active {
+            display: flex;
+        }
+
+        /* Success popup */
+        .popup {
+            position: fixed;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: #141414;
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 18px 36px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 30px rgba(75, 219, 255, 0.25);
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1001;
+        }
+
+        .popup.show {
+            transform: translateX(-50%) scale(1);
+        }
+
+        .popup .check-circle {
+            background: var(--accent);
+            transform: scale(1);
+            margin: 0;
+        }
+
+        .popup .check-mark {
+            color: #0a0a0a;
+        }
+
+        /* Context menu */
+        #contextMenu {
+            position: fixed;
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 6px 0;
+            z-index: 2000;
+            display: none;
+        }
+
+        .context-item {
+            padding: 10px 22px;
+            cursor: pointer;
+            color: var(--text);
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .context-item:hover {
+            background: rgba(75, 219, 255, 0.12);
+            color: var(--accent);
+        }
+
+        /* Edit button */
+        .edit-btn {
+            position: fixed;
+            top: 55px;
+            left: 19px;
+            font-size: 1.15em;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Edit panel */
+        #editPanel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #141414;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 30px;
+            width: 92%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        #editPanel h3 {
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 500;
+            color: white;
+        }
+
+        .student-list {
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.2s;
+        }
+
+        .student-item span {
+            color: var(--text);
+            font-size: 1.05em;
+        }
+
+        .student-item:hover {
+            background: #1c1c1c;
+            border-color: rgba(75, 219, 255, 0.25);
+        }
+
+        .remove-btn {
+            background: rgba(255, 70, 70, 0.15);
+            color: #ff8a8a;
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 70, 70, 0.35);
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 13px;
+            font-size: 1.05em;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.25s;
+            font-weight: 500;
+        }
+
+        .modal-buttons button:hover {
+            background: rgba(75, 219, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Logo */
+        .biph-logocontainer {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .biph-logo {
+            width: 22vh;
+            height: auto;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu"></div>
+    <script src="../menu.js"></script>
+
+    <!-- Edit Button -->
+    <button onclick="toggleEditPanel()" class="edit-btn" title="Edit roster">✏️</button>
+
+    <div class="page-header">
+        <div class="page-title">BIPH Tech Theater</div>
+        <div class="page-subtitle">Completion Board</div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-bar" placeholder="Search students...">
+        <button class="clear-button" onclick="document.getElementById('search-bar').value=''; filterStudents('');">×</button>
+    </div>
+
+    <div class="dropzone" id="dropzone">Drop files here</div>
+    <div class="checklist" id="checklist"></div>
+
+    <div class="popup" id="popup">
+        All complete!
+        <div class="check-circle"><div class="check-mark">✓</div></div>
+    </div>
+
+    <div id="contextMenu">
+        <div class="context-item" id="markAbsent">Mark as Absent Today</div>
+    </div>
+
+    <!-- Edit Panel -->
+    <div id="editPanel">
+        <h3>Edit Roster</h3>
+        <div class="student-list" id="studentList"></div>
+        
+        <div class="modal-buttons">
+            <button onclick="toggleEditPanel()">Done</button>
+            <button onclick="resetToFullRoster()">Reset Full Roster</button>
+        </div>
+    </div>
+
+    <div class="biph-logocontainer">        
+        <img src="../icons/Full Logo White on Transparent.png" alt="BASIS Logo" class="biph-logo">
+    </div>
+
+    <script>
+        // ==================== ROSTER MANAGEMENT ====================
+        let currentStudents = [];
+        let allStudents = [];
+        const foundFiles = new Set();
+        const absentStudents = new Set();
+
+        function initRoster() {
+            if (typeof ttStudents !== "undefined" && Array.isArray(ttStudents)) {
+                currentStudents = ttStudents.slice();
+            } else {
+                currentStudents = [];
+            }
+            allStudents = currentStudents.map(s => typeof s === 'string' ? s : (s?.name || s?.student || String(s)));
+        }
+
+        function getStudentId(name) {
+            return `student-${name.toLowerCase().replace(/\s+/g, '-')}`;
+        }
+
+        function createStudentElement(name) {
+            const div = document.createElement('div');
+            div.className = 'student';
+            div.id = getStudentId(name);
+            div.dataset.name = name;
+
+            const checkCircle = document.createElement('div');
+            checkCircle.className = 'check-circle';
+            checkCircle.innerHTML = `<div class="check-mark">✓</div>`;
+            div.appendChild(checkCircle);
+            div.appendChild(document.createTextNode(name));
+
+            div.addEventListener('click', () => {
+                if (absentStudents.has(name)) return;
+
+                if (div.classList.contains('found')) {
+                    div.classList.remove('found');
+                    foundFiles.delete(name.toLowerCase());
+                } else {
+                    div.classList.add('found');
+                    foundFiles.add(name.toLowerCase());
+                    playChime();
+                }
+                checkAllFilesFound();
+            });
+
+            div.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showContextMenu(e, name, div);
+            });
+
+            return div;
+        }
+
+        function initializeChecklist() {
+            const checklist = document.getElementById('checklist');
+            checklist.innerHTML = '';
+            allStudents.forEach(name => {
+                if (!absentStudents.has(name)) {
+                    checklist.appendChild(createStudentElement(name));
+                }
+            });
+        }
+
+        function refreshChecklist() {
+            initializeChecklist();
+        }
+
+        // ==================== EDIT PANEL ====================
+        function toggleEditPanel() {
+            const panel = document.getElementById('editPanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                refreshStudentList();
+                panel.style.display = 'block';
+            }
+        }
+
+        function refreshStudentList() {
+            const list = document.getElementById('studentList');
+            list.innerHTML = '';
+
+            currentStudents.forEach((student, index) => {
+                const div = document.createElement('div');
+                div.className = 'student-item';
+
+                const span = document.createElement('span');
+                span.textContent = typeof student === 'string' ? student : (student.name || student.student || "");
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = 'Remove';
+
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopImmediatePropagation();
+                    removeStudent(index);
+                });
+
+                div.appendChild(span);
+                div.appendChild(removeBtn);
+                list.appendChild(div);
+            });
+        }
+
+        function removeStudent(index) {
+            if (index < 0 || index >= currentStudents.length) return;
+            currentStudents.splice(index, 1);
+            allStudents = currentStudents.map(s => typeof s === 'string' ? s : (s?.name || s?.student || String(s)));
+            refreshStudentList();
+            refreshChecklist();
+        }
+
+        function resetToFullRoster() {
+            if (typeof ttStudents !== "undefined") {
+                currentStudents = ttStudents.slice();
+                allStudents = currentStudents.map(s => typeof s === 'string' ? s : (s?.name || s?.student || String(s)));
+                refreshStudentList();
+                refreshChecklist();
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('editPanel');
+            if (panel.style.display === 'block' && 
+                !panel.contains(event.target) && 
+                event.target.closest('.edit-btn') === null) {
+                toggleEditPanel();
+            }
+        });
+
+        // ==================== CONTEXT MENU ====================
+        function showContextMenu(e, name, el) {
+            currentName = name;
+            currentEl = el;
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+        }
+
+        let currentName = null;
+        let currentEl = null;
+
+        document.getElementById('markAbsent').addEventListener('click', () => {
+            if (!currentName || !currentEl) return;
+            
+            absentStudents.add(currentName);
+            currentEl.remove();
+            foundFiles.delete(currentName.toLowerCase());
+            
+            checkAllFilesFound();
+            hideContextMenu();
+        });
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        function checkAllFilesFound() {
+            const visibleStudents = document.querySelectorAll('.student').length;
+            const foundCount = foundFiles.size;
+
+            if (visibleStudents > 0 && foundCount === visibleStudents) {
+                const popup = document.getElementById('popup');
+                popup.classList.add('show');
+                playYesSound();
+
+                setTimeout(() => {
+                    popup.classList.remove('show');
+                    resetFoundMarks();
+                }, 2200);
+            } else {
+                document.getElementById('popup').classList.remove('show');
+            }
+        }
+
+        function resetFoundMarks() {
+            foundFiles.clear();
+            document.querySelectorAll('.student').forEach(student => {
+                student.classList.remove('found');
+            });
+            playResetSound();
+        }
+
+        function playChime() {
+            const a = new Audio('audio/chime.mp3'); a.volume = 0.1; a.play().catch(() => {});
+        }
+        function playYesSound() {
+            const a = new Audio('audio/yes.mp3'); a.volume = 0.5; a.play().catch(() => {});
+        }
+        function playResetSound() {
+            const a = new Audio('audio/reset.mp3'); a.volume = 0.2; a.play().catch(() => {});
+        }
+
+        // Search
+        const searchBar = document.getElementById('search-bar');
+        searchBar.addEventListener('input', (e) => filterStudents(e.target.value));
+        searchBar.addEventListener('keydown', handleKeyPress);
+
+        document.addEventListener('click', hideContextMenu);
+
+        // Drag & Drop
+        function handleFiles(files) {
+            let hasMatch = false;
+            Array.from(files).forEach(file => {
+                const fn = file.name.toLowerCase();
+                allStudents.forEach(name => {
+                    if (absentStudents.has(name)) return;
+                    if (fn.includes(name.toLowerCase())) {
+                        const el = document.getElementById(getStudentId(name));
+                        if (el && !el.classList.contains('found')) {
+                            el.classList.add('found');
+                            foundFiles.add(name.toLowerCase());
+                            hasMatch = true;
+                        }
+                    }
+                });
+            });
+            if (hasMatch) playChime();
+            checkAllFilesFound();
+        }
+
+        const dropzone = document.getElementById('dropzone');
+        document.addEventListener('dragenter', () => dropzone.classList.add('active'));
+        document.addEventListener('dragleave', () => dropzone.classList.remove('active'));
+        document.addEventListener('dragover', e => e.preventDefault());
+        document.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('active');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === '/') {
+                e.preventDefault();
+                searchBar.focus();
+            }
+        });
+
+        // Enhanced Search + Keyboard Navigation
+        let currentHighlightIndex = -1;
+        let currentMatches = [];
+
+        function getVisibleStudents() {
+            return Array.from(document.querySelectorAll('.student'));
+        }
+
+        function filterStudents(query) {
+            const items = getVisibleStudents();
+            currentMatches = [];
+            currentHighlightIndex = -1;
+
+            const lowerQuery = query.toLowerCase();
+
+            items.forEach(el => {
+                const name = el.textContent.toLowerCase();
+                if (name.includes(lowerQuery)) {
+                    el.style.opacity = '1';
+                    currentMatches.push(el);
+                } else {
+                    el.style.opacity = '0.2';
+                }
+            });
+
+            if (currentMatches.length > 0) {
+                currentHighlightIndex = 0;
+                updateHighlight();
+            } else {
+                removeAllHighlights();
+            }
+        }
+
+        function updateHighlight() {
+            removeAllHighlights();
+            if (currentMatches[currentHighlightIndex]) {
+                currentMatches[currentHighlightIndex].classList.add('highlight');
+                currentMatches[currentHighlightIndex].scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+        }
+
+        function removeAllHighlights() {
+            document.querySelectorAll('.student.highlight').forEach(el => el.classList.remove('highlight'));
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const highlighted = document.querySelector('.student.highlight');
+                if (highlighted) {
+                    const name = highlighted.dataset.name;
+                    if (highlighted.classList.contains('found')) {
+                        highlighted.classList.remove('found');
+                        foundFiles.delete(name.toLowerCase());
+                    } else {
+                        highlighted.classList.add('found');
+                        foundFiles.add(name.toLowerCase());
+                        playChime();
+                    }
+                    checkAllFilesFound();
+                    searchBar.value = '';
+                    resetStudentOpacity();
+                    searchBar.blur();
+                }
+            } 
+            else if (event.key === 'Escape') {
+                searchBar.value = '';
+                resetStudentOpacity();
+                searchBar.blur();
+            }
+            else if (['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(event.key) && currentMatches.length > 0) {
+                event.preventDefault();
+                if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+                    currentHighlightIndex = (currentHighlightIndex + 1) % currentMatches.length;
+                } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+                    currentHighlightIndex = (currentHighlightIndex - 1 + currentMatches.length) % currentMatches.length;
+                }
+                updateHighlight();
+            }
+        }
+
+        function resetStudentOpacity() {
+            currentMatches = [];
+            currentHighlightIndex = -1;
+            document.querySelectorAll('.student').forEach(el => {
+                el.style.opacity = '1';
+                el.classList.remove('highlight');
+            });
+        }
+
+        // Initialize
+        window.onload = () => {
+            initRoster();
+            initializeChecklist();
+        };
+    </script>
+</body>
+</html>
