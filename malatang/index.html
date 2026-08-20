@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cooking Deck</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;          /* black bars on the sides when wider */
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Strict 9:16 stage – top & bottom of video always visible */
+    .stage {
+      position: relative;
+      width: min(100vw, 100vh * 9 / 16);
+      height: min(100vh, 100vw * 16 / 9);
+      overflow: hidden;
+      background: #000;
+      flex-shrink: 0;
+    }
+
+    .bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .buttons {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .btn {
+      position: absolute;
+      width: 11.8%;
+      aspect-ratio: 1;
+      max-width: 64px;
+      max-height: 64px;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ff7a7a, #d32f2f 52%, #9a0007 100%);
+      box-shadow:
+        inset 0 3px 5px rgba(255,255,255,0.5),
+        inset 0 -5px 9px rgba(0,0,0,0.55),
+        0 5px 12px rgba(0,0,0,0.5),
+        0 1px 3px rgba(0,0,0,0.4);
+      border: 1.5px solid rgba(255,220,220,0.4);
+      color: #fff;
+      font-size: clamp(15px, 4.6vw, 24px);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 
+        top 0.48s cubic-bezier(0.34, 1.25, 0.64, 1),
+        left 0.48s cubic-bezier(0.34, 1.25, 0.64, 1),
+        transform 0.18s ease;
+      will-change: top, left;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+      z-index: 15;
+    }
+
+    .btn:active {
+      transform: scale(0.9);
+    }
+
+    .midi-status {
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      z-index: 20;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <video class="bg-video" autoplay muted loop playsinline>
+      <source src="backgroundloop.mov" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+    <div class="buttons" id="buttons"></div>
+    <div class="midi-status" id="midiStatus">MIDI: searching…</div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // MIDI – IAC Driver Bus 1
+    // ─────────────────────────────────────────────
+    let midiOutput = null;
+
+    async function initMIDI() {
+      const statusEl = document.getElementById('midiStatus');
+      if (!navigator.requestMIDIAccess) {
+        statusEl.textContent = 'MIDI: not supported';
+        return;
+      }
+      try {
+        const access = await navigator.requestMIDIAccess({ sysex: false });
+        const outputs = Array.from(access.outputs.values());
+
+        midiOutput = outputs.find(o =>
+          /iac/i.test(o.name) && /1/.test(o.name)
+        ) || outputs.find(o => /iac/i.test(o.name)) || outputs[0] || null;
+
+        statusEl.textContent = midiOutput
+          ? `MIDI → ${midiOutput.name}`
+          : 'MIDI: no outputs found';
+
+        access.onstatechange = () => {
+          const outs = Array.from(access.outputs.values());
+          midiOutput = outs.find(o =>
+            /iac/i.test(o.name) && /1/.test(o.name)
+          ) || outs[0] || null;
+          statusEl.textContent = midiOutput
+            ? `MIDI → ${midiOutput.name}`
+            : 'MIDI: no outputs';
+        };
+      } catch (err) {
+        statusEl.textContent = 'MIDI: permission denied';
+        console.warn(err);
+      }
+    }
+
+    function sendNote(channel, noteNumber, velocity = 100) {
+      if (!midiOutput) return;
+      const status = 0x90 + (channel - 1); // Ch1 = 0x90, Ch2 = 0x91
+      midiOutput.send([status, noteNumber, velocity]);
+      setTimeout(() => midiOutput.send([status, noteNumber, 0]), 60);
+    }
+
+    // ─────────────────────────────────────────────
+    // Button system
+    // ─────────────────────────────────────────────
+    const TOTAL = 15;
+    const buttons = [];
+
+    /*
+      COOKING_ZONES – percentages of stage width / height.
+      Compact vertical range (≈0.14 – 0.26) so the cluster
+      sits over the pans and does not climb into the top title.
+      8 slots per side = 16 total → safe for all 15 buttons.
+    */
+    const COOKING_ZONES = {
+      left: [
+        { x: 0.13, y: 0.155 },
+        { x: 0.25, y: 0.140 },
+        { x: 0.37, y: 0.155 },
+        { x: 0.13, y: 0.245 },
+        { x: 0.25, y: 0.255 },
+        { x: 0.37, y: 0.245 },
+        { x: 0.19, y: 0.200 },
+        { x: 0.31, y: 0.200 }
+      ],
+      right: [
+        { x: 0.63, y: 0.155 },
+        { x: 0.75, y: 0.140 },
+        { x: 0.87, y: 0.155 },
+        { x: 0.63, y: 0.245 },
+        { x: 0.75, y: 0.255 },
+        { x: 0.87, y: 0.245 },
+        { x: 0.69, y: 0.200 },
+        { x: 0.81, y: 0.200 }
+      ]
+    };
+
+    const occupied = {
+      left:  new Set(),
+      right: new Set()
+    };
+
+    function createButtons() {
+      const container = document.getElementById('buttons');
+      for (let i = 1; i <= TOTAL; i++) {
+        const btn = document.createElement('div');
+        btn.className = 'btn';
+        btn.textContent = i;
+        btn.dataset.num = i;
+        btn.dataset.state = 'waiting';
+        container.appendChild(btn);
+        buttons.push(btn);
+        btn.addEventListener('click', () => toggleButton(btn));
+      }
+      requestAnimationFrame(() => {
+        // Ensure height matches width (aspect-ratio fallback)
+        buttons.forEach(b => {
+          const s = b.offsetWidth;
+          b.style.height = s + 'px';
+        });
+        layoutWaiting();
+      });
+    }
+
+    function layoutWaiting() {
+      const stage = document.getElementById('stage');
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const size = buttons[0].offsetWidth;
+
+      const cols = 5;
+      const rows = 3;
+      const marginX = w * 0.055;
+      const usableW = w - marginX * 2;
+      const gapX = (usableW - cols * size) / (cols - 1);
+
+      const startY = h * 0.60;
+      const usableH = h * 0.34;
+      const gapY = (usableH - rows * size) / (rows - 1);
+
+      buttons.forEach((btn, idx) => {
+        if (btn.dataset.state !== 'waiting') return;
+
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+
+        const x = marginX + col * (size + gapX);
+        const y = startY + row * (size + gapY);
+
+        btn.style.left = x + 'px';
+        btn.style.top  = y + 'px';
+      });
+    }
+
+    function findFreeSlot(side) {
+      const zone = COOKING_ZONES[side];
+      for (let i = 0; i < zone.length; i++) {
+        if (!occupied[side].has(i)) return i;
+      }
+      // 16 slots total – this should never be reached with 15 buttons
+      return Math.floor(Math.random() * zone.length);
+    }
+
+    function placeInCooking(btn) {
+      const leftCount  = occupied.left.size;
+      const rightCount = occupied.right.size;
+      const side = leftCount <= rightCount ? 'left' : 'right';
+
+      const slotIdx = findFreeSlot(side);
+      occupied[side].add(slotIdx);
+
+      const stage = document.getElementById('stage');
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const size = btn.offsetWidth;
+
+      const pos = COOKING_ZONES[side][slotIdx];
+      const x = pos.x * w - size / 2;
+      const y = pos.y * h - size / 2;
+
+      btn.dataset.state = 'cooking';
+      btn.dataset.side = side;
+      btn.dataset.slot = slotIdx;
+
+      btn.style.left = Math.max(2, Math.min(w - size - 2, x)) + 'px';
+      btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
+    }
+
+    function returnToWaiting(btn) {
+      const side = btn.dataset.side;
+      const slot = parseInt(btn.dataset.slot, 10);
+      if (side && !isNaN(slot)) {
+        occupied[side].delete(slot);
+      }
+
+      btn.dataset.state = 'waiting';
+      delete btn.dataset.side;
+      delete btn.dataset.slot;
+
+      layoutWaiting();
+    }
+
+    function toggleButton(btn) {
+      const num = parseInt(btn.dataset.num, 10);
+
+      if (btn.dataset.state === 'waiting') {
+        placeInCooking(btn);
+        sendNote(1, num);          // Channel 1 = start cooking
+      } else {
+        returnToWaiting(btn);
+        sendNote(2, num);          // Channel 2 = finished
+      }
+    }
+
+    // Keep layout correct on resize / orientation change
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        buttons.forEach(b => {
+          const s = b.offsetWidth;
+          b.style.height = s + 'px';
+        });
+
+        buttons.forEach(btn => {
+          if (btn.dataset.state === 'cooking') {
+            const side = btn.dataset.side;
+            const slot = parseInt(btn.dataset.slot, 10);
+            const stage = document.getElementById('stage');
+            const w = stage.clientWidth;
+            const h = stage.clientHeight;
+            const size = btn.offsetWidth;
+            const pos = COOKING_ZONES[side][slot];
+            const x = pos.x * w - size / 2;
+            const y = pos.y * h - size / 2;
+            btn.style.left = Math.max(2, Math.min(w - size - 2, x)) + 'px';
+            btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
+          }
+        });
+        layoutWaiting();
+      }, 60);
+    });
+
+    // Boot
+    initMIDI();
+    createButtons();
+  </script>
+</body>
+</html>
