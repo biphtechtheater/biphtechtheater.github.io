@@ -101,6 +101,26 @@
       z-index: 20;
       pointer-events: none;
     }
+
+    .row-with-lines{
+  position: relative;
+}
+
+/* common line style */
+.hline{
+  position: absolute;
+  height: 5px;              /* thickness */
+  background: #000;
+  width: 100%;             /* set to what you want */
+}
+
+.hline-1{
+  top: 25.5vh;
+}
+
+.hline-2{
+  top: 68.1vh;
+}
   </style>
 </head>
 <body>
@@ -108,6 +128,11 @@
     <video class="bg-video" autoplay muted loop playsinline>
       <source src="backgroundvideo.mov" type="video/mp4">
     </video>
+
+      <div class="row-with-lines">
+  <div class="hline hline-1"></div>
+  <div class="hline hline-2"></div>
+</div>
 
     <div class="overlay"></div>
     <div class="buttons" id="buttons"></div>
@@ -221,8 +246,8 @@
 
   let startY, usableH, rows;
   if (state === 'waiting') {
-    startY = h * 0.69;
-    usableH = h * 0.22;
+    startY = h * 0.7;
+    usableH = h * 0.215;
     rows = 3;
     const cols = 5;
     const gapX = (usableW - cols * size) / (cols - 1);
@@ -253,8 +278,8 @@
 
       // ——— fine-tune top row spacing here ———
       if (row === 0) {
-        gapX = size * 1.5;   // smaller = tighter, larger = more spread
-      }
+  gapX = window.innerWidth * 0.06; // 1.2% * 1.2 = 1.44% of viewport width
+}
       // ————————————————————————————————
 
       const rowWidth = cols * size + (cols - 1) * gapX;
