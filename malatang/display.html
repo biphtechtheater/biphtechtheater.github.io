@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kitchen Display</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #e8f4fc;
+      font-family: "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #0d47a1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+      padding: 2.2vh 3vw;
+      gap: 2.2vh;
+    }
+
+    /* ── READY FOR PICKUP ── */
+    .ready-section {
+      background: #ffffff;
+      border: 2px solid #90caf9;
+      padding: 1.8vh 2.5vw;
+      min-height: 28vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-title {
+      font-size: clamp(22px, 2.4vw, 36px);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.4vh;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #0d47a1;
+    }
+
+    .section-title .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #0d47a1;
+      box-shadow: 0 0 10px rgba(13,71,161,0.4);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    .ready-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.4vw;
+      align-items: center;
+      flex: 1;
+      align-content: flex-start;
+    }
+
+    .ready-item {
+      width: 5.8vw;
+      height: 5.8vw;
+      max-width: 90px;
+      max-height: 90px;
+      min-width: 58px;
+      min-height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ff7a7a, #d32f2f 55%, #9a0007 100%);
+      box-shadow:
+        inset 0 3px 6px rgba(255,255,255,0.45),
+        inset 0 -4px 8px rgba(0,0,0,0.4),
+        0 4px 14px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(22px, 2.6vw, 40px);
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      animation: popIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+      cursor: pointer;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.3); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .ready-empty {
+      font-size: clamp(16px, 1.6vw, 24px);
+      color: #90a4ae;
+      font-style: italic;
+    }
+
+    /* ── CURRENTLY COOKING ── */
+    .cooking-section {
+      background: #ffffff;
+      border: 2px solid #90caf9;
+      padding: 1.8vh 2.5vw;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .cooking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5vh;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .cooking-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cooking-list::-webkit-scrollbar-thumb {
+      background: rgba(13,71,161,0.2);
+    }
+
+    .cooking-row {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      align-items: center;
+      gap: 1.6vw;
+      background: #f5fbff;
+      border: 1px solid #e3f2fd;
+      padding: 1.1vh 1.4vw;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-30px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    .cooking-num {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ff7a7a, #d32f2f 55%, #9a0007 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.45),
+        inset 0 -3px 6px rgba(0,0,0,0.35),
+        0 3px 10px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .progress-wrap {
+      height: 18px;
+      background: #e3f2fd;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 35%;
+      background: linear-gradient(90deg, #42a5f5, #90caf9, #42a5f5);
+      background-size: 200% 100%;
+      animation: progressMove 7.5s linear infinite;
+    }
+
+    @keyframes progressMove {
+      0%   { transform: translateX(-100%); background-position: 0% 0; }
+      100% { transform: translateX(380%); background-position: 200% 0; }
+    }
+
+    .cooking-empty {
+      font-size: clamp(16px, 1.6vw, 24px);
+      color: #90a4ae;
+      font-style: italic;
+      margin-top: 1vh;
+    }
+
+    .midi-status {
+      position: fixed;
+      bottom: 10px;
+      right: 16px;
+      font-size: 12px;
+      color: #90a4ae;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="ready-section">
+      <div class="section-title">
+        <span class="dot"></span>
+        READY FOR PICKUP
+      </div>
+      <div class="ready-list" id="readyList">
+        <div class="ready-empty" id="readyEmpty">Waiting for orders…</div>
+      </div>
+    </section>
+
+    <section class="cooking-section">
+      <div class="section-title">
+        <span class="dot"></span>
+        CURRENTLY COOKING
+      </div>
+      <div class="cooking-list" id="cookingList">
+        <div class="cooking-empty" id="cookingEmpty">No items cooking</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="midi-status" id="midiStatus">MIDI: searching…</div>
+
+  <script>
+    const cooking = new Map();
+    const ready   = new Map();
+
+    async function initMIDI() {
+      const statusEl = document.getElementById('midiStatus');
+      if (!navigator.requestMIDIAccess) {
+        statusEl.textContent = 'MIDI: not supported';
+        return;
+      }
+      try {
+        const access = await navigator.requestMIDIAccess({ sysex: false });
+        const inputs = Array.from(access.inputs.values());
+
+        let input = inputs.find(i =>
+          /iac/i.test(i.name) && /1/.test(i.name)
+        ) || inputs.find(i => /iac/i.test(i.name)) || inputs[0] || null;
+
+        if (input) {
+          input.onmidimessage = onMIDIMessage;
+          statusEl.textContent = `MIDI ← ${input.name}`;
+        } else {
+          statusEl.textContent = 'MIDI: no inputs found';
+        }
+
+        access.onstatechange = () => {
+          const ins = Array.from(access.inputs.values());
+          const prefer = ins.find(i =>
+            /iac/i.test(i.name) && /1/.test(i.name)
+          ) || ins[0];
+          if (prefer) {
+            prefer.onmidimessage = onMIDIMessage;
+            statusEl.textContent = `MIDI ← ${prefer.name}`;
+          }
+        };
+      } catch (err) {
+        statusEl.textContent = 'MIDI: permission denied';
+        console.warn(err);
+      }
+    }
+
+    function onMIDIMessage(event) {
+      const [status, note, velocity] = event.data;
+      if (velocity === 0) return;
+
+      const channel = (status & 0x0f) + 1;
+      const command = status & 0xf0;
+      if (command !== 0x90) return;
+
+      if (channel === 1) {
+        addCooking(note);
+      } else if (channel === 2) {
+        moveToReady(note);
+      } else if (channel === 3) {
+        removeReady(note);
+      }
+    }
+
+    function addCooking(num) {
+      if (cooking.has(num)) return;
+
+      if (ready.has(num)) {
+        ready.get(num).remove();
+        ready.delete(num);
+        updateReadyEmpty();
+      }
+
+      const list = document.getElementById('cookingList');
+      document.getElementById('cookingEmpty')?.remove();
+
+      const row = document.createElement('div');
+      row.className = 'cooking-row';
+      row.innerHTML = `
+        <div class="cooking-num">${num}</div>
+        <div class="progress-wrap">
+          <div class="progress-bar"></div>
+        </div>
+      `;
+      list.appendChild(row);
+      cooking.set(num, row);
+    }
+
+    function moveToReady(num) {
+      if (cooking.has(num)) {
+        cooking.get(num).remove();
+        cooking.delete(num);
+        if (cooking.size === 0) {
+          const list = document.getElementById('cookingList');
+          const empty = document.createElement('div');
+          empty.className = 'cooking-empty';
+          empty.id = 'cookingEmpty';
+          empty.textContent = 'No items cooking';
+          list.appendChild(empty);
+        }
+      }
+
+      if (ready.has(num)) return;
+
+      const list = document.getElementById('readyList');
+      document.getElementById('readyEmpty')?.remove();
+
+      const item = document.createElement('div');
+      item.className = 'ready-item';
+      item.textContent = num;
+      list.appendChild(item);
+      ready.set(num, item);
+    }
+
+    function removeReady(num) {
+      if (ready.has(num)) {
+        ready.get(num).remove();
+        ready.delete(num);
+        updateReadyEmpty();
+      }
+    }
+
+    function updateReadyEmpty() {
+      if (ready.size === 0) {
+        const list = document.getElementById('readyList');
+        if (!document.getElementById('readyEmpty')) {
+          const empty = document.createElement('div');
+          empty.className = 'ready-empty';
+          empty.id = 'readyEmpty';
+          empty.textContent = 'Waiting for orders…';
+          list.appendChild(empty);
+        }
+      }
+    }
+
+    document.getElementById('readyList').addEventListener('click', (e) => {
+      const item = e.target.closest('.ready-item');
+      if (!item) return;
+      const num = parseInt(item.textContent, 10);
+      removeReady(num);
+    });
+
+    initMIDI();
+  </script>
+</body>
+</html>

@@ -17,14 +17,13 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000;          /* black bars on the sides when wider */
+      background: #000;
       font-family: system-ui, -apple-system, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* Strict 9:16 stage – top & bottom of video always visible */
     .stage {
       position: relative;
       width: min(100vw, 100vh * 9 / 16);
@@ -107,7 +106,7 @@
 <body>
   <div class="stage" id="stage">
     <video class="bg-video" autoplay muted loop playsinline>
-      <source src="backgroundloop.mov" type="video/mp4">
+      <source src="backgroundvideo.mov" type="video/mp4">
     </video>
 
     <div class="overlay"></div>
@@ -116,9 +115,6 @@
   </div>
 
   <script>
-    // ─────────────────────────────────────────────
-    // MIDI – IAC Driver Bus 1
-    // ─────────────────────────────────────────────
     let midiOutput = null;
 
     async function initMIDI() {
@@ -156,43 +152,35 @@
 
     function sendNote(channel, noteNumber, velocity = 100) {
       if (!midiOutput) return;
-      const status = 0x90 + (channel - 1); // Ch1 = 0x90, Ch2 = 0x91
+      const status = 0x90 + (channel - 1);
       midiOutput.send([status, noteNumber, velocity]);
       setTimeout(() => midiOutput.send([status, noteNumber, 0]), 60);
     }
 
-    // ─────────────────────────────────────────────
-    // Button system
-    // ─────────────────────────────────────────────
     const TOTAL = 15;
     const buttons = [];
 
-    /*
-      COOKING_ZONES – percentages of stage width / height.
-      Compact vertical range (≈0.14 – 0.26) so the cluster
-      sits over the pans and does not climb into the top title.
-      8 slots per side = 16 total → safe for all 15 buttons.
-    */
+    // Cooking zone (middle) – slightly lower, left more left, right more right
     const COOKING_ZONES = {
       left: [
-        { x: 0.13, y: 0.155 },
-        { x: 0.25, y: 0.140 },
-        { x: 0.37, y: 0.155 },
-        { x: 0.13, y: 0.245 },
-        { x: 0.25, y: 0.255 },
-        { x: 0.37, y: 0.245 },
-        { x: 0.19, y: 0.200 },
-        { x: 0.31, y: 0.200 }
+        { x: 0.10, y: 0.345 },
+        { x: 0.22, y: 0.330 },
+        { x: 0.34, y: 0.345 },
+        { x: 0.10, y: 0.435 },
+        { x: 0.22, y: 0.445 },
+        { x: 0.34, y: 0.435 },
+        { x: 0.16, y: 0.390 },
+        { x: 0.28, y: 0.390 }
       ],
       right: [
-        { x: 0.63, y: 0.155 },
-        { x: 0.75, y: 0.140 },
-        { x: 0.87, y: 0.155 },
-        { x: 0.63, y: 0.245 },
-        { x: 0.75, y: 0.255 },
-        { x: 0.87, y: 0.245 },
-        { x: 0.69, y: 0.200 },
-        { x: 0.81, y: 0.200 }
+        { x: 0.66, y: 0.345 },
+        { x: 0.78, y: 0.330 },
+        { x: 0.90, y: 0.345 },
+        { x: 0.66, y: 0.435 },
+        { x: 0.78, y: 0.445 },
+        { x: 0.90, y: 0.435 },
+        { x: 0.72, y: 0.390 },
+        { x: 0.84, y: 0.390 }
       ]
     };
 
@@ -214,51 +202,88 @@
         btn.addEventListener('click', () => toggleButton(btn));
       }
       requestAnimationFrame(() => {
-        // Ensure height matches width (aspect-ratio fallback)
         buttons.forEach(b => {
           const s = b.offsetWidth;
           b.style.height = s + 'px';
         });
-        layoutWaiting();
+        layoutGrid('waiting');
       });
     }
 
-    function layoutWaiting() {
-      const stage = document.getElementById('stage');
-      const w = stage.clientWidth;
-      const h = stage.clientHeight;
-      const size = buttons[0].offsetWidth;
+    function layoutGrid(state) {
+  const stage = document.getElementById('stage');
+  const w = stage.clientWidth;
+  const h = stage.clientHeight;
+  const size = buttons[0].offsetWidth;
 
-      const cols = 5;
-      const rows = 3;
-      const marginX = w * 0.055;
-      const usableW = w - marginX * 2;
-      const gapX = (usableW - cols * size) / (cols - 1);
+  const marginX = w * 0.055;
+  const usableW = w - marginX * 2;
 
-      const startY = h * 0.60;
-      const usableH = h * 0.34;
-      const gapY = (usableH - rows * size) / (rows - 1);
+  let startY, usableH, rows;
+  if (state === 'waiting') {
+    startY = h * 0.69;
+    usableH = h * 0.22;
+    rows = 3;
+    const cols = 5;
+    const gapX = (usableW - cols * size) / (cols - 1);
+    const gapY = (usableH - rows * size) / (rows - 1);
 
-      buttons.forEach((btn, idx) => {
-        if (btn.dataset.state !== 'waiting') return;
+    const stateButtons = buttons.filter(b => b.dataset.state === state);
+    stateButtons.forEach((btn, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const x = marginX + col * (size + gapX);
+      const y = startY + row * (size + gapY);
+      btn.style.left = x + 'px';
+      btn.style.top  = y + 'px';
+    });
+  } else { // ready – top: 3 / 6 / 6
+    startY = h * 0.02;
+    usableH = h * 0.22;
+    rows = 3;
+    const rowCounts = [3, 6, 6];
+    const gapY = (usableH - rows * size) / (rows - 1);
 
-        const col = idx % cols;
-        const row = Math.floor(idx / cols);
+    const stateButtons = buttons.filter(b => b.dataset.state === state);
+    let idx = 0;
+    for (let row = 0; row < rows; row++) {
+      const cols = rowCounts[row];
+      // default even spacing
+      let gapX = cols > 1 ? (usableW - cols * size) / (cols - 1) : 0;
 
-        const x = marginX + col * (size + gapX);
+      // ——— fine-tune top row spacing here ———
+      if (row === 0) {
+        gapX = size * 1.5;   // smaller = tighter, larger = more spread
+      }
+      // ————————————————————————————————
+
+      const rowWidth = cols * size + (cols - 1) * gapX;
+
+      // row 0 = right-justified, others = centered
+      let startX;
+      if (row === 0) {
+        startX = w - marginX - rowWidth;   // right edge
+      } else {
+        startX = (w - rowWidth) / 2;       // centered
+      }
+
+      for (let col = 0; col < cols; col++) {
+        if (idx >= stateButtons.length) break;
+        const btn = stateButtons[idx++];
+        const x = startX + col * (size + gapX);
         const y = startY + row * (size + gapY);
-
         btn.style.left = x + 'px';
         btn.style.top  = y + 'px';
-      });
+      }
     }
+  }
+}
 
     function findFreeSlot(side) {
       const zone = COOKING_ZONES[side];
       for (let i = 0; i < zone.length; i++) {
         if (!occupied[side].has(i)) return i;
       }
-      // 16 slots total – this should never be reached with 15 buttons
       return Math.floor(Math.random() * zone.length);
     }
 
@@ -287,33 +312,35 @@
       btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
     }
 
-    function returnToWaiting(btn) {
+    function clearCookingSlot(btn) {
       const side = btn.dataset.side;
       const slot = parseInt(btn.dataset.slot, 10);
       if (side && !isNaN(slot)) {
         occupied[side].delete(slot);
       }
-
-      btn.dataset.state = 'waiting';
       delete btn.dataset.side;
       delete btn.dataset.slot;
-
-      layoutWaiting();
     }
 
     function toggleButton(btn) {
       const num = parseInt(btn.dataset.num, 10);
+      const state = btn.dataset.state;
 
-      if (btn.dataset.state === 'waiting') {
+      if (state === 'waiting') {
         placeInCooking(btn);
-        sendNote(1, num);          // Channel 1 = start cooking
+        sendNote(1, num);
+      } else if (state === 'cooking') {
+        clearCookingSlot(btn);
+        btn.dataset.state = 'ready';
+        layoutGrid('ready');
+        sendNote(2, num);
       } else {
-        returnToWaiting(btn);
-        sendNote(2, num);          // Channel 2 = finished
+        btn.dataset.state = 'waiting';
+        layoutGrid('waiting');
+        sendNote(3, num);
       }
     }
 
-    // Keep layout correct on resize / orientation change
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
@@ -338,11 +365,11 @@
             btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
           }
         });
-        layoutWaiting();
+        layoutGrid('waiting');
+        layoutGrid('ready');
       }, 60);
     });
 
-    // Boot
     initMIDI();
     createButtons();
   </script>
