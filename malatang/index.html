@@ -2,719 +2,367 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Malatang</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Malatang  🥘</title>
   <link rel="icon" href="../icons/BGicon.png">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #e8f4fc;
-      font-family: "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
-      color: #0d47a1;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-    }
-
-    /* ========== SPLASH / HERO ========== */
-    #start-overlay {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(160deg, #e3f2fd 0%, #bbdefb 45%, #e8f4fc 100%);
+      background: #000;
+      font-family: system-ui, -apple-system, sans-serif;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
-      pointer-events: auto;
-      cursor: pointer;
-      transition: opacity 0.55s ease, transform 0.55s ease;
-      overflow: hidden;
     }
 
-    #start-overlay.hidden {
-      opacity: 0;
-      transform: scale(1.04);
-      pointer-events: none;
-    }
-
-    .splash-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3.2vh;
-      text-align: center;
-      animation: splashRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    @keyframes splashRise {
-      from {
-        opacity: 0;
-        transform: translateY(28px) scale(0.96);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .hero-image-wrap {
+    .stage {
       position: relative;
-      width: min(42vw, 380px);
-      height: min(42vw, 380px);
-      border-radius: 28px;
+      width: min(100vw, 100vh * 9 / 16);
+      height: min(100vh, 100vw * 16 / 9);
       overflow: hidden;
-      box-shadow:
-        0 12px 40px rgba(13, 71, 161, 0.22),
-        0 4px 12px rgba(0, 0, 0, 0.08);
-      animation: float 4.5s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .hero-image-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .hero-image-wrap::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(13,71,161,0.18), transparent 55%);
-      pointer-events: none;
-    }
-
-    .splash-title {
-      font-size: clamp(32px, 4.2vw, 56px);
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      color: #0d47a1;
-      text-shadow: 0 2px 12px rgba(13, 71, 161, 0.15);
-    }
-
-    .splash-subtitle {
-      font-size: clamp(15px, 1.6vw, 20px);
-      color: #546e7a;
-      font-weight: 500;
-      letter-spacing: 0.03em;
-      margin-top: -1.6vh;
-    }
-
-    #start-btn {
-      margin-top: 1.5vh;
-      background: #0d47a1;
-      color: white;
-      border: none;
-      padding: 1.5vh 5vw;
-      font-size: clamp(18px, 2.2vw, 26px);
-      font-weight: 700;
-      border-radius: 50px;
-      letter-spacing: 0.08em;
-      box-shadow: 0 6px 20px rgba(13, 71, 161, 0.35);
-      cursor: pointer;
-      pointer-events: auto;
-      transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-      animation: pulseBtn 2.2s ease-in-out infinite;
-    }
-
-    #start-btn:hover {
-      background: #1565c0;
-      transform: scale(1.05);
-      box-shadow: 0 8px 26px rgba(13, 71, 161, 0.45);
-    }
-
-    @keyframes pulseBtn {
-      0%, 100% { box-shadow: 0 6px 20px rgba(13, 71, 161, 0.35); }
-      50% { box-shadow: 0 6px 28px rgba(13, 71, 161, 0.55); }
-    }
-
-    /* subtle floating particles */
-    .particle {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(13, 71, 161, 0.18);
-      pointer-events: none;
-      animation: drift 12s linear infinite;
-    }
-
-    @keyframes drift {
-      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 0.6; }
-      100% { transform: translateY(-20vh) scale(1.1); opacity: 0; }
-    }
-
-    /* ========== MAIN LAYOUT ========== */
-    .layout {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      height: 100%;
-      padding: 2.2vh 3vw;
-      gap: 2.2vh;
-    }
-
-    .ready-section {
-      background: #ffffff;
-      border: 2px solid #90caf9;
-      padding: 1.8vh 2.5vw;
-      min-height: 28vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .section-title {
-      font-size: clamp(22px, 2.4vw, 36px);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      margin-bottom: 1.4vh;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #0d47a1;
-    }
-
-    .section-title .dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #0d47a1;
-      box-shadow: 0 0 10px rgba(13,71,161,0.4);
-      animation: pulse 1.6s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(0.85); }
-    }
-
-    .ready-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.4vw;
-      align-items: center;
-      flex: 1;
-      align-content: flex-start;
-    }
-
-    .ready-item {
-      width: 5.8vw;
-      height: 5.8vw;
-      max-width: 90px;
-      max-height: 90px;
-      min-width: 58px;
-      min-height: 58px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 45%, #ef5350 0%, #c62828 70%, #8e0000 100%);
-      box-shadow:
-        inset 0 1px 1.5px rgba(255,255,255,0.5),
-        inset 0 -2.5px 4px rgba(0,0,0,0.5),
-        0 0 0 1.5px rgba(255,180,180,0.2),
-        0 3px 5px rgba(0,0,0,0.45),
-        0 1px 1px rgba(0,0,0,0.3);
-      border: 1px solid rgba(180,30,30,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(22px, 2.6vw, 40px);
-      font-weight: 800;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
-      animation: popIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
-      cursor: default;
-      pointer-events: none;
-      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity 0.32s ease;
-    }
-
-    .ready-item.removing {
-      transform: scale(0.18);
-      opacity: 0;
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.3); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
-
-    .ready-empty {
-      font-size: clamp(16px, 1.6vw, 24px);
-      color: #90a4ae;
-      font-style: italic;
-    }
-
-    .cooking-section {
-      background: #ffffff;
-      border: 2px solid #90caf9;
-      padding: 1.8vh 2.5vw;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .cooking-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5vh;
-      overflow-y: auto;
-      flex: 1;
-      padding-right: 8px;
-    }
-
-    .cooking-list::-webkit-scrollbar {
-      width: 6px;
-    }
-    .cooking-list::-webkit-scrollbar-thumb {
-      background: rgba(13,71,161,0.2);
-    }
-
-    .cooking-row {
-      display: grid;
-      grid-template-columns: 70px 1fr;
-      align-items: center;
-      gap: 1.6vw;
-      background: #f5fbff;
-      border: 1px solid #e3f2fd;
-      padding: 1.1vh 1.4vw;
-      animation: slideIn 0.4s ease-out;
-      transition: opacity 0.28s ease, transform 0.28s ease;
-    }
-
-    .cooking-row.leaving {
-      opacity: 0;
-      transform: translateX(-24px);
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-30px); opacity: 0; }
-      to   { transform: translateX(0); opacity: 1; }
-    }
-
-    .cooking-num {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 45%, #ef5350 0%, #c62828 70%, #8e0000 100%);
-      box-shadow:
-        inset 0 1px 1.5px rgba(255,255,255,0.5),
-        inset 0 -2.5px 4px rgba(0,0,0,0.5),
-        0 0 0 1.5px rgba(255,180,180,0.2),
-        0 3px 5px rgba(0,0,0,0.45),
-        0 1px 1px rgba(0,0,0,0.3);
-      border: 1px solid rgba(180,30,30,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 800;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
+      background: #000;
       flex-shrink: 0;
     }
 
-    .progress-wrap {
-      height: 18px;
-      background: #e3f2fd;
-      overflow: hidden;
-      position: relative;
-      border-radius: 9px;
-    }
-
-    .progress-bar {
+    .bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
       height: 100%;
-      width: 0%;
-      background: rgba(76, 175, 80, 0.55);
-      border-radius: 9px;
-      will-change: width;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .cooking-empty {
-      font-size: clamp(16px, 1.6vw, 24px);
-      color: #90a4ae;
-      font-style: italic;
-      margin-top: 1vh;
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
     }
+
+    .buttons {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+  .btn {
+  position: absolute;
+  width: 11.8%;
+  aspect-ratio: 1;
+  max-width: 64px;
+  max-height: 64px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #ef5350 0%, #c62828 70%, #8e0000 100%);
+  box-shadow:
+    inset 0 1px 1.5px rgba(255,255,255,0.5),
+    inset 0 -2.5px 4px rgba(0,0,0,0.5),
+    0 0 0 1.5px rgba(255,180,180,0.2),
+    0 3px 5px rgba(0,0,0,0.45),
+    0 1px 1px rgba(0,0,0,0.3);
+  border: 1px solid rgba(180,30,30,0.6);
+  color: #fff;
+  font-size: clamp(15px, 4.6vw, 24px);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 
+    top 0.48s cubic-bezier(0.34, 1.25, 0.64, 1),
+    left 0.48s cubic-bezier(0.34, 1.25, 0.64, 1),
+    transform 0.18s ease;
+  will-change: top, left;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.65);
+  z-index: 15;
+}
+
+    .btn:active {
+      transform: scale(0.9);
+    }
+
+    .row-with-lines{
+  position: relative;
+}
+
   </style>
 </head>
 <body>
+  <div class="stage" id="stage">
+    <video class="bg-video" autoplay muted loop playsinline>
+      <source src="backgroundvideo.mov" type="video/mp4">
+    </video>
 
-  <!-- ========== SPLASH SCREEN ========== -->
-  <div id="start-overlay">
-    <!-- floating particles -->
-    <div class="particle" style="left:12%; animation-delay:0s; width:6px; height:6px;"></div>
-    <div class="particle" style="left:28%; animation-delay:2.5s; width:10px; height:10px;"></div>
-    <div class="particle" style="left:55%; animation-delay:1.2s; width:7px; height:7px;"></div>
-    <div class="particle" style="left:72%; animation-delay:4s; width:9px; height:9px;"></div>
-    <div class="particle" style="left:88%; animation-delay:0.8s; width:5px; height:5px;"></div>
+      <div class="row-with-lines">
+  <div class="hline hline-1"></div>
+  <div class="hline hline-2"></div>
+</div>
 
-    <div class="splash-content">
-      <div class="hero-image-wrap">
-        <img src="malatang.png" alt="Malatang" />
-      </div>
-      <div class="splash-title">MALATANG</div>
-      <div class="splash-subtitle">Fresh and ready to go!</div>
-      <button id="start-btn">TAP TO START</button>
-    </div>
-  </div>
-
-  <!-- ========== MAIN BOARD ========== -->
-  <div class="layout">
-    <section class="ready-section">
-      <div class="section-title">
-        <span class="dot"></span>
-        READY FOR PICKUP
-      </div>
-      <div class="ready-list" id="readyList">
-        <div class="ready-empty" id="readyEmpty">Waiting for orders…</div>
-      </div>
-    </section>
-
-    <section class="cooking-section">
-      <div class="section-title">
-        <span class="dot"></span>
-        CURRENTLY COOKING
-      </div>
-      <div class="cooking-list" id="cookingList">
-        <div class="cooking-empty" id="cookingEmpty">No items cooking</div>
-      </div>
-    </section>
+    <div class="overlay"></div>
+    <div class="buttons" id="buttons"></div>
   </div>
 
   <script>
-    const cooking = new Map();
-    const ready   = new Map();
+    let midiOutput = null;
 
-    const audioQueue = [];
-    let isPlaying = false;
-    let lastAnnounceTime = 0;
-    let burstCount = 0;
+    async function initMIDI() {
+  if (!navigator.requestMIDIAccess) {
+    return;
+  }
+  try {
+    const access = await navigator.requestMIDIAccess({ sysex: false });
+    const outputs = Array.from(access.outputs.values());
 
-    const FULL_REENNOUNCE_GAP = 7500;
-    const BURST_WINDOW = 3000; 
-    const INTER_CLIP_GAP = 0;
+    midiOutput = outputs.find(o =>
+      /iac/i.test(o.name) && /1/.test(o.name)
+    ) || outputs.find(o => /iac/i.test(o.name)) || outputs[0] || null;
 
-    const COOK_DURATION_MS = 4 * 60 * 1000; // 4 minutes
-    const ASYMPTOTE_K = 1.9;        
+    access.onstatechange = () => {
+      const outs = Array.from(access.outputs.values());
+      midiOutput = outs.find(o =>
+        /iac/i.test(o.name) && /1/.test(o.name)
+      ) || outs[0] || null;
+    };
+  } catch (err) {
+    console.warn(err);
+  }
+}
 
-    function playClip(src) {
-      return new Promise((resolve) => {
-        const audio = new Audio(src);
-        audio.preload = 'auto';
-        const done = (e) => {
-          if (e && e.type === 'error') {
-            console.warn('[audio] failed to load/play', src, audio.error);
-          }
-          audio.onended = null;
-          audio.onerror = null;
-          resolve();
-        };
-        audio.onended = done;
-        audio.onerror = done;
-        audio.play().catch(err => {
-          console.warn('[audio] play() rejected (autoplay policy?)', src, err);
-          done();
+    function sendNote(channel, noteNumber, velocity = 100) {
+      if (!midiOutput) return;
+      const status = 0x90 + (channel - 1);
+      midiOutput.send([status, noteNumber, velocity]);
+      setTimeout(() => midiOutput.send([status, noteNumber, 0]), 60);
+    }
+
+    const TOTAL = 15;
+    const buttons = [];
+
+    // Cooking zone (middle) – slightly lower, left more left, right more right
+    const COOKING_ZONES = {
+      left: [
+        { x: 0.10, y: 0.345 },
+        { x: 0.22, y: 0.330 },
+        { x: 0.34, y: 0.345 },
+        { x: 0.10, y: 0.435 },
+        { x: 0.22, y: 0.445 },
+        { x: 0.34, y: 0.435 },
+        { x: 0.16, y: 0.390 },
+        { x: 0.28, y: 0.390 }
+      ],
+      right: [
+        { x: 0.66, y: 0.345 },
+        { x: 0.78, y: 0.330 },
+        { x: 0.90, y: 0.345 },
+        { x: 0.66, y: 0.435 },
+        { x: 0.78, y: 0.445 },
+        { x: 0.90, y: 0.435 },
+        { x: 0.72, y: 0.390 },
+        { x: 0.84, y: 0.390 }
+      ]
+    };
+
+    const occupied = {
+      left:  new Set(),
+      right: new Set()
+    };
+
+    function createButtons() {
+      const container = document.getElementById('buttons');
+      for (let i = 1; i <= TOTAL; i++) {
+        const btn = document.createElement('div');
+        btn.className = 'btn';
+        btn.textContent = i;
+        btn.dataset.num = i;
+        btn.dataset.state = 'waiting';
+        container.appendChild(btn);
+        buttons.push(btn);
+        btn.addEventListener('click', () => toggleButton(btn));
+      }
+      requestAnimationFrame(() => {
+        buttons.forEach(b => {
+          const s = b.offsetWidth;
+          b.style.height = s + 'px';
         });
+        layoutGrid('waiting');
       });
     }
 
-    async function drainQueue() {
-      if (isPlaying) return;
-      isPlaying = true;
-      while (audioQueue.length > 0) {
-        const src = audioQueue.shift();
-        await playClip(src);
-        if (audioQueue.length > 0) {
-          await new Promise(r => setTimeout(r, INTER_CLIP_GAP));
-        }
-      }
-      isPlaying = false;
-    }
+    function layoutGrid(state) {
+  const stage = document.getElementById('stage');
+  const w = stage.clientWidth;
+  const h = stage.clientHeight;
+  const size = buttons[0].offsetWidth;
 
-    function enqueue(...srcs) {
-      const withPath = srcs.map(s => s.startsWith('audio/') ? s : `audio/${s}`);
-      audioQueue.push(...withPath);
-      console.log('[audio] queued', withPath);
-      drainQueue();
-    }
+  const marginX = w * 0.055;
+  const usableW = w - marginX * 2;
 
-    function pickSingular() {
-      return Math.random() < 0.5 ? 'singular.mp3' : 'singular2.mp3';
-    }
+  let startY, usableH, rows;
+  if (state === 'waiting') {
+    startY = h * 0.7;
+    usableH = h * 0.215;
+    rows = 3;
+    const cols = 5;
+    const gapX = (usableW - cols * size) / (cols - 1);
+    const gapY = (usableH - rows * size) / (rows - 1);
 
-    function pickMultiple() {
-      return Math.random() < 0.5 ? 'multiple.mp3' : 'multiple2.mp3';
-    }
+    const stateButtons = buttons.filter(b => b.dataset.state === state);
+    stateButtons.forEach((btn, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const x = marginX + col * (size + gapX);
+      const y = startY + row * (size + gapY);
+      btn.style.left = x + 'px';
+      btn.style.top  = y + 'px';
+    });
+  } else { // ready – top: 3 / 6 / 6
+    startY = h * 0.02;
+    usableH = h * 0.22;
+    rows = 3;
+    const rowCounts = [3, 6, 6];
+    const gapY = (usableH - rows * size) / (rows - 1);
 
-    function buildListAnnouncement(nums) {
-      if (nums.length === 0) return [];
+    const stateButtons = buttons.filter(b => b.dataset.state === state);
+    let idx = 0;
+    for (let row = 0; row < rows; row++) {
+      const cols = rowCounts[row];
+      // default even spacing
+      let gapX = cols > 1 ? (usableW - cols * size) / (cols - 1) : 0;
 
-      if (nums.length === 1) {
-        const usePlease = Math.random() < 0.42;
-        if (usePlease) {
-          return [`${nums[0]}please.mp3`];
-        }
-        const files = [`${nums[0]}.mp3`];
-        if (Math.random() < 0.7) {
-          files.push(pickSingular());
-        }
-        return files;
-      }
+      // ——— fine-tune top row spacing here ———
+      if (row === 0) {
+  gapX = window.innerWidth * 0.06; // 1.2% * 1.2 = 1.44% of viewport width
+}
+      // ————————————————————————————————
 
-      const files = [];
-      for (let i = 0; i < nums.length; i++) {
-        const isLast = (i === nums.length - 1);
-        if (isLast) {
-          const usePlease = Math.random() < 0.38;
-          files.push(usePlease ? `and${nums[i]}please.mp3` : `and${nums[i]}.mp3`);
-        } else {
-          files.push(`${nums[i]}.mp3`);
-        }
-      }
+      const rowWidth = cols * size + (cols - 1) * gapX;
 
-      const last = files[files.length - 1];
-      if (!last.includes('please')) {
-        files.push(pickMultiple());
-      }
-      return files;
-    }
-
-    function buildSingleAnnouncement(num) {
-      const usePlease = Math.random() < 0.40;
-      if (usePlease) {
-        return [`${num}please.mp3`];
-      }
-
-      const files = [`${num}.mp3`];
-      if (burstCount <= 2 && Math.random() < 0.75) {
-        files.push(pickSingular());
-      }
-      return files;
-    }
-
-    function announceReady(num) {
-      const now = Date.now();
-      const current = Array.from(ready.keys()).sort((a, b) => a - b);
-
-      if (now - lastAnnounceTime > BURST_WINDOW) {
-        burstCount = 0;
-      }
-      burstCount++;
-
-      if (now - lastAnnounceTime > FULL_REENNOUNCE_GAP && current.length > 0) {
-        enqueue(...buildListAnnouncement(current));
-        burstCount = 0;
+      // row 0 = right-justified, others = centered
+      let startX;
+      if (row === 0) {
+        startX = w - marginX - rowWidth;   // right edge
       } else {
-        enqueue(...buildSingleAnnouncement(num));
+        startX = (w - rowWidth) / 2;       // centered
       }
 
-      lastAnnounceTime = now;
+      for (let col = 0; col < cols; col++) {
+        if (idx >= stateButtons.length) break;
+        const btn = stateButtons[idx++];
+        const x = startX + col * (size + gapX);
+        const y = startY + row * (size + gapY);
+        btn.style.left = x + 'px';
+        btn.style.top  = y + 'px';
+      }
+    }
+  }
+}
+
+    function findFreeSlot(side) {
+      const zone = COOKING_ZONES[side];
+      for (let i = 0; i < zone.length; i++) {
+        if (!occupied[side].has(i)) return i;
+      }
+      return Math.floor(Math.random() * zone.length);
     }
 
-    async function initMIDI() {
-      if (!navigator.requestMIDIAccess) {
-        return;
+    function placeInCooking(btn) {
+      const leftCount  = occupied.left.size;
+      const rightCount = occupied.right.size;
+      const side = leftCount <= rightCount ? 'left' : 'right';
+
+      const slotIdx = findFreeSlot(side);
+      occupied[side].add(slotIdx);
+
+      const stage = document.getElementById('stage');
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const size = btn.offsetWidth;
+
+      const pos = COOKING_ZONES[side][slotIdx];
+      const x = pos.x * w - size / 2;
+      const y = pos.y * h - size / 2;
+
+      btn.dataset.state = 'cooking';
+      btn.dataset.side = side;
+      btn.dataset.slot = slotIdx;
+
+      btn.style.left = Math.max(2, Math.min(w - size - 2, x)) + 'px';
+      btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
+    }
+
+    function clearCookingSlot(btn) {
+      const side = btn.dataset.side;
+      const slot = parseInt(btn.dataset.slot, 10);
+      if (side && !isNaN(slot)) {
+        occupied[side].delete(slot);
       }
-      try {
-        const access = await navigator.requestMIDIAccess({ sysex: false });
-        const inputs = Array.from(access.inputs.values());
+      delete btn.dataset.side;
+      delete btn.dataset.slot;
+    }
 
-        let input = inputs.find(i =>
-          /iac/i.test(i.name) && /1/.test(i.name)
-        ) || inputs.find(i => /iac/i.test(i.name)) || inputs[0] || null;
+    function toggleButton(btn) {
+      const num = parseInt(btn.dataset.num, 10);
+      const state = btn.dataset.state;
 
-        if (input) {
-          input.onmidimessage = onMIDIMessage;
-        }
+      if (state === 'waiting') {
+        placeInCooking(btn);
+        sendNote(1, num);
+      } else if (state === 'cooking') {
+        clearCookingSlot(btn);
+        btn.dataset.state = 'ready';
+        layoutGrid('ready');
+        sendNote(2, num);
+      } else {
+        btn.dataset.state = 'waiting';
+        layoutGrid('waiting');
+        sendNote(3, num);
+      }
+    }
 
-        access.onstatechange = () => {
-          const ins = Array.from(access.inputs.values());
-          const prefer = ins.find(i =>
-            /iac/i.test(i.name) && /1/.test(i.name)
-          ) || ins[0];
-          if (prefer) {
-            prefer.onmidimessage = onMIDIMessage;
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        buttons.forEach(b => {
+          const s = b.offsetWidth;
+          b.style.height = s + 'px';
+        });
+
+        buttons.forEach(btn => {
+          if (btn.dataset.state === 'cooking') {
+            const side = btn.dataset.side;
+            const slot = parseInt(btn.dataset.slot, 10);
+            const stage = document.getElementById('stage');
+            const w = stage.clientWidth;
+            const h = stage.clientHeight;
+            const size = btn.offsetWidth;
+            const pos = COOKING_ZONES[side][slot];
+            const x = pos.x * w - size / 2;
+            const y = pos.y * h - size / 2;
+            btn.style.left = Math.max(2, Math.min(w - size - 2, x)) + 'px';
+            btn.style.top  = Math.max(2, Math.min(h - size - 2, y)) + 'px';
           }
-        };
-      } catch (err) {
-        console.warn(err);
-      }
-    }
+        });
+        layoutGrid('waiting');
+        layoutGrid('ready');
+      }, 60);
+    });
 
-    function onMIDIMessage(event) {
-      const [status, note, velocity] = event.data;
-      if (velocity === 0) return;
-
-      const channel = (status & 0x0f) + 1;
-      const command = status & 0xf0;
-      if (command !== 0x90) return;
-
-      if (channel === 1) {
-        addCooking(note);
-      } else if (channel === 2) {
-        moveToReady(note);
-      } else if (channel === 3) {
-        removeReady(note);
-      }
-    }
-
-    function addCooking(num) {
-      if (cooking.has(num)) return;
-
-      if (ready.has(num)) {
-        removeReady(num);
-      }
-
-      const list = document.getElementById('cookingList');
-      document.getElementById('cookingEmpty')?.remove();
-
-      const row = document.createElement('div');
-      row.className = 'cooking-row';
-      row.innerHTML = `
-        <div class="cooking-num">${num}</div>
-        <div class="progress-wrap">
-          <div class="progress-bar"></div>
-        </div>
-      `;
-      list.appendChild(row);
-      cooking.set(num, row);
-
-      const bar = row.querySelector('.progress-bar');
-      const startTime = Date.now();
-
-      function tick() {
-        if (!cooking.has(num)) return;
-        const elapsed = Date.now() - startTime;
-        const t = elapsed / COOK_DURATION_MS;
-        const progress = 1 - Math.exp(-ASYMPTOTE_K * t);
-        bar.style.width = Math.min(progress * 100, 99.2) + '%';
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }
-
-    function moveToReady(num) {
-      if (cooking.has(num)) {
-        const row = cooking.get(num);
-        cooking.delete(num);
-
-        const bar = row.querySelector('.progress-bar');
-        bar.style.transition = 'width 0.42s cubic-bezier(0.22, 0.9, 0.3, 1)';
-        bar.style.width = '100%';
-
-        setTimeout(() => {
-          row.classList.add('leaving');
-          setTimeout(() => {
-            row.remove();
-            if (cooking.size === 0) {
-              const list = document.getElementById('cookingList');
-              if (!document.getElementById('cookingEmpty')) {
-                const empty = document.createElement('div');
-                empty.className = 'cooking-empty';
-                empty.id = 'cookingEmpty';
-                empty.textContent = 'No items cooking';
-                list.appendChild(empty);
-              }
-            }
-          }, 280);
-        }, 450);
-      }
-
-      setTimeout(() => {
-  if (ready.has(num)) return;
-
-  const list = document.getElementById('readyList');
-  document.getElementById('readyEmpty')?.remove();
-
-  const item = document.createElement('div');
-  item.className = 'ready-item';
-  item.textContent = num;
-
-  // Keep visual list sorted ascending
-  const existing = Array.from(list.children)
-    .filter(el => el.classList.contains('ready-item'));
-
-  let inserted = false;
-  for (const el of existing) {
-    if (Number(el.textContent) > num) {
-      list.insertBefore(item, el);
-      inserted = true;
-      break;
-    }
-  }
-  if (!inserted) {
-    list.appendChild(item);
-  }
-
-  ready.set(num, item);
-  announceReady(num);
-}, 520);
-    }
-
-    function removeReady(num) {
-      if (!ready.has(num)) return;
-
-      const item = ready.get(num);
-      item.classList.add('removing');
-
-      setTimeout(() => {
-        item.remove();
-        ready.delete(num);
-        updateReadyEmpty();
-      }, 340);
-    }
-
-    function updateReadyEmpty() {
-      if (ready.size === 0) {
-        const list = document.getElementById('readyList');
-        if (!document.getElementById('readyEmpty')) {
-          const empty = document.createElement('div');
-          empty.className = 'ready-empty';
-          empty.id = 'readyEmpty';
-          empty.textContent = 'Waiting for orders…';
-          list.appendChild(empty);
-        }
-      }
-    }
-
-    /* ========== START / UNLOCK ========== */
-    const overlay = document.getElementById('start-overlay');
-    const startBtn = document.getElementById('start-btn');
-
-    function unlockAndStart() {
-      // Unlock audio
-      const unlock = new Audio();
-      unlock.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-      unlock.play().catch(() => {});
-
-      // Enable page interactions
-      document.body.style.pointerEvents = 'auto';
-
-      // Fade out splash
-      overlay.classList.add('hidden');
-      setTimeout(() => overlay.remove(), 560);
-
-      // Start MIDI
-      initMIDI();
-    }
-
-    // Click anywhere on the overlay (or the button) to start
-    overlay.addEventListener('click', unlockAndStart);
+    initMIDI();
+    createButtons();
   </script>
 </body>
 </html>
