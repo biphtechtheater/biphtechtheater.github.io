@@ -405,9 +405,9 @@
     let lastAnnounceTime = 0;
     let burstCount = 0;
 
-    const FULL_REENNOUNCE_GAP = 5500;
-    const BURST_WINDOW = 3200;
-    const INTER_CLIP_GAP = 180;
+    const FULL_REENNOUNCE_GAP = 7500;
+    const BURST_WINDOW = 3000; 
+    const INTER_CLIP_GAP = 0;
 
     const COOK_DURATION_MS = 4 * 60 * 1000; // 4 minutes
     const ASYMPTOTE_K = 1.9;        
@@ -636,19 +636,34 @@
       }
 
       setTimeout(() => {
-        if (ready.has(num)) return;
+  if (ready.has(num)) return;
 
-        const list = document.getElementById('readyList');
-        document.getElementById('readyEmpty')?.remove();
+  const list = document.getElementById('readyList');
+  document.getElementById('readyEmpty')?.remove();
 
-        const item = document.createElement('div');
-        item.className = 'ready-item';
-        item.textContent = num;
-        list.appendChild(item);
-        ready.set(num, item);
+  const item = document.createElement('div');
+  item.className = 'ready-item';
+  item.textContent = num;
 
-        announceReady(num);
-      }, 520);
+  // Keep visual list sorted ascending
+  const existing = Array.from(list.children)
+    .filter(el => el.classList.contains('ready-item'));
+
+  let inserted = false;
+  for (const el of existing) {
+    if (Number(el.textContent) > num) {
+      list.insertBefore(item, el);
+      inserted = true;
+      break;
+    }
+  }
+  if (!inserted) {
+    list.appendChild(item);
+  }
+
+  ready.set(num, item);
+  announceReady(num);
+}, 520);
     }
 
     function removeReady(num) {
