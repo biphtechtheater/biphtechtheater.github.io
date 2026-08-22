@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kitchen Display</title>
+  <title>Malatang  🖥</title>
+  <link rel="icon" href="../icons/BGicon.png">
   <style>
     * {
       margin: 0;
@@ -18,6 +19,10 @@
       background: #e8f4fc;
       font-family: "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
       color: #0d47a1;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
 
     .layout {
@@ -28,7 +33,6 @@
       gap: 2.2vh;
     }
 
-    /* ── READY FOR PICKUP ── */
     .ready-section {
       background: #ffffff;
       border: 2px solid #90caf9;
@@ -72,6 +76,7 @@
       align-content: flex-start;
     }
 
+    /* Preferred #3 flat puck / coin style */
     .ready-item {
       width: 5.8vw;
       height: 5.8vw;
@@ -80,20 +85,31 @@
       min-width: 58px;
       min-height: 58px;
       border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #ff7a7a, #d32f2f 55%, #9a0007 100%);
+      background: radial-gradient(circle at 50% 45%, #ef5350 0%, #c62828 70%, #8e0000 100%);
       box-shadow:
-        inset 0 3px 6px rgba(255,255,255,0.45),
-        inset 0 -4px 8px rgba(0,0,0,0.4),
-        0 4px 14px rgba(0,0,0,0.18);
+        inset 0 1px 1.5px rgba(255,255,255,0.5),
+        inset 0 -2.5px 4px rgba(0,0,0,0.5),
+        0 0 0 1.5px rgba(255,180,180,0.2),
+        0 3px 5px rgba(0,0,0,0.45),
+        0 1px 1px rgba(0,0,0,0.3);
+      border: 1px solid rgba(180,30,30,0.6);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: clamp(22px, 2.6vw, 40px);
       font-weight: 800;
       color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
       animation: popIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
-      cursor: pointer;
+      cursor: default;
+      pointer-events: none;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.32s ease;
+    }
+
+    .ready-item.removing {
+      transform: scale(0.18);
+      opacity: 0;
     }
 
     @keyframes popIn {
@@ -107,7 +123,6 @@
       font-style: italic;
     }
 
-    /* ── CURRENTLY COOKING ── */
     .cooking-section {
       background: #ffffff;
       border: 2px solid #90caf9;
@@ -142,6 +157,12 @@
       border: 1px solid #e3f2fd;
       padding: 1.1vh 1.4vw;
       animation: slideIn 0.4s ease-out;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    .cooking-row.leaving {
+      opacity: 0;
+      transform: translateX(-24px);
     }
 
     @keyframes slideIn {
@@ -149,21 +170,26 @@
       to   { transform: translateX(0); opacity: 1; }
     }
 
+    /* Preferred #3 flat puck / coin style */
     .cooking-num {
       width: 58px;
       height: 58px;
       border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #ff7a7a, #d32f2f 55%, #9a0007 100%);
+      background: radial-gradient(circle at 50% 45%, #ef5350 0%, #c62828 70%, #8e0000 100%);
       box-shadow:
-        inset 0 2px 4px rgba(255,255,255,0.45),
-        inset 0 -3px 6px rgba(0,0,0,0.35),
-        0 3px 10px rgba(0,0,0,0.15);
+        inset 0 1px 1.5px rgba(255,255,255,0.5),
+        inset 0 -2.5px 4px rgba(0,0,0,0.5),
+        0 0 0 1.5px rgba(255,180,180,0.2),
+        0 3px 5px rgba(0,0,0,0.45),
+        0 1px 1px rgba(0,0,0,0.3);
+      border: 1px solid rgba(180,30,30,0.6);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
       font-weight: 800;
       color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
       flex-shrink: 0;
     }
 
@@ -172,19 +198,15 @@
       background: #e3f2fd;
       overflow: hidden;
       position: relative;
+      border-radius: 9px;
     }
 
     .progress-bar {
       height: 100%;
-      width: 35%;
-      background: linear-gradient(90deg, #42a5f5, #90caf9, #42a5f5);
-      background-size: 200% 100%;
-      animation: progressMove 7.5s linear infinite;
-    }
-
-    @keyframes progressMove {
-      0%   { transform: translateX(-100%); background-position: 0% 0; }
-      100% { transform: translateX(380%); background-position: 200% 0; }
+      width: 0%;
+      background: rgba(76, 175, 80, 0.55);
+      border-radius: 9px;
+      will-change: width;
     }
 
     .cooking-empty {
@@ -192,15 +214,6 @@
       color: #90a4ae;
       font-style: italic;
       margin-top: 1vh;
-    }
-
-    .midi-status {
-      position: fixed;
-      bottom: 10px;
-      right: 16px;
-      font-size: 12px;
-      color: #90a4ae;
-      z-index: 50;
     }
   </style>
 </head>
@@ -227,48 +240,165 @@
     </section>
   </div>
 
-  <div class="midi-status" id="midiStatus">MIDI: searching…</div>
-
   <script>
     const cooking = new Map();
     const ready   = new Map();
 
-    async function initMIDI() {
-      const statusEl = document.getElementById('midiStatus');
-      if (!navigator.requestMIDIAccess) {
-        statusEl.textContent = 'MIDI: not supported';
-        return;
-      }
-      try {
-        const access = await navigator.requestMIDIAccess({ sysex: false });
-        const inputs = Array.from(access.inputs.values());
+    const audioQueue = [];
+    let isPlaying = false;
+    let lastAnnounceTime = 0;
+    let burstCount = 0;
 
-        let input = inputs.find(i =>
-          /iac/i.test(i.name) && /1/.test(i.name)
-        ) || inputs.find(i => /iac/i.test(i.name)) || inputs[0] || null;
+    const FULL_REENNOUNCE_GAP = 5500;
+    const BURST_WINDOW = 3200;
+    const INTER_CLIP_GAP = 180;
 
-        if (input) {
-          input.onmidimessage = onMIDIMessage;
-          statusEl.textContent = `MIDI ← ${input.name}`;
-        } else {
-          statusEl.textContent = 'MIDI: no inputs found';
-        }
+    const COOK_DURATION_MS = 4 * 60 * 1000; // 4 minutes
+    const ASYMPTOTE_K = 1.9;        
 
-        access.onstatechange = () => {
-          const ins = Array.from(access.inputs.values());
-          const prefer = ins.find(i =>
-            /iac/i.test(i.name) && /1/.test(i.name)
-          ) || ins[0];
-          if (prefer) {
-            prefer.onmidimessage = onMIDIMessage;
-            statusEl.textContent = `MIDI ← ${prefer.name}`;
+    function playClip(src) {
+      return new Promise((resolve) => {
+        const audio = new Audio(src);
+        audio.preload = 'auto';
+        const done = (e) => {
+          if (e && e.type === 'error') {
+            console.warn('[audio] failed to load/play', src, audio.error);
           }
+          audio.onended = null;
+          audio.onerror = null;
+          resolve();
         };
-      } catch (err) {
-        statusEl.textContent = 'MIDI: permission denied';
-        console.warn(err);
-      }
+        audio.onended = done;
+        audio.onerror = done;
+        audio.play().catch(err => {
+          console.warn('[audio] play() rejected (autoplay policy?)', src, err);
+          done();
+        });
+      });
     }
+
+    async function drainQueue() {
+      if (isPlaying) return;
+      isPlaying = true;
+      while (audioQueue.length > 0) {
+        const src = audioQueue.shift();
+        await playClip(src);
+        if (audioQueue.length > 0) {
+          await new Promise(r => setTimeout(r, INTER_CLIP_GAP));
+        }
+      }
+      isPlaying = false;
+    }
+
+    function enqueue(...srcs) {
+      const withPath = srcs.map(s => s.startsWith('audio/') ? s : `audio/${s}`);
+      audioQueue.push(...withPath);
+      console.log('[audio] queued', withPath);
+      drainQueue();
+    }
+
+    function pickSingular() {
+      return Math.random() < 0.5 ? 'singular.mp3' : 'singular2.mp3';
+    }
+
+    function pickMultiple() {
+      return Math.random() < 0.5 ? 'multiple.mp3' : 'multiple2.mp3';
+    }
+
+    function buildListAnnouncement(nums) {
+      if (nums.length === 0) return [];
+
+      if (nums.length === 1) {
+        const usePlease = Math.random() < 0.42;
+        if (usePlease) {
+          return [`${nums[0]}please.mp3`];
+        }
+        const files = [`${nums[0]}.mp3`];
+        if (Math.random() < 0.7) {
+          files.push(pickSingular());
+        }
+        return files;
+      }
+
+      const files = [];
+      for (let i = 0; i < nums.length; i++) {
+        const isLast = (i === nums.length - 1);
+        if (isLast) {
+          const usePlease = Math.random() < 0.38;
+          files.push(usePlease ? `and${nums[i]}please.mp3` : `and${nums[i]}.mp3`);
+        } else {
+          files.push(`${nums[i]}.mp3`);
+        }
+      }
+
+      const last = files[files.length - 1];
+      if (!last.includes('please')) {
+        files.push(pickMultiple());
+      }
+      return files;
+    }
+
+    function buildSingleAnnouncement(num) {
+      const usePlease = Math.random() < 0.40;
+      if (usePlease) {
+        return [`${num}please.mp3`];
+      }
+
+      const files = [`${num}.mp3`];
+      if (burstCount <= 2 && Math.random() < 0.75) {
+        files.push(pickSingular());
+      }
+      return files;
+    }
+
+    function announceReady(num) {
+      const now = Date.now();
+      const current = Array.from(ready.keys()).sort((a, b) => a - b);
+
+      if (now - lastAnnounceTime > BURST_WINDOW) {
+        burstCount = 0;
+      }
+      burstCount++;
+
+      if (now - lastAnnounceTime > FULL_REENNOUNCE_GAP && current.length > 0) {
+        enqueue(...buildListAnnouncement(current));
+        burstCount = 0;
+      } else {
+        enqueue(...buildSingleAnnouncement(num));
+      }
+
+      lastAnnounceTime = now;
+    }
+
+    async function initMIDI() {
+  if (!navigator.requestMIDIAccess) {
+    return;
+  }
+  try {
+    const access = await navigator.requestMIDIAccess({ sysex: false });
+    const inputs = Array.from(access.inputs.values());
+
+    let input = inputs.find(i =>
+      /iac/i.test(i.name) && /1/.test(i.name)
+    ) || inputs.find(i => /iac/i.test(i.name)) || inputs[0] || null;
+
+    if (input) {
+      input.onmidimessage = onMIDIMessage;
+    }
+
+    access.onstatechange = () => {
+      const ins = Array.from(access.inputs.values());
+      const prefer = ins.find(i =>
+        /iac/i.test(i.name) && /1/.test(i.name)
+      ) || ins[0];
+      if (prefer) {
+        prefer.onmidimessage = onMIDIMessage;
+      }
+    };
+  } catch (err) {
+    console.warn(err);
+  }
+}
 
     function onMIDIMessage(event) {
       const [status, note, velocity] = event.data;
@@ -291,9 +421,8 @@
       if (cooking.has(num)) return;
 
       if (ready.has(num)) {
-        ready.get(num).remove();
-        ready.delete(num);
-        updateReadyEmpty();
+        // If it was already ready, animate it out first
+        removeReady(num);
       }
 
       const list = document.getElementById('cookingList');
@@ -309,40 +438,82 @@
       `;
       list.appendChild(row);
       cooking.set(num, row);
+
+      // Start asymptotic progress
+      const bar = row.querySelector('.progress-bar');
+      const startTime = Date.now();
+
+      function tick() {
+        if (!cooking.has(num)) return; // stopped (order finished or cancelled)
+        const elapsed = Date.now() - startTime;
+        const t = elapsed / COOK_DURATION_MS;
+        // Asymptotic approach: ~94% at 4 min, continues slowly afterward
+        const progress = 1 - Math.exp(-ASYMPTOTE_K * t);
+        bar.style.width = Math.min(progress * 100, 99.2) + '%';
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
     }
 
     function moveToReady(num) {
       if (cooking.has(num)) {
-        cooking.get(num).remove();
-        cooking.delete(num);
-        if (cooking.size === 0) {
-          const list = document.getElementById('cookingList');
-          const empty = document.createElement('div');
-          empty.className = 'cooking-empty';
-          empty.id = 'cookingEmpty';
-          empty.textContent = 'No items cooking';
-          list.appendChild(empty);
-        }
+        const row = cooking.get(num);
+        cooking.delete(num); // stops the progress ticker immediately
+
+        const bar = row.querySelector('.progress-bar');
+        // Quick fill to 100%
+        bar.style.transition = 'width 0.42s cubic-bezier(0.22, 0.9, 0.3, 1)';
+        bar.style.width = '100%';
+
+        // After fill, fade the cooking row out, then add to ready
+        setTimeout(() => {
+          row.classList.add('leaving');
+          setTimeout(() => {
+            row.remove();
+            if (cooking.size === 0) {
+              const list = document.getElementById('cookingList');
+              if (!document.getElementById('cookingEmpty')) {
+                const empty = document.createElement('div');
+                empty.className = 'cooking-empty';
+                empty.id = 'cookingEmpty';
+                empty.textContent = 'No items cooking';
+                list.appendChild(empty);
+              }
+            }
+          }, 280);
+        }, 450);
       }
 
-      if (ready.has(num)) return;
+      // Add to ready (slight delay so it feels sequential with the fill)
+      setTimeout(() => {
+        if (ready.has(num)) return;
 
-      const list = document.getElementById('readyList');
-      document.getElementById('readyEmpty')?.remove();
+        const list = document.getElementById('readyList');
+        document.getElementById('readyEmpty')?.remove();
 
-      const item = document.createElement('div');
-      item.className = 'ready-item';
-      item.textContent = num;
-      list.appendChild(item);
-      ready.set(num, item);
+        const item = document.createElement('div');
+        item.className = 'ready-item';
+        item.textContent = num;
+        list.appendChild(item);
+        ready.set(num, item);
+
+        announceReady(num);
+      }, 520);
     }
 
     function removeReady(num) {
-      if (ready.has(num)) {
-        ready.get(num).remove();
+      if (!ready.has(num)) return;
+
+      const item = ready.get(num);
+      item.classList.add('removing');
+
+      // Allow the scale/fade to play, then clean up.
+      // Remaining items will reflow naturally after removal.
+      setTimeout(() => {
+        item.remove();
         ready.delete(num);
         updateReadyEmpty();
-      }
+      }, 340);
     }
 
     function updateReadyEmpty() {
@@ -357,13 +528,6 @@
         }
       }
     }
-
-    document.getElementById('readyList').addEventListener('click', (e) => {
-      const item = e.target.closest('.ready-item');
-      if (!item) return;
-      const num = parseInt(item.textContent, 10);
-      removeReady(num);
-    });
 
     initMIDI();
   </script>
