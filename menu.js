@@ -14,6 +14,7 @@
                 
                 <a href="https://biphtechtheater.github.io/tutorials/">⏯   Tutorials</a>
                 <a href="https://biphtechtheater.github.io/tutorials/qlab/">          • QLab</a>
+                <a href="https://biphtechtheater.github.io/tutorials/dmxis/">          • DMXIS</a>
                 <a href="https://biphtechtheater.github.io/tutorials/m32/">          • M32 Mixer</a>
                 <a href="https://biphtechtheater.github.io/tutorials/blackbox/">          • Black Box</a>
                 <a href="https://biphtechtheater.github.io/tutorials/auditorium/">          • Auditorium</a>
