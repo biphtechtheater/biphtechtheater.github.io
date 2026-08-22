@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upcoming Events</title>
+    <title>Tech Theater • Events</title>
     <link rel="icon" href="../icons/light-icon.png">
     <link rel="stylesheet" href="../common-styles.css">
     <style>
@@ -139,7 +139,8 @@
             line-height: 1.25;
             overflow-wrap: break-word;  
             word-break: break-word;
-            white-space: normal; 
+            /* white-space: normal;  */
+            white-space: pre-line;
             display: -webkit-box;
             -webkit-line-clamp: 3; 
             line-clamp: 3;
@@ -249,7 +250,6 @@
             "2026-11-29": [{ title: "Primary Art Exhibition", location: "3rd Floor Gallery" }],
             "2026-11-30": [{ title: "Primary Art Exhibition", location: "3rd Floor Gallery" }],
             "2026-12-09": [{ title: "Winter Art Exhibition", location: "3rd Floor Gallery" }],
-            "2026-12-11": [{ title: "Primary Winter Holiday Show", location: "Black Box" }],
             "2026-12-17": [{ title: "Winter Concert (Band + Choir)", location: "Lower Gym" }],
             "2027-01-15": [{ title: "End of Q2", type: "special" }],
             "2027-01-21": [{ title: "Thespian Showcase & Awards", location: "Black Box" }],
@@ -257,14 +257,14 @@
             "2027-03-11": [{ title: "Advanced/Capstone Play", location: "Black Box" }],
             "2027-03-18": [{ title: "Band Spring Concert", location: "Black Box" }],
             "2027-03-25": [{ title: "Choir Spring Concert", location: "Black Box" }],
-            "2027-04-02": [{ title: "End of Q3", type: "special" }],
+            "2027-04-02": [{ title: "End of Q3\nSenior Projects Begin", type: "special" }],
             "2027-04-14": [{ title: "Musical Theatre Club Performance", location: "Black Box" }],
             "2027-04-15": [{ title: "Musical Theatre Club Performance", location: "Black Box" }],
-            "2027-04-28": [{ title: "Upper Primary Play", location: "Black Box" }],
             "2027-06-10": [{ title: "BIPH Talent Show", location: "Lower Gym" }, { title: "End of Year!", type: "party" }]
         };
 
-        let currentDate = new Date(2026, 9, 1); // October 2026
+        let currentDate = new Date();
+        currentDate.setDate(1);
 
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
