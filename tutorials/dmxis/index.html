@@ -6,7 +6,6 @@
     <title>DMXIS Tutorials</title>
     <link rel="icon" href="../icons/dmxisicon.png">
     
-    <!-- Common styles -->
     <link rel="stylesheet" href="../../common-styles.css">
     
     <style>
@@ -43,11 +42,11 @@
         }
         
         .play-overlay {
-        background: rgba(242, 137, 31, 0.85);   /* --accent @ 0.85 */
+        background: rgba(242, 137, 31, 0.85);   
         }
 
         .video-card:hover .play-overlay {
-        background: rgba(224, 146, 80, 0.95);  /* --accent2 @ 0.95 */
+        background: rgba(224, 146, 80, 0.95); 
         }
         
         .modal-content {
@@ -117,13 +116,14 @@
         // Your tutorial videos - add as many as you want
         const videos = [
             {
-                id: "Ir7hT9VT2R8",
-                title: "DMXIS Tutorial | How to open the config folder",
+                id: "ib0rY1m2rQo",
+                title: "DMXIS Tutorial | What is the DmxConfig File?",
                 category: "basics",
-                duration: "0:11",
-                keywords: ["templates", "settings", "workspace", "new projects"],
-                description: "Navigating to the config folder can be slow. Use this QLab script cue instead!"
+                duration: "2:53",
+                keywords: ["settings", "config", "file management"],
+                description: "An explainer about what the config file is, how to navigate to, edit, and replace them when needed."
             },
+
         ];
 
         function renderGallery(filteredVideos) {
