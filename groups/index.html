@@ -590,9 +590,11 @@
                 case '6': case '7': currentIndex = 3; updateDisplay(); break;
                 // Press 'l' / 'L' to pick a random leader in each group
                 case 'l': case 'L':
+                if (!event.metaKey && !event.ctrlKey) {
                     event.preventDefault();
                     selectLeaders();
-                    break;
+                }
+                break;
             }
         });
 
