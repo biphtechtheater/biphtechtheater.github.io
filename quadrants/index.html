@@ -643,8 +643,8 @@
                 const panel = document.getElementById('editPanel');
                 if (panel.style.display === 'block') toggleEditPanel();
             }
-            // Press 'l' / 'L' to pick a random leader in each quadrant
-            if (e.key === 'l' || e.key === 'L') {
+
+            if ((e.key === 'l' || e.key === 'L') && !e.metaKey && !e.ctrlKey) {
                 e.preventDefault();
                 selectLeaders();
             }
