@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="BIPH Band">
     <link rel="apple-touch-icon" href="https://cdn.glitch.global/bed65df6-4eb8-4247-853c-e198a6399561/icons%2FBGicon.png">
    
-    <link rel="icon" href="../icons/BGicon.png">
+    <link rel="icon" href="../icons/light-icon.png">
     <style>
         :root {
             --accent: #4bdbff;
@@ -78,7 +78,6 @@
             box-shadow: 0 0 20px rgba(75, 219, 255, 0.35),
                         0 4px 18px rgba(0, 0, 0, 0.4);
             z-index: 50;
-            font-weight: 600;
             color: white;
         }
 
@@ -117,22 +116,42 @@
             z-index: 1;
         }
 
+        /* Title starts invisible. Only becomes a real visual + spatial obstacle once it has content. */
         .quad-input {
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 78%;
+            max-width: 300px;
+            height: auto;
+            min-height: 1.5em;
             background: transparent;
             border: none;
             color: #eee;
-            font-size: 1.85em;
+            font-size: 1.3em;
             text-align: center;
             outline: none;
-            padding: 0 20px;
+            padding: 10px 18px;
             box-sizing: border-box;
             font-family: inherit;
+            opacity: 0;
+            transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            z-index: 20;
+            border-radius: 14px;
+            pointer-events: auto;
+        }
+
+        .quad-input:focus,
+        .quad-input:not(:placeholder-shown) {
+            opacity: 1;
+            background: rgba(8, 8, 8, 0.72);
+            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.45);
         }
 
         .quad-input::placeholder {
             color: var(--muted);
+            opacity: 0.55;
         }
 
         .shuffle-btn:hover {
@@ -307,6 +326,7 @@
         const container = document.querySelector('.container');
         const shuffleBtn = document.querySelector('.shuffle-btn');
         let isInputFocused = false;
+
         // Make element draggable
         function makeDraggable(element) {
             let offsetX, offsetY;
@@ -323,6 +343,7 @@
                 element.style.zIndex = 1000;
             });
         }
+
         function onMouseMove(e) {
             if (!isDragging || !draggedElement) return;
             const containerRect = container.getBoundingClientRect();
@@ -334,6 +355,7 @@
             draggedElement.style.left = `${newLeft}px`;
             draggedElement.style.top = `${newTop}px`;
         }
+
         function onMouseUp() {
             if (draggedElement) {
                 draggedElement.style.transition = 'all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)';
@@ -342,6 +364,7 @@
             isDragging = false;
             draggedElement = null;
         }
+
         function initRoster() {
             if (typeof ttStudents !== 'undefined' && ttStudents.length > 0) {
                 currentStudents = ttStudents.slice();
@@ -351,6 +374,7 @@
             }
             createStudentElements();
         }
+
         function createStudentElements() {
             studentElements.forEach(el => el.remove());
             studentElements = [];
@@ -367,6 +391,7 @@
                 makeDraggable(div);
             });
         }
+
         function toggleEditPanel() {
             const panel = document.getElementById('editPanel');
             if (panel.style.display === 'block') {
@@ -376,6 +401,18 @@
                 panel.style.display = 'block';
             }
         }
+
+        function fitQuadText(input) {
+            // Always start from the preferred size
+            input.style.fontSize = '1.3em';
+            let size = 1.3;
+            // Shrink until the text fits (or we hit a readable minimum)
+            while (input.scrollWidth > input.clientWidth && size > 0.75) {
+                size -= 0.04;
+                input.style.fontSize = size + 'em';
+            }
+        }
+
         function refreshStudentList() {
             const list = document.getElementById('studentList');
             list.innerHTML = '';
@@ -396,12 +433,14 @@
                 list.appendChild(div);
             });
         }
+
         function removeStudent(index) {
             if (index < 0 || index >= currentStudents.length) return;
             currentStudents.splice(index, 1);
             refreshStudentList();
             createStudentElements();
         }
+
         function resetToFullRoster() {
             if (typeof ttStudents !== 'undefined') {
                 currentStudents = ttStudents.slice();
@@ -409,18 +448,23 @@
                 createStudentElements();
             }
         }
+
         function getRandomPositionInQuadrant(quadIndex, existingPositions, minDistance = 95) {
             const rect = container.getBoundingClientRect();
             const qWidth = rect.width / 2;
             const qHeight = rect.height / 2;
             const baseX = (quadIndex % 2) * qWidth;
             const baseY = Math.floor(quadIndex / 2) * qHeight;
+
             const maxAttempts = 80;
             let attempts = 0;
             while (attempts < maxAttempts) {
                 attempts++;
-                const x = baseX + 80 + Math.random() * (qWidth - 160);
-                const y = baseY + 70 + Math.random() * (qHeight - 140);
+                // Slightly larger edge margins so names don’t hug the borders
+                const marginX = 75;
+                const marginY = 65;
+                const x = baseX + marginX + Math.random() * (qWidth - 2 * marginX);
+                const y = baseY + marginY + Math.random() * (qHeight - 2 * marginY);
                 let tooClose = false;
                 for (const pos of existingPositions) {
                     const dx = x - pos.x;
@@ -432,11 +476,15 @@
                 }
                 if (!tooClose) return { x, y };
             }
+            // Fallback
+            const marginX = 75;
+            const marginY = 65;
             return {
-                x: baseX + 80 + Math.random() * (qWidth - 160),
-                y: baseY + 70 + Math.random() * (qHeight - 140)
+                x: baseX + marginX + Math.random() * (qWidth - 2 * marginX),
+                y: baseY + marginY + Math.random() * (qHeight - 2 * marginY)
             };
         }
+
         function shuffle() {
             // Clear any existing leaders when reshuffling
             clearLeaders();
@@ -451,45 +499,99 @@
                 shuffleBtn.style.borderColor = '';
                 shuffleBtn.style.color = '';
             }, 180);
+
             studentElements.forEach(s => s.style.opacity = '1');
             const quadrants = [[], [], [], []];
             const shuffledStudents = [...studentElements].sort(() => Math.random() - 0.5);
             shuffledStudents.forEach((student, i) => {
                 quadrants[i % 4].push(student);
             });
+
+            const inputs = document.querySelectorAll('.quad-input');
+            const rect = container.getBoundingClientRect();
+            const qWidth = rect.width / 2;
+            const qHeight = rect.height / 2;
+
             quadrants.forEach((quadStudents, qIndex) => {
                 const positions = [];
+
+                // If this quadrant has a title, treat its center as a hard obstacle
+                if (inputs[qIndex] && inputs[qIndex].value.trim()) {
+                    const baseX = (qIndex % 2) * qWidth;
+                    const baseY = Math.floor(qIndex / 2) * qHeight;
+                    positions.push({
+                        x: baseX + qWidth / 2,
+                        y: baseY + qHeight / 2
+                    });
+                }
+
+                const minDist = (inputs[qIndex] && inputs[qIndex].value.trim()) ? 135 : 95;
+
                 quadStudents.forEach(student => {
-                    const pos = getRandomPositionInQuadrant(qIndex, positions);
+                    const pos = getRandomPositionInQuadrant(qIndex, positions, minDist);
                     positions.push(pos);
                     student.style.left = `${pos.x}px`;
                     student.style.top = `${pos.y}px`;
                 });
             });
         }
+
+        // Gently re-place only the students that are currently in one quadrant
+        // (used when a title is typed so names immediately clear the text)
+        function reflowQuadrant(qIndex) {
+            const quads = getStudentsByQuadrant();
+            const students = quads[qIndex];
+            if (!students.length) return;
+
+            const positions = [];
+            const inputs = document.querySelectorAll('.quad-input');
+            const rect = container.getBoundingClientRect();
+            const qWidth = rect.width / 2;
+            const qHeight = rect.height / 2;
+
+            if (inputs[qIndex] && inputs[qIndex].value.trim()) {
+                const baseX = (qIndex % 2) * qWidth;
+                const baseY = Math.floor(qIndex / 2) * qHeight;
+                positions.push({
+                    x: baseX + qWidth / 2,
+                    y: baseY + qHeight / 2
+                });
+            }
+
+            const minDist = (inputs[qIndex] && inputs[qIndex].value.trim()) ? 135 : 95;
+
+            students.forEach(student => {
+                const pos = getRandomPositionInQuadrant(qIndex, positions, minDist);
+                positions.push(pos);
+                student.style.left = `${pos.x}px`;
+                student.style.top = `${pos.y}px`;
+            });
+        }
+
         // ===== Leader selection =====
         function clearLeaders() {
             studentElements.forEach(el => el.classList.remove('leader'));
         }
+
         function getStudentsByQuadrant() {
             const rect = container.getBoundingClientRect();
             const midX = rect.width / 2;
             const midY = rect.height / 2;
             const quads = [[], [], [], []]; // 0:TL, 1:TR, 2:BL, 3:BR
             studentElements.forEach(el => {
-                // Use the current center position of the element
                 const left = parseFloat(el.style.left) || 0;
                 const top = parseFloat(el.style.top) || 0;
                 let q;
                 if (top < midY) {
-                    q = left < midX ? 0 : 1; // top row
+                    q = left < midX ? 0 : 1;
                 } else {
-                    q = left < midX ? 2 : 3; // bottom row
+                    q = left < midX ? 2 : 3;
                 }
                 quads[q].push(el);
             });
             return quads;
         }
+
         function selectLeaders() {
             clearLeaders();
             const quads = getStudentsByQuadrant();
@@ -499,17 +601,38 @@
                 leader.classList.add('leader');
             });
         }
+
         // Event Listeners
         shuffleBtn.addEventListener('click', shuffle);
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-        document.querySelectorAll('.quad-input').forEach(input => {
+
+        document.querySelectorAll('.quad-input').forEach((input, idx) => {
             input.addEventListener('focus', () => isInputFocused = true);
-            input.addEventListener('blur', () => isInputFocused = false);
+
+            input.addEventListener('blur', () => {
+                isInputFocused = false;
+                fitQuadText(input);       // final fit in case needed
+                reflowQuadrant(idx);      // confirm → reflow
+            });
+
             input.addEventListener('keydown', e => {
-                if (e.key === 'Escape') input.blur();
+    if (e.key === 'Escape') {
+        input.blur();
+    }
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();   // ← prevents the global shuffle hotkey
+        input.blur();          // confirms the text + triggers reflow
+    }
+});
+
+            // Only shrink font while typing – no reflow here
+            input.addEventListener('input', () => {
+                fitQuadText(input);
             });
         });
+
         document.addEventListener('keydown', e => {
             if (isInputFocused || isDragging) return;
             if (e.key === ' ' || e.key === 'Enter') {
@@ -526,6 +649,7 @@
                 selectLeaders();
             }
         });
+
         window.addEventListener('resize', () => {
             const rect = container.getBoundingClientRect();
             const centerX = rect.width / 2;
@@ -536,10 +660,12 @@
             });
             clearLeaders();
         });
+
         window.addEventListener('load', () => {
             initRoster();
             setTimeout(shuffle, 400);
         });
+
         // Close modal when clicking outside
         document.addEventListener('click', function(event) {
             const panel = document.getElementById('editPanel');
