@@ -3,224 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIPH Tech Theater</title>
-    <link rel="icon" href="icons/light-icon.png">
-    <link rel="stylesheet" href="common-styles.css">
+    <title>Tech Theater • Tutorials</title>
+    <link rel="icon" href="../icons/light-icon.png">
+    <link rel="stylesheet" href="../common-styles.css">
+    
     <style>
         :root {
-            --accent: #4bdbff;
-            --accent-dark: #3b7ccc;
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --border: #333;
+            --text: #eee;
+            --muted: #aaa;
+            --accent: #9f4bff;
         }
-
+        
         body {
-            background: #0a0a0a;
-            color: #eee;
+            background: var(--bg);
+            color: var(--text);
         }
 
-        .hero {
-            height: 520px;
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), 
-                        url('images/backstage.jpg') center/cover no-repeat;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            margin: -20px -20px 60px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .hero-content {
-            max-width: 720px;
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
             padding: 0 20px;
         }
 
-        .hero h1 {
-            font-size: 4.2rem;
-            line-height: 75%;
-            font-weight: 200;
-            letter-spacing: -2px;
-            margin-bottom: 12px;
-            color: white;
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 10px;
         }
 
-        .hero p {
-            font-size: 1.35rem;
-            color: #ccc;
-            margin-bottom: 32px;
+        .page-description {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 60px;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .cta-buttons {
+        .platforms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 32px;
+        }
+
+        .platform-card {
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            height: 100%;
+        }
+
+        .platform-card:hover {
+            box-shadow: 0 20px 25px -10px rgb(0 0 0 / 0.5);
+        }
+
+        /* Hover borders + Button colors per card */
+        .qlab-card:hover      { border-color: #9f4bff; }
+        .m32-card:hover       { border-color: #ffdf61; }
+        .blackbox-card:hover  { border-color: #00b4ff; }
+        .auditorium-card:hover{ border-color: #00cc99; }
+        .mobile-card:hover    { border-color: #ef6b5c; }
+
+        .platform-header {
+            height: 240px;
             display: flex;
-            gap: 16px;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
+            overflow: hidden;
+        }
+
+        .platform-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .platform-card:hover .platform-logo {
+            transform: scale(1.05);
+        }
+
+        .platform-content {
+            padding: 28px;
+        }
+
+        .platform-title {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .platform-desc {
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
         }
 
         .btn {
+            display: inline-block;
             padding: 14px 32px;
-            font-size: 1.1rem;
+            font-weight: 600;
             border-radius: 9999px;
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.25s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
+            transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .btn-primary:hover {
-            background: white;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid rgba(255,255,255,0.6);
-        }
-
-        .btn-secondary:hover {
-            border-color: white;
-            transform: translateY(-1px);
-            background: rgba(255,255,255,0.1);
-        }
-
-        /* Logo */
-        .logo-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 80px;
-            justify-items: center;
-        }
-
-        .link-card {
-            width: 70%;
-            max-width: 1000px;
-            min-width: 500px;
-            margin: 0 auto;
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 16px;
-            padding: 32px 28px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            color: inherit;
-            overflow: hidden;
-            box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.10);
-            z-index: 10;
-        }
-
-        .link-card:hover {
-            box-shadow: 0 2px 50px 5px rgba(75, 204, 255, 0.3);
-            border-color: var(--accent);
-        }
-
-        .link-card .icon {
-            font-size: 3.8rem;
-            margin-bottom: 5px;
-            margin-top: -20px;
-            transition: all 0.4s ease;
-            display: block;
-        }
-
-        .link-card:hover .icon {
-            transform: rotate(0.2deg);
-            color: var(--accent);
-        }
-
-        .link-card h3 {
-            font-size: 1.65rem;
-            margin-bottom: 12px;
-            color: white;
-            transition: color 0.3s ease;
-        }
-
-        .link-card:hover h3 {
-            color: var(--accent);
-        }
-
-        .link-card h3 {
-            position: relative;
-            display: inline-block;
-        }
-
-        .link-card h3::after {
-            content: '';
-            position: absolute;
-            bottom: 6px; 
-            left: 0;
-            width: 100%;
-            height: 1.5px;
-            background: var(--accent);
-            opacity: 0;
-            transform: scaleX(0.95); 
-            transition: all 0.35s ease;
-        }
-
-        .link-card h3:hover::after {
-            opacity: 1;
-            transform: scaleX(1);
-        }
-
-        .link-card p {
-            color: var(--muted);
-            line-height: 1.6;
+        .btn:hover {
+            filter: brightness(1.25);
         }
     </style>
 </head>
 <body>
     <div id="shared-menu"></div>
-    <script src="menu.js"></script>
+    <div id="shared-header"></div>
 
-<header>
-    <div class="logo-container">
-        <div class="logo-icon" style="width: 90px; height: 78px; margin-top: 5px; margin-right: -18px;">
-            <img src="icons/TechTheaterLogo.png" style="height: 80px;" alt="BIPH Tech Theater Logo">
-        </div>
-        <div>
-            <div class="header-logo" style="line-height: 85%; margin-bottom: 18px; margin-left: -1px;">BIPH Technical Theatre</div>
-            <div class="header-subtitle">2026-2027</div>
-        </div>
-    </div>
-</header>
+    <div class="container">
+        <h1>Tutorials</h1>
+        <p class="page-description">
+            Instructional videos for a wide range of our production tools
+        </p>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Find your crew</h1>
-            <p>Lighting • Sound • Video • Programming • Event Design</p>
-            <div class="cta-buttons">
-                <a href="https://biphtechtheater.github.io/tutorials/" class="btn btn-primary">Browse Tutorials</a>
-                <a href="https://biphtechtheater.github.io/files/" class="btn btn-secondary">Latest Files</a>
-            </div>
-        </div>
-    </section>
+        <div class="platforms">
+            <!-- QLab -->
+            <a href="qlab/" class="platform-card qlab-card">
+                <div class="platform-header qlab-header">
+                    <img src="images/qlab.png" alt="QLab" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #9f4bff;">QLab</h2>
+                    <p class="platform-desc">
+                        Cue-based playback, video, audio, lighting, MIDI, and advanced show control.
+                    </p>
+                    <span class="btn" style="background-color: #9f4bff; color: #000;">Browse QLab Tutorials →</span>
+                </div>
+            </a>
 
-    <main style="max-width: 1280px; margin: 0 auto; padding: 0 20px;">
-        
-        <div class="quick-links">
-            <a href="https://biphtechtheater.github.io/events" class="link-card">
-                <div class="icon">📅</div>
-                <h3>Upcoming Events</h3>
-                <p>Concerts, drama shows, club outputs, sporting events, games, art installations, you name it!</p>
+                        <!-- DMXIS -->
+            <a href="dmxis/" class="platform-card dmxis-card">
+                <div class="platform-header dmxis-header">
+                    <img src="images/dmxis.png" alt="DMXIS" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #ff8100;">DMXIS</h2>
+                    <p class="platform-desc">
+                        Digital, programmable, cueable, cross-platform, DMX512 lighting control.
+                    </p>
+                    <span class="btn" style="background-color: #ff8100; color: #000;">Browse DMXIS Tutorials →</span>
+                </div>
+            </a>
+
+            <!-- Midas M32 -->
+            <a href="m32/" class="platform-card m32-card">
+                <div class="platform-header m32-header">
+                    <img src="images/m32.png" alt="Midas M32" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #ffdf61;">Midas M32</h2>
+                    <p class="platform-desc">
+                        Digital mixing console techniques, routing, effects, scenes, and live sound.
+                    </p>
+                    <span class="btn" style="background-color: #ffdf61; color: #000;">Browse M32 Tutorials →</span>
+                </div>
+            </a>
+
+            <!-- Black Box Theater -->
+            <a href="blackbox/" class="platform-card blackbox-card">
+                <div class="platform-header blackbox-header">
+                    <img src="images/blackbox2.jpg" alt="Black Box" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #5cceff;">Black Box Theater</h2>
+                    <p class="platform-desc">
+                        Power distribution, cables, lighting, LED screen setup, and other equipment.
+                    </p>
+                    <span class="btn" style="background-color: #00b4ff; color: #000;">Browse Black Box Tutorials →</span>
+                </div>
+            </a>
+
+            <!-- Auditorium -->
+            <a href="auditorium/" class="platform-card auditorium-card">
+                <div class="platform-header auditorium-header">
+                    <img src="images/auditorium.png" alt="Auditorium" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #00cc99;">Auditorium</h2>
+                    <p class="platform-desc">
+                        Audio mixer, LED screen, lighting, podium, and wireless microphones.
+                    </p>
+                    <span class="btn" style="background-color: #00cc99; color: #000;">Browse Auditorium Tutorials →</span>
+                </div>
+            </a>
+
+            <!-- Mobile Setup -->
+            <a href="mobile/" class="platform-card mobile-card">
+                <div class="platform-header mobile-header">
+                    <img src="images/mobilesetup.jpg" alt="Mobile Setup" class="platform-logo">
+                </div>
+                <div class="platform-content">
+                    <h2 class="platform-title" style="color: #ef6b5c;">Mobile Setup</h2>
+                    <p class="platform-desc">
+                        Lighting trees, spotlight, speakers, amplifiers, and equipment transport.
+                    </p>
+                    <span class="btn" style="background-color: #ef6b5c; color: #000;">Browse Mobile Setup Tutorials →</span>
+                </div>
             </a>
         </div>
-        
-        <div class="biph-logocontainer">        
-            <img src="icons/Full Logo White on Transparent.png" class="biph-logo">
-        </div>
-    </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../menu.js"></script>
+    <script src="../header.js"></script>
+
+    <script>
+        console.log('%cBIPH Tech Theater Tutorials loaded', 'color: #9f4bff; font-size: 13px;');
+    </script>
 </body>
 </html>
