@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capstone Technical Theatre | BIPH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Ambient light layers -->
+  <div class="ambient" aria-hidden="true">
+    <div class="light-orb orb-1"></div>
+    <div class="light-orb orb-2"></div>
+    <div class="light-orb orb-3"></div>
+    <div class="light-orb orb-4"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Progress rail -->
+  <div class="progress-rail" aria-hidden="true">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Slide counter -->
+  <div class="slide-counter" id="slideCounter">
+    <span class="current">01</span>
+    <span class="divider">/</span>
+    <span class="total">08</span>
+  </div>
+
+  <!-- Navigation hints -->
+  <div class="nav-hint" id="navHint">
+    <span>Click or press → to advance</span>
+  </div>
+
+  <!-- Main stage -->
+  <main class="stage" id="stage">
+
+    <!-- SLIDE 0: Title -->
+    <section class="slide active" data-slide="0">
+      <div class="slide-inner">
+        <div class="glass-card hero-card">
+          <p class="eyebrow">BIPH Tech Theater</p>
+          <h1 class="hero-title">
+            <span class="line">Capstone</span>
+            <span class="line accent">Technical Theatre</span>
+          </h1>
+          <p class="hero-sub">Lighting · Video · Sound</p>
+          <div class="hero-cta">
+            <span class="pulse-dot"></span>
+            Enter the booth
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 1: Course Overview -->
+    <section class="slide" data-slide="1">
+      <div class="slide-inner">
+        <div class="glass-card content-card">
+          <p class="eyebrow">The Course</p>
+          <h2>Hands-on production technology</h2>
+          <div class="pillars">
+            <div class="pillar">
+              <div class="pillar-icon light">💡</div>
+              <h3>Lighting</h3>
+              <p>Design, control, DMX</p>
+            </div>
+            <div class="pillar">
+              <div class="pillar-icon video">🎬</div>
+              <h3>Video</h3>
+              <p>Playback, switching, mapping</p>
+            </div>
+            <div class="pillar">
+              <div class="pillar-icon sound">🔊</div>
+              <h3>Sound</h3>
+              <p>Signal flow, cues, live mix</p>
+            </div>
+          </div>
+          <p class="tagline">Equipment · Software · Creative problem-solving</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Philosophy -->
+    <section class="slide" data-slide="2">
+      <div class="slide-inner wide">
+        <div class="glass-card quote-card">
+          <p class="eyebrow">Philosophy</p>
+          <blockquote>
+            Master the tools.<br />
+            Shape the light.<br />
+            <span class="accent">Own the show.</span>
+          </blockquote>
+          <p class="support">Student-led projects power real school events — concerts, drama, clubs, installations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Q1 -->
+    <section class="slide" data-slide="3">
+      <div class="slide-inner">
+        <div class="glass-card quarter-card q1">
+          <div class="q-badge">Q1</div>
+          <h2>QLab Fundamentals</h2>
+          <p class="q-focus">Basic Cues</p>
+          <ul class="skill-list">
+            <li><span class="dot"></span> Interface mastery</li>
+            <li><span class="dot"></span> Music · Video · Text cues</li>
+            <li><span class="dot"></span> Starts, stops & fades</li>
+            <li><span class="dot"></span> Group + independent projects</li>
+          </ul>
+          <div class="q-footer">Design your first production setups</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Q2 -->
+    <section class="slide" data-slide="4">
+      <div class="slide-inner">
+        <div class="glass-card quarter-card q2">
+          <div class="q-badge">Q2</div>
+          <h2>Physical Systems</h2>
+          <p class="q-focus">Hardware & Signal</p>
+          <ul class="skill-list">
+            <li><span class="dot"></span> Cable types & routing</li>
+            <li><span class="dot"></span> MIDI + DMX protocols</li>
+            <li><span class="dot"></span> Sound fundamentals · EQ · Feedback</li>
+            <li><span class="dot"></span> Digital & analog interfaces</li>
+          </ul>
+          <div class="q-footer">Configure real production chains</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Q3 -->
+    <section class="slide" data-slide="5">
+      <div class="slide-inner">
+        <div class="glass-card quarter-card q3">
+          <div class="q-badge">Q3</div>
+          <h2>Integrated Design</h2>
+          <p class="q-focus">Systems Thinking</p>
+          <ul class="skill-list">
+            <li><span class="dot"></span> Triggers & nested groups</li>
+            <li><span class="dot"></span> MIDI cues → lighting control</li>
+            <li><span class="dot"></span> Mixer configurations</li>
+            <li><span class="dot"></span> I/O troubleshooting</li>
+          </ul>
+          <div class="q-footer">Execute cohesive show designs</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: Q4 -->
+    <section class="slide" data-slide="6">
+      <div class="slide-inner">
+        <div class="glass-card quarter-card q4">
+          <div class="q-badge">Q4</div>
+          <h2>Advanced Techniques</h2>
+          <p class="q-focus">Mastery</p>
+          <ul class="skill-list">
+            <li><span class="dot"></span> Audio & video effects · looping</li>
+            <li><span class="dot"></span> Live video switching (ATEM)</li>
+            <li><span class="dot"></span> OSC + AppleScript integration</li>
+            <li><span class="dot"></span> Student-led independent projects</li>
+          </ul>
+          <div class="q-footer">Real-world production scenarios</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Outcomes / Close -->
+    <section class="slide" data-slide="7">
+      <div class="slide-inner">
+        <div class="glass-card close-card">
+          <p class="eyebrow">Outcomes</p>
+          <h2>Leave ready to run the room</h2>
+          <div class="outcome-grid">
+            <div class="outcome">
+              <span class="num">01</span>
+              <p>Operate industry tools with confidence</p>
+            </div>
+            <div class="outcome">
+              <span class="num">02</span>
+              <p>Design cohesive lighting, video & sound</p>
+            </div>
+            <div class="outcome">
+              <span class="num">03</span>
+              <p>Lead collaborative production teams</p>
+            </div>
+            <div class="outcome">
+              <span class="num">04</span>
+              <p>Deliver for real community events</p>
+            </div>
+          </div>
+          <div class="final-line">
+            <span class="accent">Find your crew.</span> Own the tech.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Keyboard / click capture -->
+  <div class="click-layer" id="clickLayer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
