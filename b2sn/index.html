@@ -1704,20 +1704,22 @@ body.fading-to-black .final-line {
       next();
     }
   });
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" || e.key === "PageUp") {
-      e.preventDefault();
-      prev();
-    } else if (
-      e.key === "ArrowRight" ||
-      e.key === " " ||
-      e.key === "PageDown"
-    ) {
-      e.preventDefault();
-      next();
-    }
-  });
+  
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft" || e.key === "PageUp") {
+    e.preventDefault();
+    prev();
+  } else if (e.key === "ArrowDown" || e.key === "PageDown") {
+    e.preventDefault();
+    prev(); // down same as left
+  } else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+    e.preventDefault();
+    next();
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    next(); // up same as right
+  }
+});
 
   let touchStartX = 0;
   let touchStartY = 0;
