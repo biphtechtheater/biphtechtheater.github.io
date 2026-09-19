@@ -26,6 +26,7 @@
     }
 
     /* ========== SPLASH / HERO ========== */
+
     #start-overlay {
       position: fixed;
       inset: 0;
@@ -61,6 +62,7 @@
         opacity: 0;
         transform: translateY(28px) scale(0.96);
       }
+
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -143,7 +145,6 @@
       50% { box-shadow: 0 6px 28px rgba(13, 71, 161, 0.55); }
     }
 
-    /* subtle floating particles */
     .particle {
       position: absolute;
       width: 8px;
@@ -155,13 +156,27 @@
     }
 
     @keyframes drift {
-      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 0.6; }
-      100% { transform: translateY(-20vh) scale(1.1); opacity: 0; }
+      0% {
+        transform: translateY(100vh) scale(0.6);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 0.6;
+      }
+
+      100% {
+        transform: translateY(-20vh) scale(1.1);
+        opacity: 0;
+      }
     }
 
     /* ========== MAIN LAYOUT ========== */
+
     .layout {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -200,8 +215,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(0.85); }
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.45;
+        transform: scale(0.85);
+      }
     }
 
     .ready-list {
@@ -239,8 +261,9 @@
       animation: popIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
       cursor: default;
       pointer-events: none;
-      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity 0.32s ease;
+      transition:
+        transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.32s ease;
     }
 
     .ready-item.removing {
@@ -249,11 +272,19 @@
     }
 
     @keyframes popIn {
-      from { transform: scale(0.3); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
+      from {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
-    .ready-empty {
+    .ready-empty,
+    .cooking-empty {
       font-size: clamp(16px, 1.6vw, 24px);
       color: #90a4ae;
       font-style: italic;
@@ -280,6 +311,7 @@
     .cooking-list::-webkit-scrollbar {
       width: 6px;
     }
+
     .cooking-list::-webkit-scrollbar-thumb {
       background: rgba(13,71,161,0.2);
     }
@@ -302,8 +334,15 @@
     }
 
     @keyframes slideIn {
-      from { transform: translateX(-30px); opacity: 0; }
-      to   { transform: translateX(0); opacity: 1; }
+      from {
+        transform: translateX(-30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
 
     .cooking-num {
@@ -344,19 +383,114 @@
       will-change: width;
     }
 
-    .cooking-empty {
-      font-size: clamp(16px, 1.6vw, 24px);
-      color: #90a4ae;
-      font-style: italic;
-      margin-top: 1vh;
+    /* ========== WEBRTC MODAL ========== */
+
+    #webrtc-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0,0,0,0.42);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      pointer-events: auto;
+    }
+
+    #webrtc-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(420px, calc(100vw - 32px));
+      z-index: 10001;
+      background: rgba(255,255,255,.97);
+      border: 2px solid #90caf9;
+      border-radius: 16px;
+      padding: 18px;
+      color: #0d47a1;
+      font-family: system-ui, sans-serif;
+      pointer-events: auto;
+      box-shadow: 0 18px 50px rgba(13,71,161,.22);
+    }
+
+    #webrtc-panel h2 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      letter-spacing: .04em;
+    }
+
+    #connection-status {
+      font-size: 12px;
+      line-height: 1.35;
+      color: #546e7a;
+      margin-bottom: 12px;
+      min-height: 16px;
+    }
+
+    .rtc-textarea {
+      width: 100%;
+      height: 78px;
+      resize: none;
+      border: 1px solid #90caf9;
+      border-radius: 8px;
+      background: #f5fbff;
+      color: #263238;
+      padding: 8px;
+      font: 10px/1.25 ui-monospace, monospace;
+      user-select: text;
+      -webkit-user-select: text;
+      pointer-events: auto;
+    }
+
+    .rtc-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 8px;
+      background: #0d47a1;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .rtc-btn:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+
+    #create-answer {
+      margin-top: 8px;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 <body>
 
+  <!-- ========== WEBRTC MODAL ========== -->
+
+  <div id="webrtc-backdrop"></div>
+
+  <div id="webrtc-panel">
+    <h2>WEBRTC • DISPLAY</h2>
+    <div id="connection-status">Paste the offer from CONTROL below.</div>
+
+    <textarea
+      id="offer"
+      class="rtc-textarea"
+      placeholder="Paste the offer here"
+    ></textarea>
+
+    <button class="rtc-btn" id="create-answer">
+      Generate answer
+    </button>
+  </div>
+
   <!-- ========== SPLASH SCREEN ========== -->
+
   <div id="start-overlay">
-    <!-- floating particles -->
     <div class="particle" style="left:12%; animation-delay:0s; width:6px; height:6px;"></div>
     <div class="particle" style="left:28%; animation-delay:2.5s; width:10px; height:10px;"></div>
     <div class="particle" style="left:55%; animation-delay:1.2s; width:7px; height:7px;"></div>
@@ -367,21 +501,27 @@
       <div class="hero-image-wrap">
         <img src="malatang.png" alt="Malatang" />
       </div>
+
       <div class="splash-title">MALATANG</div>
       <div class="splash-subtitle">Fresh and ready to go!</div>
+
       <button id="start-btn">TAP TO START</button>
     </div>
   </div>
 
   <!-- ========== MAIN BOARD ========== -->
+
   <div class="layout">
     <section class="ready-section">
       <div class="section-title">
         <span class="dot"></span>
         READY FOR PICKUP
       </div>
+
       <div class="ready-list" id="readyList">
-        <div class="ready-empty" id="readyEmpty">Waiting for orders…</div>
+        <div class="ready-empty" id="readyEmpty">
+          Waiting for orders…
+        </div>
       </div>
     </section>
 
@@ -390,15 +530,18 @@
         <span class="dot"></span>
         CURRENTLY COOKING
       </div>
+
       <div class="cooking-list" id="cookingList">
-        <div class="cooking-empty" id="cookingEmpty">No items cooking</div>
+        <div class="cooking-empty" id="cookingEmpty">
+          No items cooking
+        </div>
       </div>
     </section>
   </div>
 
   <script>
     const cooking = new Map();
-    const ready   = new Map();
+    const ready = new Map();
 
     const audioQueue = [];
     let isPlaying = false;
@@ -406,28 +549,32 @@
     let burstCount = 0;
 
     const FULL_REENNOUNCE_GAP = 7500;
-    const BURST_WINDOW = 3000; 
+    const BURST_WINDOW = 3000;
     const INTER_CLIP_GAP = 0;
 
-    const COOK_DURATION_MS = 4 * 60 * 1000; // 4 minutes
-    const ASYMPTOTE_K = 1.9;        
+    const COOK_DURATION_MS = 4 * 60 * 1000;
+    const ASYMPTOTE_K = 1.9;
 
     function playClip(src) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const audio = new Audio(src);
         audio.preload = 'auto';
-        const done = (e) => {
+
+        const done = e => {
           if (e && e.type === 'error') {
             console.warn('[audio] failed to load/play', src, audio.error);
           }
+
           audio.onended = null;
           audio.onerror = null;
           resolve();
         };
+
         audio.onended = done;
         audio.onerror = done;
+
         audio.play().catch(err => {
-          console.warn('[audio] play() rejected (autoplay policy?)', src, err);
+          console.warn('[audio] play() rejected', src, err);
           done();
         });
       });
@@ -435,30 +582,41 @@
 
     async function drainQueue() {
       if (isPlaying) return;
+
       isPlaying = true;
+
       while (audioQueue.length > 0) {
         const src = audioQueue.shift();
+
         await playClip(src);
+
         if (audioQueue.length > 0) {
           await new Promise(r => setTimeout(r, INTER_CLIP_GAP));
         }
       }
+
       isPlaying = false;
     }
 
     function enqueue(...srcs) {
-      const withPath = srcs.map(s => s.startsWith('audio/') ? s : `audio/${s}`);
+      const withPath = srcs.map(s =>
+        s.startsWith('audio/') ? s : `audio/${s}`
+      );
+
       audioQueue.push(...withPath);
-      console.log('[audio] queued', withPath);
       drainQueue();
     }
 
     function pickSingular() {
-      return Math.random() < 0.5 ? 'singular.mp3' : 'singular2.mp3';
+      return Math.random() < 0.5
+        ? 'singular.mp3'
+        : 'singular2.mp3';
     }
 
     function pickMultiple() {
-      return Math.random() < 0.5 ? 'multiple.mp3' : 'multiple2.mp3';
+      return Math.random() < 0.5
+        ? 'multiple.mp3'
+        : 'multiple2.mp3';
     }
 
     function buildListAnnouncement(nums) {
@@ -466,57 +624,78 @@
 
       if (nums.length === 1) {
         const usePlease = Math.random() < 0.42;
+
         if (usePlease) {
           return [`${nums[0]}please.mp3`];
         }
+
         const files = [`${nums[0]}.mp3`];
+
         if (Math.random() < 0.7) {
           files.push(pickSingular());
         }
+
         return files;
       }
 
       const files = [];
+
       for (let i = 0; i < nums.length; i++) {
-        const isLast = (i === nums.length - 1);
+        const isLast = i === nums.length - 1;
+
         if (isLast) {
           const usePlease = Math.random() < 0.38;
-          files.push(usePlease ? `and${nums[i]}please.mp3` : `and${nums[i]}.mp3`);
+
+          files.push(
+            usePlease
+              ? `and${nums[i]}please.mp3`
+              : `and${nums[i]}.mp3`
+          );
         } else {
           files.push(`${nums[i]}.mp3`);
         }
       }
 
       const last = files[files.length - 1];
+
       if (!last.includes('please')) {
         files.push(pickMultiple());
       }
+
       return files;
     }
 
     function buildSingleAnnouncement(num) {
       const usePlease = Math.random() < 0.40;
+
       if (usePlease) {
         return [`${num}please.mp3`];
       }
 
       const files = [`${num}.mp3`];
+
       if (burstCount <= 2 && Math.random() < 0.75) {
         files.push(pickSingular());
       }
+
       return files;
     }
 
     function announceReady(num) {
       const now = Date.now();
-      const current = Array.from(ready.keys()).sort((a, b) => a - b);
+      const current = Array.from(ready.keys())
+        .sort((a, b) => a - b);
 
       if (now - lastAnnounceTime > BURST_WINDOW) {
         burstCount = 0;
       }
+
       burstCount++;
 
-      if (now - lastAnnounceTime > FULL_REENNOUNCE_GAP && current.length > 0) {
+      if (
+        now - lastAnnounceTime > FULL_REENNOUNCE_GAP &&
+        current.length > 0
+      ) {
         enqueue(...buildListAnnouncement(current));
         burstCount = 0;
       } else {
@@ -526,52 +705,161 @@
       lastAnnounceTime = now;
     }
 
-    async function initMIDI() {
-      if (!navigator.requestMIDIAccess) {
-        return;
+    /* ========== WEBRTC ========== */
+
+    let peer = null;
+    let dataChannel = null;
+
+    const rtcPanel = document.getElementById('webrtc-panel');
+    const rtcBackdrop = document.getElementById('webrtc-backdrop');
+    const statusEl = document.getElementById('connection-status');
+    const offerEl = document.getElementById('offer');
+    const createAnswerBtn = document.getElementById('create-answer');
+
+    function setRTCStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function waitForIceComplete(pc) {
+      if (pc.iceGatheringState === 'complete') {
+        return Promise.resolve();
       }
-      try {
-        const access = await navigator.requestMIDIAccess({ sysex: false });
-        const inputs = Array.from(access.inputs.values());
 
-        let input = inputs.find(i =>
-          /iac/i.test(i.name) && /1/.test(i.name)
-        ) || inputs.find(i => /iac/i.test(i.name)) || inputs[0] || null;
-
-        if (input) {
-          input.onmidimessage = onMIDIMessage;
-        }
-
-        access.onstatechange = () => {
-          const ins = Array.from(access.inputs.values());
-          const prefer = ins.find(i =>
-            /iac/i.test(i.name) && /1/.test(i.name)
-          ) || ins[0];
-          if (prefer) {
-            prefer.onmidimessage = onMIDIMessage;
+      return new Promise(resolve => {
+        const check = () => {
+          if (pc.iceGatheringState === 'complete') {
+            pc.removeEventListener('icegatheringstatechange', check);
+            resolve();
           }
         };
+
+        pc.addEventListener('icegatheringstatechange', check);
+      });
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        const textarea = document.createElement('textarea');
+
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        let copied = false;
+
+        try {
+          copied = document.execCommand('copy');
+        } catch {}
+
+        textarea.remove();
+
+        return copied;
+      }
+    }
+
+    function closeRTCModal() {
+      rtcPanel.classList.add('hidden');
+      rtcBackdrop.classList.add('hidden');
+    }
+
+    function setupDataChannel(channel) {
+      dataChannel = channel;
+
+      channel.onopen = () => {
+        setRTCStatus('Connected!');
+        setTimeout(closeRTCModal, 1000);
+      };
+
+      channel.onclose = () => {
+        dataChannel = null;
+      };
+
+      channel.onerror = err => {
+        console.warn('[WebRTC] data channel error', err);
+      };
+
+      channel.onmessage = event => {
+        try {
+          const message = JSON.parse(event.data);
+
+          if (message.type !== 'malatang') return;
+
+          if (message.channel === 1) {
+            addCooking(message.note);
+          } else if (message.channel === 2) {
+            moveToReady(message.note);
+          } else if (message.channel === 3) {
+            removeReady(message.note);
+          }
+
+        } catch (err) {
+          console.warn('[WebRTC] invalid message', err);
+        }
+      };
+    }
+
+    async function createAnswer() {
+      try {
+        if (!offerEl.value.trim()) {
+          setRTCStatus('Paste an offer first.');
+          return;
+        }
+
+        if (peer) {
+          peer.close();
+        }
+
+        const offer = JSON.parse(offerEl.value.trim());
+
+        peer = new RTCPeerConnection();
+
+        peer.ondatachannel = event => {
+          setupDataChannel(event.channel);
+        };
+
+        peer.onconnectionstatechange = () => {
+          if (peer.connectionState === 'failed') {
+            setRTCStatus('Connection failed.');
+          }
+        };
+
+        await peer.setRemoteDescription(offer);
+
+        const answer = await peer.createAnswer();
+
+        await peer.setLocalDescription(answer);
+
+        setRTCStatus('Generating answer…');
+
+        await waitForIceComplete(peer);
+
+        const answerText = JSON.stringify(peer.localDescription);
+        const copied = await copyText(answerText);
+
+        if (!copied) {
+          setRTCStatus('Could not copy answer.');
+          return;
+        }
+
+        setRTCStatus('Copied to clipboard!');
+
+        setTimeout(closeRTCModal, 1000);
+
       } catch (err) {
-        console.warn(err);
+        console.error(err);
+        setRTCStatus('Invalid offer.');
       }
     }
 
-    function onMIDIMessage(event) {
-      const [status, note, velocity] = event.data;
-      if (velocity === 0) return;
+    createAnswerBtn.addEventListener('click', createAnswer);
 
-      const channel = (status & 0x0f) + 1;
-      const command = status & 0xf0;
-      if (command !== 0x90) return;
-
-      if (channel === 1) {
-        addCooking(note);
-      } else if (channel === 2) {
-        moveToReady(note);
-      } else if (channel === 3) {
-        removeReady(note);
-      }
-    }
+    /* ========== COOKING ========== */
 
     function addCooking(num) {
       if (cooking.has(num)) return;
@@ -581,17 +869,22 @@
       }
 
       const list = document.getElementById('cookingList');
+
       document.getElementById('cookingEmpty')?.remove();
 
       const row = document.createElement('div');
+
       row.className = 'cooking-row';
+
       row.innerHTML = `
         <div class="cooking-num">${num}</div>
         <div class="progress-wrap">
           <div class="progress-bar"></div>
         </div>
       `;
+
       list.appendChild(row);
+
       cooking.set(num, row);
 
       const bar = row.querySelector('.progress-bar');
@@ -599,35 +892,50 @@
 
       function tick() {
         if (!cooking.has(num)) return;
+
         const elapsed = Date.now() - startTime;
         const t = elapsed / COOK_DURATION_MS;
+
         const progress = 1 - Math.exp(-ASYMPTOTE_K * t);
-        bar.style.width = Math.min(progress * 100, 99.2) + '%';
+
+        bar.style.width =
+          Math.min(progress * 100, 99.2) + '%';
+
         requestAnimationFrame(tick);
       }
+
       requestAnimationFrame(tick);
     }
 
     function moveToReady(num) {
       if (cooking.has(num)) {
         const row = cooking.get(num);
+
         cooking.delete(num);
 
         const bar = row.querySelector('.progress-bar');
-        bar.style.transition = 'width 0.42s cubic-bezier(0.22, 0.9, 0.3, 1)';
+
+        bar.style.transition =
+          'width 0.42s cubic-bezier(0.22, 0.9, 0.3, 1)';
+
         bar.style.width = '100%';
 
         setTimeout(() => {
           row.classList.add('leaving');
+
           setTimeout(() => {
             row.remove();
+
             if (cooking.size === 0) {
               const list = document.getElementById('cookingList');
+
               if (!document.getElementById('cookingEmpty')) {
                 const empty = document.createElement('div');
+
                 empty.className = 'cooking-empty';
                 empty.id = 'cookingEmpty';
                 empty.textContent = 'No items cooking';
+
                 list.appendChild(empty);
               }
             }
@@ -636,40 +944,45 @@
       }
 
       setTimeout(() => {
-  if (ready.has(num)) return;
+        if (ready.has(num)) return;
 
-  const list = document.getElementById('readyList');
-  document.getElementById('readyEmpty')?.remove();
+        const list = document.getElementById('readyList');
 
-  const item = document.createElement('div');
-  item.className = 'ready-item';
-  item.textContent = num;
+        document.getElementById('readyEmpty')?.remove();
 
-  // Keep visual list sorted ascending
-  const existing = Array.from(list.children)
-    .filter(el => el.classList.contains('ready-item'));
+        const item = document.createElement('div');
 
-  let inserted = false;
-  for (const el of existing) {
-    if (Number(el.textContent) > num) {
-      list.insertBefore(item, el);
-      inserted = true;
-      break;
-    }
-  }
-  if (!inserted) {
-    list.appendChild(item);
-  }
+        item.className = 'ready-item';
+        item.textContent = num;
 
-  ready.set(num, item);
-  announceReady(num);
-}, 520);
+        const existing = Array.from(list.children)
+          .filter(el => el.classList.contains('ready-item'));
+
+        let inserted = false;
+
+        for (const el of existing) {
+          if (Number(el.textContent) > num) {
+            list.insertBefore(item, el);
+            inserted = true;
+            break;
+          }
+        }
+
+        if (!inserted) {
+          list.appendChild(item);
+        }
+
+        ready.set(num, item);
+
+        announceReady(num);
+      }, 520);
     }
 
     function removeReady(num) {
       if (!ready.has(num)) return;
 
       const item = ready.get(num);
+
       item.classList.add('removing');
 
       setTimeout(() => {
@@ -680,40 +993,43 @@
     }
 
     function updateReadyEmpty() {
-      if (ready.size === 0) {
-        const list = document.getElementById('readyList');
-        if (!document.getElementById('readyEmpty')) {
-          const empty = document.createElement('div');
-          empty.className = 'ready-empty';
-          empty.id = 'readyEmpty';
-          empty.textContent = 'Waiting for orders…';
-          list.appendChild(empty);
-        }
+      if (ready.size !== 0) return;
+
+      const list = document.getElementById('readyList');
+
+      if (!document.getElementById('readyEmpty')) {
+        const empty = document.createElement('div');
+
+        empty.className = 'ready-empty';
+        empty.id = 'readyEmpty';
+        empty.textContent = 'Waiting for orders…';
+
+        list.appendChild(empty);
       }
     }
 
     /* ========== START / UNLOCK ========== */
+
     const overlay = document.getElementById('start-overlay');
     const startBtn = document.getElementById('start-btn');
 
     function unlockAndStart() {
-      // Unlock audio
       const unlock = new Audio();
-      unlock.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
+      unlock.src =
+        'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
       unlock.play().catch(() => {});
 
-      // Enable page interactions
       document.body.style.pointerEvents = 'auto';
 
-      // Fade out splash
       overlay.classList.add('hidden');
-      setTimeout(() => overlay.remove(), 560);
 
-      // Start MIDI
-      initMIDI();
+      setTimeout(() => {
+        overlay.remove();
+      }, 560);
     }
 
-    // Click anywhere on the overlay (or the button) to start
     overlay.addEventListener('click', unlockAndStart);
   </script>
 </body>
