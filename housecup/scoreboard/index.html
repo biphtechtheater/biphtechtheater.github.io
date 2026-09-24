@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scoreboard</title>
+
+  <style>
+    :root {
+      --red: #ff4057;
+      --blue: #3487ff;
+      --green: #32c979;
+      --yellow: #f4c542;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: #05070a;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .score-row {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .team-box {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-right: 2px solid rgba(255,255,255,.72);
+      isolation: isolate;
+      transition: flex .35s ease;
+    }
+
+    .team-box:last-child { border-right: 0; }
+
+    .team-box::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 28% 20%, rgba(255,255,255,.25), transparent 28%),
+        radial-gradient(circle at 75% 78%, rgba(0,0,0,.16), transparent 38%);
+      animation: ambient 9s ease-in-out infinite alternate;
+    }
+
+    .team-box::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(135deg, rgba(255,255,255,.12), transparent 40%, rgba(0,0,0,.16));
+      pointer-events: none;
+    }
+
+    @keyframes ambient {
+      from { transform: translate3d(-2%, -1%, 0) scale(1); }
+      to   { transform: translate3d(2%, 1%, 0) scale(1.06); }
+    }
+
+    .bg-yellow { background: linear-gradient(145deg, #f8d85b, #c49b1c); }
+    .bg-blue   { background: linear-gradient(145deg, #438fff, #2059c8); }
+    .bg-green  { background: linear-gradient(145deg, #42d886, #168650); }
+    .bg-red    { background: linear-gradient(145deg, #ff5065, #ad1831); }
+
+    .team-box-inner {
+      position: relative;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      padding: 4vw;
+      text-shadow: 0 5px 24px rgba(0,0,0,.22);
+    }
+
+    .team-name {
+      margin: 0 0 1vh;
+      font-size: 7vw;
+      line-height: .9;
+      font-weight: 900;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .team-score {
+      margin: 0;
+      font-size: 20vw;
+      line-height: .82;
+      font-weight: 950;
+      letter-spacing: -.08em;
+    }
+
+    .team-score.score-pulse {
+      animation: scorePulse .48s cubic-bezier(.2,.85,.25,1);
+    }
+
+    .team-box.match-in {
+      animation: teamIn .55s cubic-bezier(.2,.8,.2,1);
+    }
+
+    @keyframes teamIn {
+      from { opacity: 0; filter: brightness(.55); }
+      to   { opacity: 1; filter: brightness(1); }
+    }
+
+    @keyframes scorePulse {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 5px 24px rgba(0,0,0,.22);
+      }
+      38% {
+        transform: scale(1.055);
+        text-shadow:
+          0 0 28px rgba(255,255,255,.35),
+          0 7px 30px rgba(0,0,0,.25);
+      }
+      100% {
+        transform: scale(1);
+        text-shadow: 0 5px 24px rgba(0,0,0,.22);
+      }
+    }
+
+    .confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    @media (max-aspect-ratio: 1/1) {
+      .score-row { flex-direction: column; }
+
+      .team-box {
+        border-right: 0;
+        border-bottom: 2px solid rgba(255,255,255,.72);
+      }
+
+      .team-box:last-child { border-bottom: 0; }
+      .team-name { font-size: 11vw; }
+      .team-score { font-size: 27vw; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="score-row" id="scoreRow"></div>
+  <canvas class="confetti-canvas" id="confettiCanvas" aria-hidden="true"></canvas>
+
+  <script>
+    const SCORE_CHANNEL_NAME = 'biph-scoreboard-v2';
+    const STORAGE_KEY = 'soccerControllerStateV2';
+
+    const teamsConfig = {
+      yellow: { id: 'yellow', name: 'Yellow', bgClass: 'bg-yellow' },
+      blue:   { id: 'blue',   name: 'Blue',   bgClass: 'bg-blue' },
+      green:  { id: 'green',  name: 'Green',  bgClass: 'bg-green' },
+      red:    { id: 'red',    name: 'Red',    bgClass: 'bg-red' }
+    };
+
+    const TEAM_CONFETTI_COLORS = {
+      red: '#ff4057',
+      blue: '#3487ff',
+      green: '#32c979',
+      yellow: '#f4c542'
+    };
+
+    let scores = { yellow: 0, blue: 0, green: 0, red: 0 };
+    let currentMatch = { teamA: null, teamB: null };
+    let scoreChannel = null;
+
+    let confettiCanvas = null;
+    let confettiContext = null;
+    let confettiParticles = [];
+    let confettiAnimationFrame = null;
+
+    function loadStateFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+
+        const state = JSON.parse(raw);
+
+        if (state.scores) scores = Object.assign(scores, state.scores);
+        if (state.currentMatch) currentMatch = state.currentMatch;
+      } catch (error) {
+        console.warn('[SCOREBOARD] Could not load storage state:', error);
+      }
+    }
+
+    function initConfetti() {
+      confettiCanvas = document.getElementById('confettiCanvas');
+      if (!confettiCanvas) return;
+      confettiContext = confettiCanvas.getContext('2d');
+
+      const resize = () => {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+        confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+        confettiCanvas.style.width = window.innerWidth + 'px';
+        confettiCanvas.style.height = window.innerHeight + 'px';
+        confettiContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+
+      resize();
+      window.addEventListener('resize', resize);
+    }
+
+    function confettiBurst(teamId, originX, originY, amount = 190) {
+      if (!confettiContext) initConfetti();
+      if (!confettiContext) return;
+
+      const color = TEAM_CONFETTI_COLORS[teamId] || '#ffffff';
+
+      for (let i = 0; i < amount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 4 + Math.random() * 15;
+
+        confettiParticles.push({
+          x: originX,
+          y: originY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - (Math.random() * 5 + 3),
+          gravity: 0.15 + Math.random() * 0.12,
+          drag: 0.985,
+          size: 10 + Math.random() * 9,
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - .5) * .35,
+          life: 85 + Math.random() * 65,
+          age: 0,
+          color
+        });
+      }
+
+      if (!confettiAnimationFrame) animateConfetti();
+    }
+
+    function launchGoalConfetti(teamId) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const centers = [
+        [width * 0.18, height * 0.48],
+        [width * 0.50, height * 0.32],
+        [width * 0.82, height * 0.48]
+      ];
+
+      centers.forEach(([x, y], i) => {
+        setTimeout(() => confettiBurst(teamId, x, y, 190), i * 120);
+      });
+    }
+
+    function animateConfetti() {
+      if (!confettiContext) return;
+      confettiAnimationFrame = requestAnimationFrame(animateConfetti);
+
+      confettiContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      confettiParticles = confettiParticles.filter(
+        p => p.age < p.life && p.y < window.innerHeight + 80
+      );
+
+      for (const p of confettiParticles) {
+        p.age += 1;
+        p.vx *= p.drag;
+        p.vy += p.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+
+        const alpha = Math.max(
+          0,
+          1 - Math.max(0, p.age - p.life * .7) / (p.life * .3)
+        );
+
+        confettiContext.save();
+        confettiContext.globalAlpha = alpha;
+        confettiContext.translate(p.x, p.y);
+        confettiContext.rotate(p.rotation);
+        confettiContext.fillStyle = p.color;
+        confettiContext.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .58);
+        confettiContext.restore();
+      }
+
+      if (!confettiParticles.length) {
+        cancelAnimationFrame(confettiAnimationFrame);
+        confettiAnimationFrame = null;
+        confettiContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+    }
+
+    function render(animate = false) {
+      const scoreRow = document.getElementById('scoreRow');
+      scoreRow.innerHTML = '';
+
+      const teamA = currentMatch.teamA ? teamsConfig[currentMatch.teamA] : null;
+      const teamB = currentMatch.teamB ? teamsConfig[currentMatch.teamB] : null;
+
+      if (!teamA || !teamB) {
+        scoreRow.innerHTML = `
+          <div class="team-box" style="background:#080a0e;"></div>
+          <div class="team-box" style="background:#080a0e;"></div>
+        `;
+        return;
+      }
+
+      [teamA, teamB].forEach(team => {
+        const box = document.createElement('div');
+        box.className = `team-box ${team.bgClass}${animate ? ' match-in' : ''}`;
+
+        box.innerHTML = `
+          <div class="team-box-inner">
+            <p class="team-name">${team.name}</p>
+            <p class="team-score" data-score-team="${team.id}">
+              ${scores[team.id] ?? 0}
+            </p>
+          </div>
+        `;
+
+        scoreRow.appendChild(box);
+      });
+    }
+
+    function animateScore(teamId) {
+      const scoreElement = document.querySelector(`[data-score-team="${teamId}"]`);
+      if (!scoreElement) return;
+
+      scoreElement.classList.remove('score-pulse');
+      void scoreElement.offsetWidth;
+      scoreElement.classList.add('score-pulse');
+    }
+
+    function applyMessage(message) {
+      if (!message || message.source !== 'biph-controller') return;
+
+      if (message.type === 'match-start' && message.match) {
+        currentMatch = { ...message.match };
+
+        scores = {
+          yellow: 0,
+          blue: 0,
+          green: 0,
+          red: 0,
+          ...(message.scores || {})
+        };
+
+        render(true);
+        return;
+      }
+
+      if (message.type === 'score-update' && message.teamId) {
+        scores[message.teamId] = Number(message.score) || 0;
+
+        const scoreElement = document.querySelector(`[data-score-team="${message.teamId}"]`);
+
+        if (scoreElement) {
+          scoreElement.textContent = scores[message.teamId];
+          animateScore(message.teamId);
+        } else {
+          currentMatch = message.match || currentMatch;
+          render();
+          animateScore(message.teamId);
+        }
+
+        if (message.celebration !== false) {
+          launchGoalConfetti(message.teamId);
+        }
+      }
+    }
+
+    function initBroadcastChannel() {
+      if (!('BroadcastChannel' in window)) return;
+
+      scoreChannel = new BroadcastChannel(SCORE_CHANNEL_NAME);
+      scoreChannel.addEventListener('message', event => {
+        applyMessage(event.data);
+      });
+    }
+
+    window.addEventListener('message', event => {
+      applyMessage(event.data);
+    });
+
+    window.addEventListener('storage', event => {
+      if (event.key === STORAGE_KEY) {
+        loadStateFromStorage();
+        render();
+      }
+    });
+
+    loadStateFromStorage();
+    initConfetti();
+    initBroadcastChannel();
+    render();
+  </script>
+</body>
+</html>
