@@ -721,6 +721,15 @@
 
   <script src="players.js"></script>
   <script>
+    // This controller is mouse/touch driven rather than keyboard-navigation driven.
+    // Remove native controls from the Tab sequence while preserving programmatic
+    // focus used by the site's own shortcuts.
+    function disableTabNavigation() {
+      document.querySelectorAll('button, input, select, textarea, [tabindex]').forEach(element => {
+        element.setAttribute('tabindex', '-1');
+      });
+    }
+
     const IAC_OUTPUT_NAME = 'IAC Driver Bus 1';
     const SCORE_CHANNEL_NAME = 'biph-scoreboard-v2';
 
@@ -731,12 +740,19 @@
       red: 83
     };
 
+    const goalNotes = {
+      yellow: 84,
+      blue: 85,
+      green: 86,
+      red: 87
+    };
 
     const MUSIC_MIDI_CHANNEL = 4;
 
     const musicNotes = {
       previous: 92,
-      playPause: 90,
+      play: 90,
+      pause: 89,
       next: 91,
       walkout: 93,
       goal: 94
@@ -747,6 +763,11 @@
     let midiAccess = null;
     let midiOutput = null;
     let scoreChannel = null;
+
+    // MIDI can finish initializing after the page is already interactive.
+    // Queue pulses until the requested output is ready so a player/goal action
+    // is never silently lost.
+    const pendingMidiPulses = [];
 
     let currentMatch = {
       teamA: null,
@@ -768,6 +789,11 @@
       if ('BroadcastChannel' in window) {
         scoreChannel = new BroadcastChannel(SCORE_CHANNEL_NAME);
       }
+    }
+
+    function setMusicPlayingState(playing) {
+      musicPlaying = playing;
+      updateMediaPlayerUI();
     }
 
     function broadcastScoreEvent(type, teamId, extra = {}) {
@@ -816,6 +842,16 @@
 
           midiOutput = exact;
           console.log(`[MIDI] Using ${IAC_OUTPUT_NAME}`);
+
+          // Flush anything triggered before Web MIDI finished initializing.
+          while (pendingMidiPulses.length) {
+            const pulse = pendingMidiPulses.shift();
+            sendNoteOn(pulse.note, pulse.velocity, pulse.channel);
+            window.setTimeout(
+              () => sendNoteOff(pulse.note, pulse.channel),
+              pulse.duration
+            );
+          }
         })
         .catch(error => {
           console.error('[MIDI] Could not access MIDI:', error);
@@ -836,6 +872,16 @@
     }
 
     function pulseNote(note, channel = 0, duration = 150) {
+      if (!midiOutput) {
+        pendingMidiPulses.push({
+          note,
+          channel,
+          duration,
+          velocity: 0x7f
+        });
+        return;
+      }
+
       sendNoteOn(note, 0x7f, channel);
       setTimeout(() => sendNoteOff(note, channel), duration);
     }
@@ -854,14 +900,35 @@
     }
 
     function triggerMusic(action) {
-      // Previous/Next may control the external music system, but they never
-      // change the controller's playing state. Only Play/Pause does that.
-      const note = musicNotes[action];
-      if (note !== undefined) pulseNote(note, MUSIC_MIDI_CHANNEL, 150);
-
       if (action === 'playPause') {
-        musicPlaying = !musicPlaying;
-        updateMediaPlayerUI();
+        const nextState = !musicPlaying;
+
+        pulseNote(
+          nextState ? musicNotes.play : musicNotes.pause,
+          MUSIC_MIDI_CHANNEL,
+          150
+        );
+
+        setMusicPlayingState(nextState);
+        return;
+      }
+
+      const note = musicNotes[action];
+      if (note !== undefined) {
+        pulseNote(note, MUSIC_MIDI_CHANNEL, 150);
+      }
+    }
+
+    function triggerMusicPause() {
+      // Escape is an explicit pause command: always send the pause MIDI note,
+      // even when the controller already thinks nothing is playing.
+      pulseNote(musicNotes.pause, MUSIC_MIDI_CHANNEL, 150);
+      setMusicPlayingState(false);
+    }
+
+    function triggerAutoMusicStart() {
+      if (!musicPlaying) {
+        setMusicPlayingState(true);
       }
     }
 
@@ -1029,6 +1096,13 @@
       const team = teamById(teamId);
       if (!team) return;
 
+      triggerAutoMusicStart();
+
+      const goalNote = goalNotes[teamId];
+      if (goalNote !== undefined) {
+        pulseNote(goalNote, team.midiChannel, 200);
+      }
+
       addScore(teamId);
 
       const button = document.querySelector(`[data-goal-team="${teamId}"]`);
@@ -1139,11 +1213,24 @@
       const player = Number.isInteger(index) ? team.players[index] : null;
       if (!player) return;
 
-      /*
-        Player-specific event remains MIDI.
-        Score changes are NOT MIDI anymore; they are broadcast separately.
-      */
-      pulseNote(player.note, team.midiChannel, 200);
+      triggerAutoMusicStart();
+
+      // A player selection is always a two-pulse MIDI event:
+      // the player's unique note AND their team's goal note.
+      // Keep these calls together so every selection produces both signals.
+      // Send the player's personal note first. The goal pulse follows
+      // immediately after it so MIDI receivers that process one incoming
+      // message at a time do not swallow the personal note.
+      if (player.note !== undefined) {
+        pulseNote(player.note, team.midiChannel, 200);
+      }
+
+      const goalNote = goalNotes[teamId];
+      if (goalNote !== undefined) {
+        window.setTimeout(() => {
+          pulseNote(goalNote, team.midiChannel, 200);
+        }, 5);
+      }
 
       addScore(teamId);
 
@@ -1177,7 +1264,15 @@
       const name = normalize(player.name);
       const number = normalize(player.number);
 
-      return name.startsWith(q) || number.startsWith(q);
+      // Match the beginning of any name part, not just the beginning
+      // of the complete name. Numbers still match from their beginning.
+      const nameParts = name.split(/\s+/).filter(Boolean);
+
+      return (
+        name.startsWith(q) ||
+        nameParts.some(part => part.startsWith(q)) ||
+        number.startsWith(q)
+      );
     }
 
     function filterTeamPlayers(teamId, query) {
@@ -1215,29 +1310,29 @@
       if (!query) return;
 
       const matches = filterTeamPlayers(teamId, query);
+      if (!matches.length) return;
 
-      // If the search is an exact player number, prefer that exact number
-      // even when other player numbers share the same prefix.
-      const exactNumberMatches = matches.filter(({ player }) =>
-        normalize(player.number) === query
+      // Prefer an exact player number or exact player name. This makes
+      // pressing Return deterministic even when several names/numbers share
+      // the same prefix.
+      const exactMatches = matches.filter(({ player }) =>
+        normalize(player.number) === query ||
+        normalize(player.name) === query
       );
 
-      if (exactNumberMatches.length === 1) {
-        const selected = exactNumberMatches[0];
+      if (exactMatches.length >= 1) {
+        const selected = exactMatches[0];
         const selectedIndex = Number(selected.button.dataset.playerIndex);
         triggerCelebration(teamId, selectedIndex, selected.button);
         return;
       }
 
+      // A non-exact search is only confirmed when it resolves to one player.
       if (matches.length !== 1) return;
 
       const selected = matches[0];
-
       const selectedIndex = Number(selected.button.dataset.playerIndex);
       triggerCelebration(teamId, selectedIndex, selected.button);
-
-      // triggerCelebration() clears the search field just as a manual
-      // player click does.
     }
 
     function focusTeamSearch(teamId) {
@@ -1375,6 +1470,8 @@
           }
         });
       });
+
+      disableTabNavigation();
     }
 
     function renderTeamPanel(teamId) {
@@ -1389,7 +1486,7 @@
               class="score"
               data-score-team="${teamId}"
               role="button"
-              tabindex="0"
+              tabindex="-1"
               title="Click to edit score"
               onclick="startScoreEdit('${teamId}')"
               onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); startScoreEdit('${teamId}'); }"
@@ -1442,13 +1539,22 @@
       y: 'yellow'
     };
 
+
+    document.addEventListener('pointerup', event => {
+      const interactive = event.target?.closest?.('button, input, select, textarea, [tabindex]');
+      if (interactive) {
+        window.setTimeout(() => interactive.blur(), 0);
+      }
+    });
+
     document.addEventListener('keydown', event => {
       // Let the browser keep its normal refresh shortcut (Cmd/Ctrl + R).
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'r') {
         return;
       }
 
-      // Escape always closes the New Match modal, even if focus is elsewhere.
+      // Escape closes the modal first. Otherwise it is always an explicit
+      // pause command, including when music is already stopped.
       if (event.key === 'Escape' && matchModalOpen) {
         event.preventDefault();
         closeMatchModal();
@@ -1461,6 +1567,31 @@
         tag === 'TEXTAREA' ||
         tag === 'SELECT' ||
         event.target?.isContentEditable;
+
+      // Media shortcuts are global, including while a search field is focused.
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        triggerMusicPause();
+        return;
+      }
+
+      if (event.metaKey && event.key === 'ArrowRight') {
+        event.preventDefault();
+        triggerMusic('next');
+        return;
+      }
+
+      if (event.metaKey && event.key === 'ArrowLeft') {
+        event.preventDefault();
+        triggerMusic('previous');
+        return;
+      }
+
+      if (event.key === ' ' && !isTyping) {
+        event.preventDefault();
+        triggerMusic('playPause');
+        return;
+      }
 
       if (isTyping) return;
 
@@ -1500,6 +1631,7 @@
     initScoreChannel();
     updateMediaPlayerUI();
     renderMatch();
+    disableTabNavigation();
 
     if (!currentMatch.teamA || !currentMatch.teamB) {
       openMatchModal();

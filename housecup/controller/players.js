@@ -1,21 +1,22 @@
 const teams = {
-  yellow: {
-    id: 'yellow',
-    name: 'Yellow',
-    colorClass: 'team-yellow',
+    red: {
+    id: 'red',
+    name: 'Red',
+    colorClass: 'team-red',
     score: 0,
-    midiChannel: 0,
+    midiChannel: 1,
     players: [
-      { name: 'Lionel Messi',      number: 10, note: 60 },
-      { name: 'Mohamed Salah',     number: 11, note: 62 },
-      { name: 'Kevin De Bruyne',   number: 17, note: 63 },
-      { name: 'Erling Haaland',    number: 9,  note: 64 },
-      { name: 'Vinícius Júnior',   number: 7,  note: 67 },
-      { name: 'Jude Bellingham',   number: 5,  note: 69 },
-      { name: 'David Beckham',     number: 23, note: 110 },
-      { name: 'Xavi Hernández',    number: 6,  note: 102 },
-      { name: 'Steven Gerrard',    number: 8,  note: 122 },
-      { name: 'Zico',              number: 10, note: 123 }
+      { name: 'Pelé',              number: 10, note: 111 },
+      { name: 'Johan Cruyff',      number: 14, note: 113 },
+      { name: 'Franz Beckenbauer', number: 5,  note: 114 },
+      { name: 'Paolo Maldini',     number: 3,  note: 115 },
+      { name: 'Ronaldo Nazário',   number: 9,  note: 116 },
+      { name: 'George Best',       number: 7,  note: 118 },
+      { name: 'Gerd Müller',       number: 13, note: 119 },
+      { name: 'Lev Yashin',        number: 1,  note: 120 },
+      { name: 'Franco Baresi',     number: 6,  note: 125 },
+      { name: 'Lothar Matthäus',   number: 8,  note: 126 },
+      { name: 'Javier Zanetti',    number: 4,  note: 127 }
     ]
   },
 
@@ -24,7 +25,7 @@ const teams = {
     name: 'Blue',
     colorClass: 'team-blue',
     score: 0,
-    midiChannel: 1,
+    midiChannel: 2,
     players: [
       { name: 'Cristiano Ronaldo', number: 7,  note: 70 },
       { name: 'Harry Kane',        number: 9,  note: 71 },
@@ -44,7 +45,7 @@ const teams = {
     name: 'Green',
     colorClass: 'team-green',
     score: 0,
-    midiChannel: 2,
+    midiChannel: 3,
     players: [
       { name: 'Andrés Iniesta',     number: 8,  note: 101 },
       { name: 'Sergio Ramos',       number: 4,  note: 103 },
@@ -58,25 +59,24 @@ const teams = {
       { name: 'Robert Lewandowski', number: 9,  note: 68 }
     ]
   },
-
-  red: {
-    id: 'red',
-    name: 'Red',
-    colorClass: 'team-red',
+  
+  yellow: {
+    id: 'yellow',
+    name: 'Yellow',
+    colorClass: 'team-yellow',
     score: 0,
-    midiChannel: 3,
+    midiChannel: 4,
     players: [
-      { name: 'Pelé',              number: 10, note: 111 },
-      { name: 'Johan Cruyff',      number: 14, note: 113 },
-      { name: 'Franz Beckenbauer', number: 5,  note: 114 },
-      { name: 'Paolo Maldini',     number: 3,  note: 115 },
-      { name: 'Ronaldo Nazário',   number: 9,  note: 116 },
-      { name: 'George Best',       number: 7,  note: 118 },
-      { name: 'Gerd Müller',       number: 13, note: 119 },
-      { name: 'Lev Yashin',        number: 1,  note: 120 },
-      { name: 'Franco Baresi',     number: 6,  note: 125 },
-      { name: 'Lothar Matthäus',   number: 8,  note: 126 },
-      { name: 'Javier Zanetti',    number: 4,  note: 127 }
+      { name: 'Lionel Messi',      number: 10, note: 60 },
+      { name: 'Mohamed Salah',     number: 11, note: 62 },
+      { name: 'Kevin De Bruyne',   number: 17, note: 63 },
+      { name: 'Erling Haaland',    number: 9,  note: 64 },
+      { name: 'Vinícius Júnior',   number: 7,  note: 67 },
+      { name: 'Jude Bellingham',   number: 5,  note: 69 },
+      { name: 'David Beckham',     number: 23, note: 110 },
+      { name: 'Xavi Hernández',    number: 6,  note: 102 },
+      { name: 'Steven Gerrard',    number: 8,  note: 122 },
+      { name: 'Zico',              number: 10, note: 123 }
     ]
-  }
+  },
 };
