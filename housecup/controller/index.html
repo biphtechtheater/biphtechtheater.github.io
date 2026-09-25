@@ -137,16 +137,16 @@
     }
 
     .media-wave.wave-left-a {
-      animation: waveLeftA 0.4s linear infinite alternate;
+      animation: waveLeftA 0.41s linear infinite alternate;
     }
 
     .media-wave.wave-left-b {
-      animation: waveLeftB 0.2s linear infinite alternate;
+      animation: waveLeftB 0.38s linear infinite alternate;
       fill: rgba(205,211,220,.27);
     }
 
     .media-wave.wave-right {
-      animation: waveRight 0.3s linear infinite alternate;
+      animation: waveRight 0.47s linear infinite alternate;
       fill: rgba(225,229,235,.24);
     }
 
@@ -155,18 +155,18 @@
     }
 
     @keyframes waveLeftA {
-      from { transform: translateX(0); transform: translateY(-10%); }
-      to   { transform: translateX(-50%); transform: translateY(20%); }
+      from { transform: translateX(0%) scaleY(100%);}
+      to   { transform: translateX(2%) scaleY(25%);}
     }
 
     @keyframes waveLeftB {
-      from { transform: translateX(0); transform: translateY(0); }
-      to   { transform: translateX(50%); transform: translateY(10%); }
+      from { transform: translateX(-0%) scaleY(40%);}
+      to   { transform: translateX(-2%) scaleY(100%);}
     }
 
     @keyframes waveRight {
-      from { transform: translateX(0); transform: translateY(0); }
-      to   { transform: translateX(-50%); transform: translateY(15%); }
+      from { transform: translateX(-0%) scaleY(60%);}
+      to   { transform: translateX(-5%) scaleY(100%);}
     }
 
     .media-button {
