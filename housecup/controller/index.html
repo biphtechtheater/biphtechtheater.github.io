@@ -185,11 +185,15 @@
       transition: background .14s ease, transform .12s ease, filter .14s ease;
     }
 
-    .media-button:first-child { border-radius: 12px 0 0 12px; }
+    .media-button:first-child { border-radius: 0 12px 12px 0; }
     .media-button:last-child {
       border-right: 0;
       border-radius: 0 12px 12px 0;
       border-left: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .media-button.media-prev {
+      border-radius: 8px 0 0 8px;
     }
 
     .media-button:hover {
