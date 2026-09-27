@@ -45,7 +45,10 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    body { padding: 18px; }
+    body {
+      padding: 18px;
+      padding-bottom: 90px;
+    }
     button, input { font: inherit; }
     button { -webkit-tap-highlight-color: transparent; }
 
@@ -550,6 +553,63 @@
       animation: hypeShake .34s cubic-bezier(.36,.07,.19,.97);
     }
 
+    /* GUYS / GIRLS MATCH TOGGLE */
+
+    .match-type-toggle {
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      background: rgba(14,18,25,.92);
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .match-type-button {
+      min-width: 104px;
+      padding: 9px 18px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #7f8998;
+      cursor: pointer;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      transition: color .16s ease, background .16s ease, box-shadow .16s ease, transform .12s ease;
+    }
+
+    .match-type-button:hover { color: #e9edf4; }
+    .match-type-button:active { transform: scale(.96); }
+
+    .match-type-button.active {
+      color: white;
+      background: linear-gradient(135deg, #384454, #202733);
+      box-shadow: 0 4px 12px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    @media (max-width: 520px) {
+      .match-type-toggle {
+        bottom: max(12px, env(safe-area-inset-bottom));
+      }
+
+      .match-type-button {
+        min-width: 88px;
+        padding-inline: 14px;
+      }
+    }
+
     .confetti-canvas {
       position: fixed;
       inset: 0;
@@ -656,6 +716,52 @@
       background: rgba(255,255,255,.06);
     }
 
+
+    .special-music-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+
+    .special-music-button {
+      min-height: 52px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025)),
+        #121720;
+      color: #f5f7fb;
+      cursor: pointer;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 5px 16px rgba(0,0,0,.2);
+      transition: filter .13s ease, transform .1s ease, box-shadow .13s ease;
+    }
+
+    .special-music-button:hover {
+      filter: brightness(1.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 7px 20px rgba(0,0,0,.28);
+    }
+
+    .special-music-button:active {
+      transform: scale(.975);
+    }
+
+    @media (max-width: 520px) {
+      .special-music-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
     @media (max-width: 780px) {
       body { padding: 10px; }
       .match-grid { grid-template-columns: 1fr; }
@@ -706,8 +812,44 @@
       </div>
     </section>
 
+
+    <section class="special-music-buttons" aria-label="Special music controls">
+      <button
+        class="special-music-button"
+        type="button"
+        onclick="triggerSpecialMusic('walkout1')"
+      >Play Walk-Out Music 1</button>
+      <button
+        class="special-music-button"
+        type="button"
+        onclick="triggerSpecialMusic('walkout2')"
+      >Play Walk-Out Music 2</button>
+      <button
+        class="special-music-button"
+        type="button"
+        onclick="triggerSpecialMusic('champion')"
+      >Play Champion Music</button>
+    </section>
+
     <section id="matchArea"></section>
   </main>
+
+  <div class="match-type-toggle" id="matchTypeToggle" role="group" aria-label="Match type">
+    <button
+      class="match-type-button active"
+      id="guysMatchButton"
+      type="button"
+      onclick="setMatchType('guys')"
+      aria-pressed="true"
+    >Guys</button>
+    <button
+      class="match-type-button"
+      id="girlsMatchButton"
+      type="button"
+      onclick="setMatchType('girls')"
+      aria-pressed="false"
+    >Girls</button>
+  </div>
 
   <canvas class="confetti-canvas" id="confettiCanvas" aria-hidden="true"></canvas>
 
@@ -730,14 +872,28 @@
       });
     }
 
-    const IAC_OUTPUT_NAME = 'IAC Driver Bus 1';
+    const IAC_OUTPUT_NAMES = [
+      'IAC Driver Bus 1',
+      'IAC驱动程序 总线1'
+    ];
+
     const SCORE_CHANNEL_NAME = 'biph-scoreboard-v2';
 
+    // Guys and girls deliberately use different MIDI notes for every squad.
+    // This makes the same squad button produce a distinct MIDI command by match type.
     const squadNotes = {
-      yellow: 80,
-      blue: 81,
-      green: 82,
-      red: 83
+      guys: {
+        yellow: 80,
+        blue: 81,
+        green: 82,
+        red: 83
+      },
+      girls: {
+        yellow: 100,
+        blue: 101,
+        green: 102,
+        red: 103
+      }
     };
 
     const goalNotes = {
@@ -749,13 +905,26 @@
 
     const MUSIC_MIDI_CHANNEL = 4;
 
+    // Special music commands also have separate notes for guys vs. girls.
+    const specialMusicNotes = {
+      guys: {
+        walkout1: 93,
+        walkout2: 94,
+        champion: 95
+      },
+      girls: {
+        walkout1: 113,
+        walkout2: 114,
+        champion: 115
+      }
+    };
+
     const musicNotes = {
       previous: 92,
       play: 90,
       pause: 89,
       next: 91,
-      walkout: 93,
-      goal: 94
+      goal: 96
     };
 
     let musicPlaying = false;
@@ -773,6 +942,9 @@
       teamA: null,
       teamB: null
     };
+
+    // Guys = note 1, Girls = note 2.
+    let matchType = 'guys';
 
     let matchModalOpen = false;
     let modalSelection = [];
@@ -829,24 +1001,32 @@
         .then(midi => {
           midiAccess = midi;
 
-          const exact = Array.from(midi.outputs.values())
-            .find(output => output.name === IAC_OUTPUT_NAME);
+          const outputs = Array.from(midi.outputs.values());
 
-          if (!exact) {
+          const midiOutputMatch = IAC_OUTPUT_NAMES
+            .map(name => outputs.find(output => output.name === name))
+            .find(Boolean);
+
+          if (!midiOutputMatch) {
             console.error(
-              `[MIDI] Required output "${IAC_OUTPUT_NAME}" was not found.`,
-              Array.from(midi.outputs.values()).map(output => output.name)
+              `[MIDI] None of the required outputs were found.`,
+              {
+                required: IAC_OUTPUT_NAMES,
+                available: outputs.map(output => output.name)
+              }
             );
             return;
           }
 
-          midiOutput = exact;
-          console.log(`[MIDI] Using ${IAC_OUTPUT_NAME}`);
+          midiOutput = midiOutputMatch;
+          console.log(`[MIDI] Using ${midiOutput.name}`);
 
           // Flush anything triggered before Web MIDI finished initializing.
           while (pendingMidiPulses.length) {
             const pulse = pendingMidiPulses.shift();
+
             sendNoteOn(pulse.note, pulse.velocity, pulse.channel);
+
             window.setTimeout(
               () => sendNoteOff(pulse.note, pulse.channel),
               pulse.duration
@@ -860,7 +1040,7 @@
 
     function sendNoteOn(note, velocity = 0x7f, channel = 0) {
       if (!midiOutput) {
-        console.warn(`[MIDI] ${IAC_OUTPUT_NAME} is unavailable.`);
+        console.warn('[MIDI] MIDI output is unavailable.');
         return;
       }
       midiOutput.send([0x90 + channel, note, velocity]);
@@ -934,12 +1114,33 @@
 
     function triggerSquad(teamId) {
       const team = teamById(teamId);
-      const note = squadNotes[teamId];
+      const modeNotes = squadNotes[matchType];
+      const note = modeNotes ? modeNotes[teamId] : undefined;
+
       if (team && note !== undefined) {
         pulseNote(note, team.midiChannel, 200);
       }
 
       const button = document.querySelector(`[data-squad-team="${teamId}"]`);
+      if (button) {
+        button.classList.remove('squad-hit');
+        void button.offsetWidth;
+        button.classList.add('squad-hit');
+      }
+    }
+
+    function triggerSpecialMusic(action) {
+      const modeNotes = specialMusicNotes[matchType];
+      const note = modeNotes ? modeNotes[action] : undefined;
+
+      if (note !== undefined) {
+        pulseNote(note, MUSIC_MIDI_CHANNEL, 200);
+      }
+
+      const button = document.querySelector(
+        `[onclick="triggerSpecialMusic('${action}')"]`
+      );
+
       if (button) {
         button.classList.remove('squad-hit');
         void button.offsetWidth;
@@ -1047,6 +1248,51 @@
         cancelAnimationFrame(confettiAnimationFrame);
         confettiAnimationFrame = null;
         confettiContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+    }
+
+    function getActivePlayerNote() {
+      return matchType === 'girls' ? 2 : 1;
+    }
+
+    function setMatchType(type) {
+      if (type !== 'guys' && type !== 'girls') return;
+
+      matchType = type;
+
+      const guysButton = document.getElementById('guysMatchButton');
+      const girlsButton = document.getElementById('girlsMatchButton');
+
+      if (guysButton) {
+        const active = type === 'guys';
+        guysButton.classList.toggle('active', active);
+        guysButton.setAttribute('aria-pressed', String(active));
+      }
+
+      if (girlsButton) {
+        const active = type === 'girls';
+        girlsButton.classList.toggle('active', active);
+        girlsButton.setAttribute('aria-pressed', String(active));
+      }
+
+      try {
+        localStorage.setItem('soccerControllerMatchTypeV1', matchType);
+      } catch (error) {
+        console.warn('[STATE] Could not save match type:', error);
+      }
+
+      renderMatch();
+      disableTabNavigation();
+    }
+
+    function loadMatchType() {
+      try {
+        const saved = localStorage.getItem('soccerControllerMatchTypeV1');
+        if (saved === 'guys' || saved === 'girls') {
+          matchType = saved;
+        }
+      } catch (error) {
+        console.warn('[STATE] Could not load match type:', error);
       }
     }
 
@@ -1291,6 +1537,11 @@
         const player = Number.isInteger(index) ? team.players[index] : null;
         if (!player) return;
 
+        if (player.note !== getActivePlayerNote()) {
+          button.classList.remove('prediction-dim', 'prediction-match');
+          return;
+        }
+
         const isMatch = playerMatches(player, normalizedQuery);
 
         button.classList.toggle('prediction-dim', Boolean(normalizedQuery && !isMatch));
@@ -1514,7 +1765,10 @@
           </div>
 
           <div class="player-list">
-            ${team.players.map((player, index) => `
+            ${team.players
+              .map((player, index) => ({ player, index }))
+              .filter(({ player }) => player.note === getActivePlayerNote())
+              .map(({ player, index }) => `
               <button
                 class="player-button"
                 type="button"
@@ -1626,6 +1880,7 @@
     });
 
     loadState();
+    loadMatchType();
     initConfetti();
     initMIDI();
     initScoreChannel();
