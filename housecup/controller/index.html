@@ -874,7 +874,7 @@
 
     const IAC_OUTPUT_NAMES = [
       'IAC Driver Bus 1',
-      'IAC驱动程序 总线1'
+      'IAC驱动程序总线1'
     ];
 
     const SCORE_CHANNEL_NAME = 'biph-scoreboard-v2';
@@ -943,7 +943,26 @@
       teamB: null
     };
 
-    // Guys = note 1, Girls = note 2.
+    // Player MIDI notes:
+    // Red   = guys 1 / girls 2
+    // Blue  = guys 3 / girls 4
+    // Green = guys 5 / girls 6
+    // Yellow= guys 7 / girls 8
+    const playerNotes = {
+      guys: {
+        red: 1,
+        blue: 3,
+        green: 5,
+        yellow: 7
+      },
+      girls: {
+        red: 2,
+        blue: 4,
+        green: 6,
+        yellow: 8
+      }
+    };
+
     let matchType = 'guys';
 
     let matchModalOpen = false;
@@ -1051,18 +1070,20 @@
       midiOutput.send([0x80 + channel, note, 0]);
     }
 
-    function pulseNote(note, channel = 0, duration = 150) {
+    function pulseNote(note, channel = 0, duration = 150, velocity = 0x7f) {
+      const safeVelocity = Math.max(0, Math.min(127, Number(velocity) || 0));
+
       if (!midiOutput) {
         pendingMidiPulses.push({
           note,
           channel,
           duration,
-          velocity: 0x7f
+          velocity: safeVelocity
         });
         return;
       }
 
-      sendNoteOn(note, 0x7f, channel);
+      sendNoteOn(note, safeVelocity, channel);
       setTimeout(() => sendNoteOff(note, channel), duration);
     }
 
@@ -1251,8 +1272,8 @@
       }
     }
 
-    function getActivePlayerNote() {
-      return matchType === 'girls' ? 2 : 1;
+    function getActivePlayerNote(teamId) {
+      return playerNotes[matchType]?.[teamId];
     }
 
     function setMatchType(type) {
@@ -1461,24 +1482,13 @@
 
       triggerAutoMusicStart();
 
-      // A player selection is always a two-pulse MIDI event:
-      // the player's unique note AND their team's goal note.
-      // Keep these calls together so every selection produces both signals.
-      // Send the player's personal note first. The goal pulse follows
-      // immediately after it so MIDI receivers that process one incoming
-      // message at a time do not swallow the personal note.
+      // Player buttons are completely independent from goal scoring.
+      // Clicking a player sends ONLY that player's personal MIDI note.
+      // It does NOT send the team's goal MIDI note and does NOT change
+      // the team's score. Use the separate Goal button for scoring.
       if (player.note !== undefined) {
-        pulseNote(player.note, team.midiChannel, 200);
+        pulseNote(player.note, team.midiChannel, 200, player.velocity);
       }
-
-      const goalNote = goalNotes[teamId];
-      if (goalNote !== undefined) {
-        window.setTimeout(() => {
-          pulseNote(goalNote, team.midiChannel, 200);
-        }, 5);
-      }
-
-      addScore(teamId);
 
       // Clicking a player always clears any active search for that team.
       const activeSearch = document.querySelector(`[data-search-team="${teamId}"]`);
@@ -1537,7 +1547,7 @@
         const player = Number.isInteger(index) ? team.players[index] : null;
         if (!player) return;
 
-        if (player.note !== getActivePlayerNote()) {
+        if (player.note !== getActivePlayerNote(teamId)) {
           button.classList.remove('prediction-dim', 'prediction-match');
           return;
         }
@@ -1767,7 +1777,7 @@
           <div class="player-list">
             ${team.players
               .map((player, index) => ({ player, index }))
-              .filter(({ player }) => player.note === getActivePlayerNote())
+              .filter(({ player }) => player.note === getActivePlayerNote(teamId))
               .map(({ player, index }) => `
               <button
                 class="player-button"
