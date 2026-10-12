@@ -1,146 +1,327 @@
 <!doctype html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Backstage Cue Display — WebRTC POC</title>
+
 <style>
+
 :root{color-scheme:dark;--bg:#10131a;--panel:#1c202b;--line:#363d4e;--text:#f4f6fb;--muted:#adb6c8;--accent:#91d8ff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}
+
+\*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}
+
 main{max-width:900px;margin:auto;padding:20px}h1{font-size:clamp(1.6rem,4vw,2.4rem);margin:.2rem 0}h2{font-size:1.15rem;margin:0 0 12px}
+
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+
 button,select,textarea{font:inherit;color:var(--text);background:#272e3d;border:1px solid #4a5368;border-radius:10px;padding:11px 13px}
+
 button{cursor:pointer}.primary{background:#1d5674;border-color:#3986ae}textarea{width:100%;min-height:105px;resize:vertical;font:12px/1.4 ui-monospace,monospace}
+
 label{display:block;color:var(--muted);font-size:.9rem;margin:8px 0 5px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
 .status{padding:10px 12px;border-radius:10px;background:#272e3d;margin-top:10px}.muted{color:var(--muted);font-size:.9rem}
-#camera{width:100%;max-width:420px;border-radius:12px;background:#050608;display:none}#scanCanvas{display:none}
-#message{min-height:230px;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:#222838;border:1px solid #3c465c;margin:16px 0}
-#message .eyebrow{font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;color:#aebbd0}#message h2{font-size:clamp(2rem,7vw,4.5rem);line-height:1.1;margin:16px 0}#message p{font-size:clamp(1rem,3vw,1.35rem);margin:0;color:#d2d9e7}
-#message.alert{background:#392e17;border-color:#8c702f}#message.alert .eyebrow{color:#ffda83}#message.lyric{background:#17333c;border-color:#367c91}#message.lyric h2{font-size:clamp(2.5rem,9vw,5rem)}
+
+\#camera{width:100%;max-width:420px;border-radius:12px;background:#050608;display:none}#scanCanvas{display:none}
+
+\#message{min-height:230px;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:#222838;border:1px solid #3c465c;margin:16px 0}
+
+\#message .eyebrow{font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;color:#aebbd0}#message h2{font-size:clamp(2rem,7vw,4.5rem);line-height:1.1;margin:16px 0}#message p{font-size:clamp(1rem,3vw,1.35rem);margin:0;color:#d2d9e7}
+
+\#message.alert{background:#392e17;border-color:#8c702f}#message.alert .eyebrow{color:#ffda83}#message.lyric{background:#17333c;border-color:#367c91}#message.lyric h2{font-size:clamp(2.5rem,9vw,5rem)}
+
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.pill{padding:5px 10px;border-radius:99px;background:#2b3343;color:#b8c6da;font-size:.8rem}.history{font-size:.95rem;color:#c9d1df;white-space:pre-wrap}
+
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+
+<script src="https\://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+
 </head>
+
 <body><main>
+
 <div class="top"><div><h1>Backstage Display</h1><p class="muted">Choose this iPad's role, then pair it with the control page.</p></div><span class="pill" id="connectionPill">NOT CONNECTED</span></div>
 
-<div class="panel">
-<h2>1. Choose display role</h2>
-<div class="row"><select id="role"><option value="left">Backstage Left</option><option value="right">Backstage Right</option><option value="lyrics">Lyrics Display</option></select><button id="saveRole">Use this role</button></div>
-<p class="muted">This page interprets the same incoming Key Pressure event differently according to the selected role.</p>
-</div>
+
 
 <div class="panel">
-<h2>2. Pair with control</h2>
-<div class="row"><button class="primary" id="startScan">Scan control QR</button><button id="stopScan" disabled>Stop camera</button></div>
-<video id="camera" playsinline></video><canvas id="scanCanvas"></canvas>
-<label for="offerInput">Or paste the offer code here</label>
-<textarea id="offerInput" placeholder="Paste BO1.… offer code from control.html"></textarea>
-<div class="row"><button class="primary" id="acceptOffer">Create answer code</button><button id="copyAnswer" disabled>Copy answer code</button></div>
-<label for="answerOutput">Answer code (paste this into control.html)</label>
-<textarea id="answerOutput" readonly placeholder="Your compact answer code will appear here"></textarea>
-<div id="status" class="status">Choose a role and scan or paste an offer.</div>
+
+<h2>1. Choose display role</h2>
+
+<div class="row"><select id="role"><option value="left">Backstage Left</option><option value="right">Backstage Right</option><option value="lyrics">Lyrics Display</option></select><button id="saveRole">Use this role</button><button id="fullscreenButton">Enter fullscreen</button></div>
+
+<p class="muted">This page interprets the same incoming Key Pressure event differently according to the selected role.</p>
+
 </div>
+
+
+
+<div class="panel">
+
+<h2>2. Pair with control</h2>
+
+<div class="row"><button class="primary" id="startScan">Scan control QR</button><button id="stopScan" disabled>Stop camera</button></div>
+
+<video id="camera" playsinline></video><canvas id="scanCanvas"></canvas>
+
+<label for="offerInput">Or paste the offer code here</label>
+
+<textarea id="offerInput" placeholder="Paste BO1.… offer code from control.html"></textarea>
+
+<div class="row"><button class="primary" id="acceptOffer">Create answer code</button><button id="copyAnswer" disabled>Copy answer code</button></div>
+
+<label for="answerOutput">Answer code (paste this into control.html)</label>
+
+<textarea id="answerOutput" readonly placeholder="Your compact answer code will appear here"></textarea>
+
+<div id="status" class="status">Choose a role. A pairing QR opens this page and creates the answer automatically. Tap Enter fullscreen once if needed.</div>
+
+</div>
+
+
 
 <div id="message">
+
 <div class="eyebrow" id="messageEyebrow">Waiting for cues</div>
+
 <h2 id="messageTitle">Ready</h2>
+
 <p id="messageBody">This display will update when the control page sends an event.</p>
+
 </div>
 
+
+
 <div class="panel"><h2>Recent messages</h2><div class="history" id="history">No messages received yet.</div></div>
+
 <p class="muted">This is a proof of concept. Keep the page open during the show. WebRTC does not automatically persist the connection after a refresh.</p>
+
 </main>
+
 <script>
+
 const $=id=>document.getElementById(id);
+
 let pc=null,dc=null,scanStream=null,scanFrame=null,historyItems=[];
+
 const rtcConfig={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
+
 function setStatus(s,cls=""){$("status").textContent=s;$("status").className="status "+cls;}
-function toBase64Url(bytes){let bin="";for(const b of bytes)bin+=String.fromCharCode(b);return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
-function fromBase64Url(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";const bin=atob(s);return Uint8Array.from(bin,c=>c.charCodeAt(0));}
+
+function toBase64Url(bytes){let bin="";for(const b of bytes)bin+=String.fromCharCode(b);return btoa(bin).replace(/\\+/g,"-").replace(/\\//g,"\_").replace(/=+$/,"");}
+
+function fromBase64Url(s){s=s.replace(/-/g,"+").replace(/\_/g,"/");while(s.length%4)s+="=";const bin=atob(s);return Uint8Array.from(bin,c=>c.charCodeAt(0));}
+
 async function packAnswer(obj){
+
  const raw=new TextEncoder().encode(JSON.stringify(obj));
+
  if("CompressionStream" in window){const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate"));const bytes=new Uint8Array(await new Response(stream).arrayBuffer());return "BA1."+toBase64Url(bytes);}
+
  return "BA0."+toBase64Url(raw);
+
 }
+
 async function unpackOffer(code){
+
  code=code.trim();
+
  if(code.startsWith("BO1.")){
+
   if(!("DecompressionStream" in window))throw new Error("This browser cannot decompress the QR offer. Use a current Safari/Chrome browser.");
+
   const bytes=fromBase64Url(code.slice(4));
+
   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+
   return JSON.parse(new TextDecoder().decode(await new Response(stream).arrayBuffer()));
+
  }
+
  if(code.startsWith("BO0."))return JSON.parse(new TextDecoder().decode(fromBase64Url(code.slice(4))));
+
  throw new Error("Offer code should begin with BO1. or BO0.");
+
 }
+
 function waitIceComplete(pc,timeoutMs=12000){
+
  if(pc.iceGatheringState==="complete")return Promise.resolve();
+
  return new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;pc.removeEventListener("icegatheringstatechange",check);resolve();};const check=()=>{if(pc.iceGatheringState==="complete")finish();};pc.addEventListener("icegatheringstatechange",check);setTimeout(finish,timeoutMs);});
+
 }
+
 function roleName(){return $("role").selectedOptions[0].textContent;}
+
 async function acceptOffer(){
+
  const offer=await unpackOffer($("offerInput").value);
+
  if(offer.type!=="offer"||!offer.sdp)throw new Error("That code doesn't contain a valid WebRTC offer.");
+
  if(pc){try{pc.close()}catch{}}
+
  pc=new RTCPeerConnection(rtcConfig);
- pc.ondatachannel=event=>{
+
+ pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==="disconnected"||pc.connectionState==="failed"||pc.connectionState==="closed"){
+      $("connectionPill").textContent="DISCONNECTED";
+      if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+    }
+  };
+  pc.ondatachannel=event=>{
+
   dc=event.channel;
+
   dc.onopen=()=>{$("connectionPill").textContent="CONNECTED";$("connectionPill").style.color="#a7f3c0";setStatus("Connected to control as "+roleName()+".","ok");};
-  dc.onclose=()=>{$("connectionPill").textContent="DISCONNECTED";setStatus("Connection closed. Pair again from the control page.");};
+
+  dc.onclose=()=>{$("connectionPill").textContent="DISCONNECTED";setStatus("Connection closed. Pair again from the control page.");if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});};
+
   dc.onmessage=event=>{try{const msg=JSON.parse(event.data);if(msg.type==="key_pressure")handleEvent(msg);}catch(e){console.warn("Ignored malformed message",e);}};
+
  };
+
  await pc.setRemoteDescription({type:"offer",sdp:offer.sdp});
+
  const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+
  setStatus("Gathering connection candidates…");
+
  await waitIceComplete(pc);
+
  const answerObj={v:1,type:"answer",sdp:pc.localDescription.sdp};
+
  $("answerOutput").value=await packAnswer(answerObj);
+
  $("copyAnswer").disabled=false;
+
  setStatus("Answer ready. Copy it back into control.html and complete pairing.","ok");
+
 }
+
 function handleEvent(msg){
+
  // MIDI Polyphonic Key Pressure (Aftertouch), not Note On.
+
  if(msg.channel!==1||msg.note!==1)return;
+
  const p=Number(msg.pressure),role=$("role").value;
+
  let title="",body="",kind="";
+
  if(role==="left"&&p===1){title="Stand by for entrance";body="Please be ready at your entrance position.";kind="alert";}
+
  if(role==="right"&&p===2){title="Prepare for scene change";body="Stand by for the upcoming scene change.";kind="alert";}
+
  if(p===3&&(role==="left"||role==="right")){title="Places, please";body="Please go to your places.";kind="alert";}
+
  if(role==="lyrics"&&p===3){title="Next lyric";body="Show next lyric";kind="lyric";}
+
  if(role==="lyrics"&&p===4){title="Lyrics cleared";body="Clear lyrics";kind="";}
+
  if(!title){return;} // "No change" means leave current display untouched.
+
  $("message").className=kind;
+
  $("messageEyebrow").textContent=roleName()+" · Key Pressure "+p;
+
  $("messageTitle").textContent=title;
+
  $("messageBody").textContent=body;
+
  const entry=new Date().toLocaleTimeString()+" — "+roleName()+": "+title;
- historyItems.unshift(entry);historyItems=historyItems.slice(0,8);$("history").textContent=historyItems.join("\\n");
+
+ historyItems.unshift(entry);historyItems=historyItems.slice(0,8);$("history").textContent=historyItems.join("\\\n");
+
 }
+
 $("saveRole").onclick=()=>{setStatus("Role set to "+roleName()+".","ok");};
+$("fullscreenButton").onclick=async()=>{
+  try{
+    if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
+    $("fullscreenButton").textContent="Exit fullscreen";
+  }catch(e){setStatus("Fullscreen was blocked by the browser. Tap the fullscreen button again or use the browser's fullscreen control.");}
+};
+document.addEventListener("fullscreenchange",()=>{
+  $("fullscreenButton").textContent=document.fullscreenElement?"Exit fullscreen":"Enter fullscreen";
+});
+$("fullscreenButton").addEventListener("click",async()=>{
+  if(document.fullscreenElement){try{await document.exitFullscreen();}catch{}}
+});
+
 $("acceptOffer").onclick=()=>acceptOffer().catch(e=>setStatus(e.message,"bad"));
+
 $("copyAnswer").onclick=async()=>{try{await navigator.clipboard.writeText($("answerOutput").value);setStatus("Answer code copied. Paste it into control.html.","ok");}catch{setStatus("Clipboard unavailable; select and copy the answer code.");}};
+
 async function startScan(){
+
  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Camera access isn't available. Use the paste-offer fallback.");
+
  if(typeof jsQR==="undefined")throw new Error("QR scanner library didn't load. Check internet access, then reload.");
+
  scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
+
  $("camera").srcObject=scanStream;$("camera").style.display="block";await $("camera").play();$("startScan").disabled=true;$("stopScan").disabled=false;
+
  const canvas=$("scanCanvas"),ctx=canvas.getContext("2d",{willReadFrequently:true});
+
  const tick=()=>{
+
   if(!scanStream)return;
+
   const v=$("camera");
+
   if(v.readyState===v.HAVE_ENOUGH_DATA){
+
    canvas.width=v.videoWidth;canvas.height=v.videoHeight;ctx.drawImage(v,0,0,canvas.width,canvas.height);
+
    const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+
    const code=jsQR(data.data,data.width,data.height,{inversionAttempts:"dontInvert"});
-   if(code&&code.data.startsWith("BO1.")){$("offerInput").value=code.data;stopScan();setStatus("QR scanned. Tap “Create answer code”.","ok");return;}
+
+   if(code){
+    let offerCode="";
+    if(code.data.startsWith("BO1.")||code.data.startsWith("BO0."))offerCode=code.data;
+    else {try{const u=new URL(code.data);offerCode=u.searchParams.get("offer")||"";}catch{}}
+    if(offerCode.startsWith("BO1.")||offerCode.startsWith("BO0.")){
+      $("offerInput").value=offerCode;stopScan();setStatus("QR scanned. Creating answer code…","ok");
+      acceptOffer().catch(e=>setStatus(e.message,"bad"));return;
+    }
   }
+
+  }
+
   scanFrame=requestAnimationFrame(tick);
+
  };
+
  tick();
+
 }
+
 function stopScan(){if(scanFrame)cancelAnimationFrame(scanFrame);scanFrame=null;if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}$("camera").srcObject=null;$("camera").style.display="none";$("startScan").disabled=false;$("stopScan").disabled=true;}
+
 $("startScan").onclick=()=>startScan().catch(e=>setStatus(e.message,"bad"));
+
 $("stopScan").onclick=stopScan;
+
+// QR codes from control.html open this page with ?offer=...; generate the answer automatically.
+window.addEventListener("load",()=>{
+  const params=new URLSearchParams(location.search);
+  const offer=params.get("offer");
+  if(offer){
+    $("offerInput").value=offer;
+    acceptOffer().catch(e=>setStatus(e.message,"bad"));
+  }
+});
+
 </script>
+
 </body></html>

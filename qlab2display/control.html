@@ -1,183 +1,407 @@
 <!doctype html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Backstage Cue Control — WebRTC POC</title>
+
 <style>
+
 :root{color-scheme:dark;--bg:#11131a;--panel:#1b1f2a;--line:#353b4b;--text:#f3f5fa;--muted:#aab2c4;--accent:#8bd5ff;--warn:#ffd479}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}
+
+\*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}
+
 main{max-width:1000px;margin:auto;padding:24px}h1{font-size:clamp(1.6rem,4vw,2.3rem);margin:.2rem 0}h2{font-size:1.15rem;margin:0 0 12px}p{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}
+
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+
 button,select,textarea,input{font:inherit;color:var(--text);background:#252b39;border:1px solid #4a5368;border-radius:10px;padding:11px 13px}
+
 button{cursor:pointer}button.primary{background:#1d5674;border-color:#3986ae}button:disabled{opacity:.45;cursor:not-allowed}
+
 textarea{width:100%;min-height:110px;resize:vertical;font:12px/1.4 ui-monospace,monospace}label{display:block;color:var(--muted);font-size:.9rem;margin:8px 0 5px}
-#qr{background:white;padding:12px;border-radius:12px;display:inline-block;min-width:220px;min-height:220px}#qr canvas,#qr img{max-width:100%;height:auto}
+
+\#qr{background:white;padding:12px;border-radius:12px;display:inline-block;min-width:220px;min-height:220px}#qr canvas,#qr img{max-width:100%;height:auto}
+
 .status{padding:10px 12px;border-radius:10px;background:#252b39;margin-top:10px}.ok{color:#a7f3c0}.bad{color:#ffaaaa}.muted{color:var(--muted);font-size:.9rem}
+
 .device{border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}.device strong{display:block}.device small{color:var(--muted)}
+
 .log{font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;color:#cbd5e1;max-height:180px;overflow:auto}
+
 </style>
+
 <!-- QR generation is loaded from a CDN; the rest of each page is self-contained. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script src="https\://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 </head>
+
 <body><main>
+
 <h1>Backstage Cue Control</h1>
-<p>Manual WebRTC signaling proof of concept. Pair each display once, then send test key-pressure events to connected displays.</p>
+
+<p>WebRTC cue control with browser MIDI input. Pair displays, then send cues from QLab or use the test buttons.</p>
+
 <div class="panel">
+
 <h2>1. Pair a display</h2>
+
 <div class="row">
+
 <label style="margin:0">Display label <input id="peerLabel" value="Display 1" maxlength="40"></label>
+
 <button class="primary" id="createOffer">Create pairing QR</button>
+
 </div>
+
 <p class="muted">The QR contains the WebRTC offer. On the display iPad, choose its role, scan the QR, then copy its compact answer code back here.</p>
+
 <div id="qr" aria-label="Pairing QR code"><span style="color:#333">QR appears here</span></div>
+
 <label for="offerText">Offer text (fallback if scanning QR isn't convenient)</label>
+
 <textarea id="offerText" readonly placeholder="Create an offer to populate this field"></textarea>
+
 <div class="row"><button id="copyOffer">Copy offer text</button><button id="downloadOffer">Download offer text</button></div>
+
 <label for="answerText">Paste answer code from the display</label>
+
 <textarea id="answerText" placeholder="Paste compact answer code here"></textarea>
+
 <div class="row"><button class="primary" id="applyAnswer">Complete pairing</button><button id="clearPairing">Clear current pairing</button></div>
+
 <div id="pairStatus" class="status">No pairing in progress.</div>
+
 </div>
 
+
+
 <div class="panel">
+
 <h2>2. Connected displays</h2>
+
 <div id="devices"><p class="muted">No connected displays yet.</p></div>
+
 </div>
 
+
+
 <div class="panel">
+
 <h2>3. Send test Key Pressure events</h2>
+
 <p>These buttons simulate <strong>Polyphonic Key Pressure (Aftertouch)</strong> on MIDI channel 1, note 1, with pressure values 1–4. They do not send MIDI Note On messages.</p>
+
 <div class="grid">
+
 <button data-pressure="1">Key Pressure 1 — Stand by for entrance</button>
+
 <button data-pressure="2">Key Pressure 2 — Prepare for scene change</button>
+
 <button data-pressure="3">Key Pressure 3 — Places, please / Show next lyric</button>
+
 <button data-pressure="4">Key Pressure 4 — Clear lyrics</button>
+
 </div>
-<p class="muted">The role-specific mapping is applied on each display. These are browser test buttons for now; a future MIDI bridge can send the same event object.</p>
+
+<p class="muted">The role-specific mapping is applied on each display. These buttons simulate the same event format as incoming MIDI. MIDI access requires a supported browser and a secure HTTPS context.</p>
+
 </div>
+
 <div class="panel"><h2>Activity log</h2><div class="log" id="log"></div></div>
+
 <p class="muted">Networking note: both pages should be served from a secure context (HTTPS, or localhost for development). QR libraries load from a CDN, so internet access is needed for QR generation in this prototype. WebRTC media/data itself can operate over the local network. If a network blocks direct connectivity, a TURN relay may be needed.</p>
+
 </main>
+
 <script>
+
 const $ = id => document.getElementById(id);
+
 let pending = null;
+
 let peers = [];
+
 let nextPeerId = 1;
+
 const rtcConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
 
-function log(msg){ const el=$("log"); el.textContent = new Date().toLocaleTimeString()+"  "+msg+"\\n"+el.textContent; }
+
+
+function log(msg){ const el=$("log"); el.textContent = new Date().toLocaleTimeString()+"  "+msg+"\\\n"+el.textContent; }
+
 function setPairStatus(msg, cls=""){ $("pairStatus").textContent=msg; $("pairStatus").className="status "+cls; }
+
 function waitIceComplete(pc, timeoutMs=12000){
+
   if(pc.iceGatheringState==="complete") return Promise.resolve();
+
   return new Promise(resolve=>{
+
     let done=false;
+
     const finish=()=>{if(done)return;done=true;pc.removeEventListener("icegatheringstatechange",check);resolve();};
+
     const check=()=>{if(pc.iceGatheringState==="complete")finish();};
+
     pc.addEventListener("icegatheringstatechange",check);
+
     setTimeout(finish,timeoutMs);
+
   });
+
 }
+
 function toBase64Url(bytes){
+
   let bin=""; for(const b of bytes) bin+=String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+
+  return btoa(bin).replace(/\\+/g,"-").replace(/\\//g,"\_").replace(/=+$/,"");
+
 }
+
 function fromBase64Url(s){
-  s=s.replace(/-/g,"+").replace(/_/g,"/");
+
+  s=s.replace(/-/g,"+").replace(/\_/g,"/");
+
   while(s.length%4)s+="=";
+
   const bin=atob(s); return Uint8Array.from(bin,c=>c.charCodeAt(0));
+
 }
+
 async function packAnswer(obj){
+
   const raw=new TextEncoder().encode(JSON.stringify(obj));
+
   if("CompressionStream" in window){
+
     const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate"));
+
     const compressed=new Uint8Array(await new Response(stream).arrayBuffer());
+
     return "BA1."+toBase64Url(compressed);
+
   }
+
   return "BA0."+toBase64Url(raw);
+
 }
+
 async function unpackAnswer(code){
+
   code=code.trim();
+
   if(code.startsWith("BA1.")){
+
     if(!("DecompressionStream" in window)) throw new Error("This browser cannot decompress the compact answer code. Try a current Safari/Chrome browser.");
+
     const bytes=fromBase64Url(code.slice(4));
+
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+
     return JSON.parse(new TextDecoder().decode(await new Response(stream).arrayBuffer()));
+
   }
+
   if(code.startsWith("BA0.")) return JSON.parse(new TextDecoder().decode(fromBase64Url(code.slice(4))));
+
   throw new Error("Answer code should begin with BA1. or BA0.");
+
 }
+
 async function createPairing(){
+
   if(typeof QRCode==="undefined") throw new Error("QR library did not load. Check internet access, then reload.");
+
   if(pending){try{pending.pc.close()}catch{} pending=null;}
+
   const pc=new RTCPeerConnection(rtcConfig);
+
   const dc=pc.createDataChannel("backstage-cues");
+
   const label=$("peerLabel").value.trim()||("Display "+nextPeerId);
+
   pending={pc,dc,label,offer:null};
+
   dc.onopen=()=>{log("Connected: "+label); setPairStatus("Connected to "+label+".", "ok"); addPeer(label,pc,dc);};
+
   dc.onclose=()=>{log("Data channel closed: "+label); renderDevices();};
+
   pc.onconnectionstatechange=()=>{log(label+" connection: "+pc.connectionState);};
+
   const offer=await pc.createOffer();
+
   await pc.setLocalDescription(offer);
+
   setPairStatus("Gathering connection candidates…");
+
   await waitIceComplete(pc);
+
   const payload={v:1,type:"offer",sdp:pc.localDescription.sdp,label};
+
   const raw=new TextEncoder().encode(JSON.stringify(payload));
+
   let code;
+
   if("CompressionStream" in window){
+
     const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate"));
+
     const compressed=new Uint8Array(await new Response(stream).arrayBuffer());
+
     code="BO1."+toBase64Url(compressed);
+
   } else {
+
     code="BO0."+toBase64Url(raw);
+
   }
+
   pending.offer=code;
+
   $("offerText").value=code;
+
   $("answerText").value="";
+
   $("qr").innerHTML="";
-  new QRCode($("qr"),{text:code,width:220,height:220,correctLevel:QRCode.CorrectLevel.L});
-  setPairStatus("Offer ready. Scan the QR on the display, then paste its answer code here.", "ok");
+
+  const displayUrl="https://biphtechtheater.github.io/qlab2display/display.html?offer="+encodeURIComponent(code);
+  new QRCode($("qr"),{text:displayUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.L});
+
+  setPairStatus("Offer ready. Scan the QR with the display device camera. The display page will open and generate its answer code automatically; paste that answer here.", "ok");
+
   log("Created pairing offer for "+label);
+
 }
+
 function addPeer(label,pc,dc){
+
   const item={id:nextPeerId++,label,pc,dc};
+
   peers.push(item); renderDevices();
+
 }
+
 function renderDevices(){
+
   const root=$("devices");
+
   if(!peers.length){root.innerHTML='<p class="muted">No connected displays yet.</p>';return;}
+
   root.innerHTML="";
+
   peers.forEach((p,i)=>{
+
     const div=document.createElement("div"); div.className="device";
+
     const title=document.createElement("strong"); title.textContent=p.label;
+
     const state=document.createElement("small"); state.textContent="Connection: "+p.pc.connectionState+" · Data channel: "+p.dc.readyState;
+
     const remove=document.createElement("button"); remove.textContent="Disconnect"; remove.style.marginTop="8px";
+
     remove.onclick=()=>{try{p.dc.close();p.pc.close()}catch{} peers=peers.filter(x=>x!==p);renderDevices();log("Disconnected "+p.label);};
+
     div.append(title,state,document.createElement("br"),remove);root.append(div);
+
   });
+
 }
+
 function sendPressure(pressure){
+
   const event={type:"key_pressure",channel:1,note:1,pressure:Number(pressure),timestamp:Date.now()};
+
   let sent=0;
+
   peers.forEach(p=>{
+
     if(p.dc.readyState==="open"){p.dc.send(JSON.stringify(event));sent++;}
+
   });
+
   log("Sent Polyphonic Key Pressure: channel 1, note 1, pressure "+pressure+" to "+sent+" display(s).");
+
 }
+
 $("createOffer").onclick=()=>createPairing().catch(e=>{setPairStatus(e.message,"bad");log("ERROR: "+e.message);});
-$("copyOffer").onclick=async()=>{try{await navigator.clipboard.writeText($("offerText").value);setPairStatus("Offer copied.");}catch{setPairStatus("Clipboard access unavailable; select and copy the offer text.");}};
-$("downloadOffer").onclick=()=>{const blob=new Blob([$("offerText").value],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backstage-offer.txt";a.click();URL.revokeObjectURL(a.href);};
-$("applyAnswer").onclick=async()=>{
+
+// Create a fresh pairing QR automatically whenever control.html loads.
+window.addEventListener("load",()=>createPairing().catch(e=>{setPairStatus(e.message,"bad");log("ERROR: "+e.message);}));
+
+// Web MIDI input: Polyphonic Key Pressure uses status high-nibble 0xA0.
+let midiAccess=null;
+function attachMidiInputs(){
+  const select=$("midiInput"), previous=select.value;
+  select.innerHTML="";
+  const inputs=[...midiAccess.inputs.values()];
+  if(!inputs.length){select.add(new Option("No MIDI inputs found",""));$("midiStatus").textContent="No MIDI inputs found. Check Audio MIDI Setup and reload/enable MIDI again.";return;}
+  inputs.forEach(input=>select.add(new Option(input.name||input.id,input.id)));
+  const preferred=inputs.find(i=>/IAC.*Bus 1|Bus 1.*IAC/i.test(i.name||""));
+  select.value=inputs.some(i=>i.id===previous)?previous:(preferred?preferred.id:inputs[0].id);
+  inputs.forEach(input=>input.onmidimessage=null);
+  bindSelectedMidi();
+}
+function bindSelectedMidi(){
+  if(!midiAccess)return;
+  for(const input of midiAccess.inputs.values())input.onmidimessage=null;
+  const input=midiAccess.inputs.get($("midiInput").value);
+  if(!input){$("midiStatus").textContent="Choose an available MIDI input.";return;}
+  input.onmidimessage=event=>{
+    const [status,note,pressure]=event.data;
+    if((status&0xF0)!==0xA0)return; // Polyphonic Key Pressure only
+    const channel=(status&0x0F)+1;
+    log("MIDI in: Polyphonic Key Pressure, channel "+channel+", note "+note+", pressure "+pressure+" ("+(input.name||input.id)+")");
+    if(channel===1&&note===1&&pressure>=1&&pressure<=4)sendPressure(pressure);
+  };
+  $("midiStatus").textContent="Listening to "+(input.name||input.id)+".";
+}
+$("enableMidi").onclick=async()=>{
   try{
-    if(!pending) throw new Error("Create a pairing offer first.");
-    const answer=await unpackAnswer($("answerText").value);
-    if(answer.type!=="answer"||!answer.sdp) throw new Error("That code doesn't contain a valid WebRTC answer.");
-    await pending.pc.setRemoteDescription({type:"answer",sdp:answer.sdp});
-    setPairStatus("Answer accepted. Waiting for the data channel to connect…");
-    log("Applied answer for "+pending.label);
-  }catch(e){setPairStatus(e.message,"bad");log("ERROR: "+e.message);}
+    if(!navigator.requestMIDIAccess)throw new Error("This browser does not support Web MIDI. Use a current desktop Chrome/Edge browser on HTTPS.");
+    midiAccess=await navigator.requestMIDIAccess({sysex:false});
+    attachMidiInputs();
+    midiAccess.onstatechange=attachMidiInputs;
+    log("MIDI access enabled.");
+  }catch(e){$("midiStatus").textContent=e.message;log("MIDI ERROR: "+e.message);}
 };
+$("midiInput").onchange=bindSelectedMidi;
+
+$("copyOffer").onclick=async()=>{try{await navigator.clipboard.writeText($("offerText").value);setPairStatus("Offer copied.");}catch{setPairStatus("Clipboard access unavailable; select and copy the offer text.");}};
+
+$("downloadOffer").onclick=()=>{const blob=new Blob([$("offerText").value],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backstage-offer.txt";a.click();URL.revokeObjectURL(a.href);};
+
+$("applyAnswer").onclick=async()=>{
+
+  try{
+
+    if(!pending) throw new Error("Create a pairing offer first.");
+
+    const answer=await unpackAnswer($("answerText").value);
+
+    if(answer.type!=="answer"||!answer.sdp) throw new Error("That code doesn't contain a valid WebRTC answer.");
+
+    await pending.pc.setRemoteDescription({type:"answer",sdp:answer.sdp});
+
+    setPairStatus("Answer accepted. Waiting for the data channel to connect…");
+
+    log("Applied answer for "+pending.label);
+
+  }catch(e){setPairStatus(e.message,"bad");log("ERROR: "+e.message);}
+
+};
+
 $("clearPairing").onclick=()=>{if(pending){try{pending.dc.close();pending.pc.close()}catch{}pending=null;} $("qr").innerHTML="";$("offerText").value="";$("answerText").value="";setPairStatus("Current pairing cleared.");};
+
 document.querySelectorAll("[data-pressure]").forEach(btn=>btn.onclick=()=>sendPressure(btn.dataset.pressure));
+
 </script>
+
 </body></html>
