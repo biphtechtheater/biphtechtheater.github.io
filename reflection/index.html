@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tech Theater • Self-Reflection</title>
+
+    <link rel="icon" href="../icons/light-icon.png">
+    <link rel="stylesheet" href="../common-styles.css">
+
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --border: #333;
+            --text: #eee;
+            --muted: #aaa;
+            --accent: #9f4bff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .page-description {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 45px;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Reflection form card */
+
+        .reflection-wrapper {
+            max-width: 850px;
+            margin: 0 auto 70px;
+        }
+
+        .reflection-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 36px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            width: 100%;
+        }
+
+        .form-group label {
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input.score-input,
+        textarea {
+            background: #111;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 13px 15px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input.score-input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(159, 75, 255, 0.15);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .score-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        input.score-input {
+            padding-right: 45px;
+        }
+
+        .score-wrapper::after {
+            content: '%';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            font-size: 1rem;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Export button */
+
+        .export-button {
+            display: inline-block;
+            align-self: flex-start;
+            padding: 14px 32px;
+            margin-top: 8px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 9999px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .export-button:hover {
+            filter: brightness(1.25);
+            transform: translateY(-2px);
+        }
+
+        .export-button:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile adjustments */
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .page-description {
+                font-size: 1rem;
+                margin-bottom: 30px;
+            }
+
+            .reflection-card {
+                padding: 22px;
+            }
+
+            form {
+                gap: 22px;
+            }
+
+            .export-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Shared site navigation -->
+    <div id="shared-menu"></div>
+    <div id="shared-header"></div>
+
+    <div class="container">
+
+        <h1>Self-Reflection</h1>
+
+        <p class="page-description">
+            Take a moment to reflect on your performance,
+            recognize what went well, and identify areas for growth.
+        </p>
+
+        <div class="reflection-wrapper">
+
+            <div class="reflection-card">
+
+                <form id="reflectionForm">
+
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="performance">Performance:</label>
+                        <input type="text" id="performance">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wentWell">What went well?</label>
+                        <textarea id="wentWell"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="needsImprovement">What went wrong?</label>
+                        <textarea id="needsImprovement"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skillsToWorkOn">
+                            What skills or knowledge do you personally
+                            want to work on for future performances?
+                        </label>
+                        <textarea id="skillsToWorkOn"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="selfScore">
+                            What score would you give yourself for this performance?
+                        </label>
+
+                        <div class="score-wrapper">
+                            <input
+                                type="number"
+                                id="selfScore"
+                                class="score-input"
+                                min="1"
+                                max="100"
+                                step="1"
+                            >
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="export-button"
+                        onclick="generatePDF()"
+                    >
+                        Export PDF →
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Shared site scripts -->
+    <script src="../menu.js"></script>
+    <script src="../header.js"></script>
+
+    <script>
+        console.log(
+            '%cBIPH Tech Theater Self-Reflection loaded',
+            'color: #9f4bff; font-size: 13px;'
+        );
+
+        // Restrict score to integers 1–100
+
+        document.getElementById('selfScore').addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            let val = parseInt(this.value, 10);
+
+            if (isNaN(val)) {
+                this.value = '';
+            } else if (val < 1) {
+                this.value = '1';
+            } else if (val > 100) {
+                this.value = '100';
+            } else {
+                this.value = val;
+            }
+        });
+
+        // Generate PDF
+
+        function generatePDF() {
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(45, 70, 119);
+            doc.rect(0, 0, 210, 297, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica");
+
+            let y = 20;
+
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("BIPH Music", 105, y, { align: 'center' });
+
+            y += 15;
+
+            doc.setFontSize(14);
+            doc.text("Student Self-Reflection", 105, y, { align: 'center' });
+
+            y += 30;
+
+            doc.setFontSize(12);
+
+            const name =
+                document.getElementById('name').value.trim() || 'Student';
+
+            const performance =
+                document.getElementById('performance').value.trim() || 'Performance';
+
+            const wentWell =
+                document.getElementById('wentWell').value || '';
+
+            const needsImprovement =
+                document.getElementById('needsImprovement').value || '';
+
+            const skillsToWorkOn =
+                document.getElementById('skillsToWorkOn').value || '';
+
+            const selfScore =
+                document.getElementById('selfScore').value || '';
+
+            // Sanitize filename
+
+            const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+            const safePerf = performance.replace(/[^a-zA-Z0-9]/g, '_');
+
+            const filename =
+                `${safeName}-${safePerf}-self-reflection.pdf`;
+
+            // Name
+
+            doc.setFont("helvetica", "bold");
+            doc.text('Name:', 20, y);
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+            doc.text(name, 20, y);
+
+            y += 20;
+
+            // Performance
+
+            doc.setFont("helvetica", "bold");
+            doc.text('What was the performance:', 20, y);
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+            doc.text(performance, 20, y);
+
+            y += 20;
+
+            // What went well
+
+            doc.setFont("helvetica", "bold");
+            doc.text('What went well:', 20, y);
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+
+            const wentWellLines =
+                doc.splitTextToSize(wentWell, 170);
+
+            doc.text(wentWellLines, 20, y);
+
+            y += (wentWellLines.length * 7) + 15;
+
+            // Areas for improvement
+
+            doc.setFont("helvetica", "bold");
+            doc.text('What still needs improvement:', 20, y);
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+
+            const needsLines =
+                doc.splitTextToSize(needsImprovement, 170);
+
+            doc.text(needsLines, 20, y);
+
+            y += (needsLines.length * 7) + 15;
+
+            // Skills to work on
+
+            doc.setFont("helvetica", "bold");
+
+            doc.text(
+                'What skills or knowledge do you personally want to work on for future performances?',
+                20,
+                y,
+                { maxWidth: 170 }
+            );
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+
+            const skillsLines =
+                doc.splitTextToSize(skillsToWorkOn, 170);
+
+            doc.text(skillsLines, 20, y);
+
+            y += (skillsLines.length * 7) + 15;
+
+            // Self-assigned score
+
+            doc.setFont("helvetica", "bold");
+            doc.text('Self-assigned score:', 20, y);
+
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+            doc.text(selfScore ? selfScore + ' %' : '', 20, y);
+
+            y += 20;
+
+            // Teacher's final score field
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Teacher's final score:", 20, y);
+
+            const teacherField = new doc.AcroFormTextField();
+
+            teacherField.Rect = [80, y - 6, 60, 12];
+            teacherField.fieldName = 'teacherScore';
+            teacherField.value = '';
+            teacherField.color = 'white';
+            teacherField.borderColor = [255, 255, 255];
+            teacherField.backgroundColor = [45, 70, 119];
+
+            doc.addField(teacherField);
+
+            // Save
+
+            doc.save(filename);
+        }
+    </script>
+
+</body>
+</html>
