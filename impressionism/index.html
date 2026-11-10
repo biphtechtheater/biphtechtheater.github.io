@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Impressionism</title>
+<title>Impressionism — Interactive Exhibition</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1758,6 +1758,189 @@ const IGNORE_MOTION_MS = 1500;
 
 const MOTION_SAMPLE_STEP = 1;
 
+// MIDI is sent only when at least this proportion of sampled
+// webcam pixels changes significantly in a single frame.
+const MOTION_MIDI_MIN_PERCENT = 0.005; // 0.5%
+const MOTION_MIDI_COOLDOWN_MS = 2000;
+
+
+/* =========================================================
+   MIDI OUTPUT — IAC DRIVER BUS 1, CHANNEL 16
+========================================================= */
+
+let midiAccess = null;
+let midiAccessPromise = null;
+let midiOutput = null;
+
+let lastMotionMidiTime = -Infinity;
+let motionMidiPending = false;
+
+
+function findMidiOutput(access) {
+
+    const outputs = Array.from(access.outputs.values());
+
+    midiOutput = outputs.find(output =>
+        output.name?.trim().toLowerCase() === "iac driver bus 1"
+    ) || null;
+
+    if (midiOutput) {
+
+        console.info(
+            `[Impressionism MIDI] Connected to ${midiOutput.name} (channel 16).`
+        );
+
+    } else {
+
+        console.warn(
+            "[Impressionism MIDI] IAC Driver Bus 1 was not found. Available outputs:",
+            outputs.map(output => output.name)
+        );
+
+    }
+
+}
+
+
+async function initializeMidi() {
+
+    if (midiOutput?.state === "connected") {
+        return true;
+    }
+
+    if (!navigator.requestMIDIAccess) {
+
+        console.warn(
+            "[Impressionism MIDI] Web MIDI is unavailable in this browser. Use a supported browser over HTTPS."
+        );
+
+        return false;
+
+    }
+
+    if (midiAccessPromise) {
+        return midiAccessPromise;
+    }
+
+    // This function is first called directly from a display-button
+    // interaction, allowing the browser to request MIDI permission.
+    midiAccessPromise = navigator.requestMIDIAccess({ sysex: false })
+        .then(access => {
+
+            midiAccess = access;
+
+            findMidiOutput(midiAccess);
+
+            midiAccess.onstatechange = () => {
+                findMidiOutput(midiAccess);
+            };
+
+            return Boolean(midiOutput);
+
+        })
+        .catch(error => {
+
+            console.warn(
+                "[Impressionism MIDI] Could not access MIDI devices:",
+                error
+            );
+
+            midiAccessPromise = null;
+
+            return false;
+
+        });
+
+    return midiAccessPromise;
+
+}
+
+
+// MIDI channels are zero-based in the status byte.
+// 0x9F = Note On, channel 16. 0x8F = Note Off, channel 16.
+function sendMidiNote(note, velocity = 100) {
+
+    if (
+        !midiOutput ||
+        midiOutput.state !== "connected" ||
+        !Number.isInteger(note) ||
+        note < 0 ||
+        note > 127
+    ) return;
+
+    try {
+
+        const noteOffTime = performance.now() + 150;
+
+        midiOutput.send([0x9F, note, velocity]);
+        midiOutput.send([0x8F, note, 0], noteOffTime);
+
+        // console.info(`[Impressionism MIDI] Note ${note} — channel 16`);
+
+    } catch (error) {
+
+        // console.warn("[Impressionism MIDI] Could not send note:", error);
+
+    }
+
+}
+
+
+function getArtworkMidiNote(index) {
+
+    const art = artworks[index];
+
+    if (!art) return null;
+
+    const match = art.file.match(/^piece(\d+)\.jpg$/i);
+
+    return match ? Number(match[1]) : null;
+
+}
+
+
+function sendArtworkMidiNote(index) {
+
+    const note = getArtworkMidiNote(index);
+
+    if (note !== null) {
+        sendMidiNote(note);
+    }
+
+}
+
+
+function triggerMotionMidi() {
+
+    const now = performance.now();
+
+    if (
+        motionMidiPending ||
+        now - lastMotionMidiTime < MOTION_MIDI_COOLDOWN_MS ||
+        currentMode !== "main" ||
+        displayTransitioning ||
+        !displayFade.classList.contains("visible")
+    ) return;
+
+    motionMidiPending = true;
+    lastMotionMidiTime = now;
+
+    sendMidiNote(61);
+
+    // Read the artwork index after the delay so the follow-up note
+    // always identifies the work still on display at that moment.
+    setTimeout(() => {
+
+        if (currentMode === "main" && currentArtworkIndex >= 0) {
+            sendArtworkMidiNote(currentArtworkIndex);
+        }
+
+        motionMidiPending = false;
+
+    }, 1000);
+
+}
+
 
 /* =========================================================
    RIPPLE ENGINE STATE
@@ -1951,7 +2134,53 @@ function logCurrentArtwork(index, mode) {
 
 
 /* =========================================================
+   IMAGE LOADING HELPER
+
+   Waits for an image to be downloaded and decoded before
+   allowing it to be used by the display.
+========================================================= */
+
+async function loadImageAsset(path, description) {
+
+    const image = new Image();
+    image.decoding = "async";
+
+    image.src = path;
+
+    try {
+
+        await image.decode();
+
+        if (!image.naturalWidth || !image.naturalHeight) {
+            throw new Error("Image decoded without usable dimensions.");
+        }
+
+    } catch (error) {
+
+        console.error(
+            `[Impressionism] ${description} failed to load: ${path}`,
+            {
+                path,
+                naturalWidth: image.naturalWidth,
+                naturalHeight: image.naturalHeight,
+                error
+            }
+        );
+
+        throw error;
+
+    }
+
+    return image;
+
+}
+
+
+/* =========================================================
    LOAD AN ARTWORK
+
+   The new painting is fully loaded and decoded before it
+   replaces the currently displayed painting.
 ========================================================= */
 
 async function loadArtwork(index) {
@@ -1962,36 +2191,15 @@ async function loadArtwork(index) {
         throw new Error(`No artwork exists at schedule index ${index}.`);
     }
 
-    const image = new Image();
+    const imagePath =
+        "art/" + encodeURIComponent(art.file);
 
-    image.decoding = "async";
+    const image = await loadImageAsset(
+        imagePath,
+        `Artwork "${art.title}"`
+    );
 
-    const imagePath = "art/" + art.file;
-
-    image.src = imagePath;
-
-    try {
-
-        await image.decode();
-
-    } catch (error) {
-
-        console.error(
-            `[Impressionism] Image failed to decode: ${imagePath}`,
-            {
-                artwork: art.title,
-                artist: art.artist,
-                expectedFile: art.file,
-                imageWidth: image.naturalWidth,
-                imageHeight: image.naturalHeight,
-                error
-            }
-        );
-
-        throw error;
-
-    }
-
+    // Only replace the existing painting after the new one is ready.
     activeImage = image;
 
     logCurrentArtwork(index, "Main Display");
@@ -2004,15 +2212,29 @@ async function loadArtwork(index) {
 
 
 /* =========================================================
-   PLACARD CONTENT
+   UPDATE PLACARD
+
+   Load the new artist portrait first. Only after it is
+   successfully decoded do we update the text and portrait.
 ========================================================= */
 
-function updatePlacard(index) {
+async function updatePlacard(index) {
 
     const art = artworks[index];
 
-    logCurrentArtwork(index, "Placard");
+    if (!art) {
+        throw new Error(`No artwork exists at schedule index ${index}.`);
+    }
 
+    const portraitPath =
+        encodeURI(art.portrait).replaceAll("#", "%23");
+
+    const portraitImage = await loadImageAsset(
+        portraitPath,
+        `Artist portrait for ${art.artist}`
+    );
+
+    // Commit all the new content together.
     document.getElementById("placard-artist").textContent =
         art.artist;
 
@@ -2028,8 +2250,10 @@ function updatePlacard(index) {
     document.getElementById("placard-description").textContent =
         art.description;
 
-    placardPortrait.src = art.portrait;
+    placardPortrait.src = portraitImage.src;
     placardPortrait.alt = art.artist;
+
+    logCurrentArtwork(index, "Placard");
 
 }
 
@@ -2108,7 +2332,8 @@ async function transitionMainDisplay(index) {
 
     displayTransitioning = true;
 
-    // Fade the existing artwork to black.
+    // Fade the existing painting to black.
+    sendMidiNote(0);
     displayFade.classList.remove("visible");
 
     await new Promise(resolve => {
@@ -2117,25 +2342,33 @@ async function transitionMainDisplay(index) {
 
     try {
 
-        // The image changes while the display is completely black.
+        // Wait until the new painting has fully loaded and decoded.
         await loadArtwork(index);
 
         currentArtworkIndex = index;
 
+        // Only now reveal the new painting.
+        displayFade.classList.add("visible");
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        sendArtworkMidiNote(currentArtworkIndex);
+
     } catch (error) {
 
-        console.error("Could not load scheduled artwork:", error);
+        // If the new painting fails, remain black.
+        console.error(
+            `[Impressionism] Artwork transition to schedule index ${index} was not completed.`,
+            error
+        );
+
+    } finally {
+
+        displayTransitioning = false;
 
     }
-
-    // Fade the new painting back into view.
-    displayFade.classList.add("visible");
-
-    await new Promise(resolve => {
-        setTimeout(resolve, 1500);
-    });
-
-    displayTransitioning = false;
 
 }
 
@@ -2155,26 +2388,43 @@ async function transitionPlacard(index) {
 
     placardTransitioning = true;
 
-    // Fade only the artist and artwork information.
-    // The heading remains visible.
+    // Fade out the artist and artwork information.
+    sendMidiNote(0);
     placardContent.classList.add("fading");
 
     await new Promise(resolve => {
         setTimeout(resolve, 1500);
     });
 
-    updatePlacard(index);
+    try {
 
-    currentArtworkIndex = index;
+        // Wait for the new portrait to load before changing anything.
+        await updatePlacard(index);
 
-    // Fade the new information back in.
-    placardContent.classList.remove("fading");
+        currentArtworkIndex = index;
 
-    await new Promise(resolve => {
-        setTimeout(resolve, 1500);
-    });
+        // Reveal the new text and portrait together.
+        placardContent.classList.remove("fading");
 
-    placardTransitioning = false;
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        sendArtworkMidiNote(currentArtworkIndex);
+
+    } catch (error) {
+
+        // If loading fails, leave the placard content hidden.
+        console.error(
+            `[Impressionism] Placard transition to schedule index ${index} was not completed.`,
+            error
+        );
+
+    } finally {
+
+        placardTransitioning = false;
+
+    }
 
 }
 
@@ -2241,6 +2491,272 @@ function scheduleNextArtwork() {
 
 
 /* =========================================================
+   BACKGROUND MUSIC — MAIN DISPLAY ONLY
+
+   Static hosting cannot automatically list the contents
+   of a folder, so tracks are maintained in this playlist.
+========================================================= */
+
+const MUSIC_TRACKS = [
+    "Maurice Ravel - Pavane pour une infante defunte.mp3",
+    "Claude Debussy - Arabesque No 1.mp3",
+    "Claude Debussy - Clair de Lune.mp3",
+    "Claude Debussy - Girl With Flaxen Hair.mp3",
+    "Claude Debussy - La fille aux cheveux de lin.mp3",
+    "Claude Debussy - Petite Suite En Bateau.mp3",
+    "Claude Debussy - Pour invoquer Pan, dieu du vent dete.mp3",
+    "Claude Debussy - Reverie.mp3",
+    "Claude Debussy - Sarabande.mp3",
+    "Erik Satie - Gymnopedie No. 1.mp3",
+    "Gabriel Faure - Pavane.mp3"
+];
+
+const backgroundMusic = new Audio();
+
+backgroundMusic.preload = "auto";
+
+let musicTrackIndex = 0;
+let musicPlaybackActive = false;
+let musicFailedTracks = new Set();
+
+
+/* =========================================================
+   MUSIC FILE PATH
+========================================================= */
+
+function getMusicTrackPath(filename) {
+
+    return "music/" + encodeURIComponent(filename);
+
+}
+
+
+/* =========================================================
+   PLAY CURRENT TRACK
+========================================================= */
+
+function playCurrentMusicTrack() {
+
+    console.warn("[MUSIC TEST] playCurrentMusicTrack() was called.");
+
+    if (!musicPlaybackActive || currentMode !== "main") {
+
+        console.error(
+            "[MUSIC TEST] Playback aborted.",
+            {
+                musicPlaybackActive,
+                currentMode
+            }
+        );
+
+        return;
+    }
+
+    if (!MUSIC_TRACKS.length) return;
+
+    const filename = MUSIC_TRACKS[musicTrackIndex];
+    const trackPath = getMusicTrackPath(filename);
+
+    console.warn(
+        `[MUSIC TEST] Attempting to play: ${filename}`
+    );
+
+    console.warn(
+        `[MUSIC TEST] File path: ${trackPath}`
+    );
+
+    backgroundMusic.src = trackPath;
+
+    const playPromise = backgroundMusic.play();
+
+    if (playPromise) {
+
+        playPromise.then(() => {
+
+            console.warn(
+                `[MUSIC TEST] PLAYBACK STARTED: ${filename}`
+            );
+
+        }).catch(error => {
+
+            console.error(
+                `[MUSIC TEST] PLAYBACK FAILED: ${filename}`,
+                error.name,
+                error.message
+            );
+
+        });
+
+    }
+
+}
+
+/* =========================================================
+   START MUSIC
+========================================================= */
+
+function startBackgroundMusic() {
+
+    console.warn("[MUSIC TEST] startBackgroundMusic() was called.");
+
+    if (!MUSIC_TRACKS.length) {
+
+        console.error("[MUSIC TEST] Playlist is empty.");
+        return;
+
+    }
+
+    musicPlaybackActive = true;
+    musicTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+
+    musicFailedTracks.clear();
+
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+
+    console.warn(
+        `[MUSIC TEST] Starting playlist with ${MUSIC_TRACKS.length} tracks.`
+    );
+
+    playCurrentMusicTrack();
+
+}
+
+
+/* =========================================================
+   STOP MUSIC
+========================================================= */
+
+function stopBackgroundMusic() {
+
+    musicPlaybackActive = false;
+
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+
+    backgroundMusic.removeAttribute("src");
+    backgroundMusic.load();
+
+    console.info("[Impressionism Music] Playback stopped.");
+
+}
+
+
+/* =========================================================
+   ADVANCE TO NEXT TRACK
+========================================================= */
+
+function advanceBackgroundMusic() {
+
+    if (!musicPlaybackActive || currentMode !== "main") return;
+
+    // Stop if every track has failed.
+    if (musicFailedTracks.size >= MUSIC_TRACKS.length) {
+
+        console.error(
+            "[Impressionism Music] Every track in the playlist failed to load. Playback has stopped."
+        );
+
+        stopBackgroundMusic();
+        return;
+
+    }
+
+    // Find the next track that has not already failed.
+    let checked = 0;
+
+    do {
+
+        musicTrackIndex =
+            (musicTrackIndex + 1) % MUSIC_TRACKS.length;
+
+        checked++;
+
+    } while (
+        musicFailedTracks.has(musicTrackIndex) &&
+        checked < MUSIC_TRACKS.length
+    );
+
+    playCurrentMusicTrack();
+
+}
+
+
+/* =========================================================
+   MUSIC EVENT LISTENERS
+========================================================= */
+
+// This is the most useful diagnostic:
+// it confirms that playback has actually begun.
+backgroundMusic.addEventListener("playing", () => {
+
+    if (!musicPlaybackActive || currentMode !== "main") return;
+
+    const filename = MUSIC_TRACKS[musicTrackIndex];
+
+    console.info(
+        `[Impressionism Music] NOW PLAYING (${musicTrackIndex + 1}/${MUSIC_TRACKS.length}): ${filename}`
+    );
+
+});
+
+
+// Confirms that the browser has enough data to begin playback.
+backgroundMusic.addEventListener("canplay", () => {
+
+    if (!musicPlaybackActive || currentMode !== "main") return;
+
+    console.info(
+        `[Impressionism Music] Ready to play: ${MUSIC_TRACKS[musicTrackIndex]}`
+    );
+
+});
+
+
+// If a file cannot be loaded, report it and skip to the next.
+backgroundMusic.addEventListener("error", () => {
+
+    if (!musicPlaybackActive || currentMode !== "main") return;
+
+    const filename = MUSIC_TRACKS[musicTrackIndex];
+    const mediaError = backgroundMusic.error;
+
+    musicFailedTracks.add(musicTrackIndex);
+
+    console.error(
+        `[Impressionism Music] COULD NOT LOAD: ${filename}`,
+        {
+            path: backgroundMusic.currentSrc ||
+                getMusicTrackPath(filename),
+
+            mediaErrorCode: mediaError?.code,
+            mediaErrorMessage: mediaError?.message,
+
+            failedTracks: musicFailedTracks.size,
+            totalTracks: MUSIC_TRACKS.length
+        }
+    );
+
+    advanceBackgroundMusic();
+
+});
+
+
+// When a track finishes normally, play the next one.
+backgroundMusic.addEventListener("ended", () => {
+
+    if (!musicPlaybackActive || currentMode !== "main") return;
+
+    console.info(
+        `[Impressionism Music] Finished: ${MUSIC_TRACKS[musicTrackIndex]}`
+    );
+
+    advanceBackgroundMusic();
+
+});
+
+
+/* =========================================================
    START MAIN DISPLAY
 ========================================================= */
 
@@ -2249,6 +2765,12 @@ async function startMainDisplay() {
     if (currentMode !== "home") return;
 
     currentMode = "main";
+
+    console.warn("[MUSIC TEST] Main Display was selected.");
+
+    startBackgroundMusic();
+
+    const midiReadyPromise = initializeMidi();
 
     home.style.display = "none";
 
@@ -2279,21 +2801,41 @@ async function startMainDisplay() {
 
     const initialIndex = getArtworkIndex(new Date());
 
+    let initialArtworkLoaded = false;
+
     try {
 
+        // Wait for the painting to fully load and decode.
         await loadArtwork(initialIndex);
 
         currentArtworkIndex = initialIndex;
 
+        initialArtworkLoaded = true;
+
     } catch (error) {
 
-        console.error("Could not load artwork:", error);
+        console.error(
+            `[Impressionism] Initial artwork failed to load (schedule index ${initialIndex}). The display will remain black.`,
+            error
+        );
 
     }
 
 
-    // Reveal the initial painting from black.
-    displayFade.classList.add("visible");
+    // Only reveal the painting after successful loading.
+    if (initialArtworkLoaded) {
+
+        displayFade.classList.add("visible");
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        midiReadyPromise.then(() => {
+            sendArtworkMidiNote(currentArtworkIndex);
+        });
+
+    }
 
 
     // Start the webcam independently.
@@ -2310,9 +2852,12 @@ async function startMainDisplay() {
    START PLACARD
 ========================================================= */
 
-function startPlacard() {
+
+async function startPlacard() {
 
     if (currentMode !== "home") return;
+
+    const midiReadyPromise = initializeMidi();
 
     currentMode = "placard";
 
@@ -2320,11 +2865,41 @@ function startPlacard() {
 
     placard.classList.add("active");
 
-    placardContent.classList.remove("fading");
+    // Keep the placard content hidden until it is ready.
+    placardContent.classList.add("fading");
 
     currentArtworkIndex = getArtworkIndex(new Date());
 
-    updatePlacard(currentArtworkIndex);
+    try {
+
+        await updatePlacard(currentArtworkIndex);
+
+        // The new portrait and all text are now ready.
+        placardContent.classList.remove("fading");
+
+    } catch (error) {
+
+        console.error(
+            `[Impressionism] Initial placard content failed to load (schedule index ${currentArtworkIndex}).`,
+            error
+        );
+
+        placard.classList.remove("active");
+
+        home.style.display = "";
+
+        currentMode = "home";
+
+        currentArtworkIndex = -1;
+
+        return;
+
+    }
+
+
+    midiReadyPromise.then(() => {
+        sendArtworkMidiNote(currentArtworkIndex);
+    });
 
     placardTransitioning = false;
 
@@ -2435,6 +3010,9 @@ async function startCamera() {
 function closeDisplay() {
 
     if (currentMode === "home") return;
+
+    // Music belongs exclusively to Main Display.
+    stopBackgroundMusic();
 
     clearScheduledTransition();
 
@@ -2745,6 +3323,8 @@ function loop(timeMs) {
     const previous = lastData.data;
 
     let motionFound = false;
+    let changedPixelCount = 0;
+    let sampledPixelCount = 0;
 
     const step = MOTION_SAMPLE_STEP;
 
@@ -2752,6 +3332,8 @@ function loop(timeMs) {
     for (let y = 2; y < h - 2; y += step) {
 
         for (let x = 2; x < w - 2; x += step) {
+
+            sampledPixelCount++;
 
             const i = (y * w + x) * 4;
 
@@ -2765,11 +3347,20 @@ function loop(timeMs) {
                 addRipple(x, y, 80);
 
                 motionFound = true;
+                changedPixelCount++;
 
             }
 
         }
 
+    }
+
+    const changedPixelRatio = sampledPixelCount
+        ? changedPixelCount / sampledPixelCount
+        : 0;
+
+    if (changedPixelRatio >= MOTION_MIDI_MIN_PERCENT) {
+        triggerMotionMidi();
     }
 
 
@@ -2849,6 +3440,7 @@ document.addEventListener("visibilitychange", async () => {
 
         displayTransitioning = false;
 
+        sendMidiNote(0);
         displayFade.classList.remove("visible");
 
         try {
@@ -2865,19 +3457,32 @@ document.addEventListener("visibilitychange", async () => {
 
         displayFade.classList.add("visible");
 
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        sendArtworkMidiNote(currentArtworkIndex);
+
     } else if (currentMode === "placard") {
 
         placardTransitioning = false;
 
+        sendMidiNote(0);
         placardContent.classList.add("fading");
 
-        setTimeout(() => {
+        setTimeout(async () => {
 
             updatePlacard(correctIndex);
 
             currentArtworkIndex = correctIndex;
 
             placardContent.classList.remove("fading");
+
+            await new Promise(resolve => {
+                setTimeout(resolve, 1500);
+            });
+
+            sendArtworkMidiNote(currentArtworkIndex);
 
         }, 1500);
 
