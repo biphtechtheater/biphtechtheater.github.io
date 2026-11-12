@@ -254,6 +254,52 @@ body {
 
 
 /* =========================================================
+   AUDIO CONTROLS
+========================================================= */
+
+.audio-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 35px;
+    max-width: 650px;
+    margin-top: 27px;
+}
+
+.audio-control {
+    min-width: 0;
+}
+
+.audio-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.audio-label label {
+    color: var(--secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.audio-label span {
+    color: var(--text);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.audio-control input[type="range"] {
+    display: block;
+    width: 100%;
+    height: 5px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+
+/* =========================================================
    MAIN DISPLAY
 ========================================================= */
 
@@ -530,6 +576,12 @@ body {
         max-width: 100%;
     }
 
+    .audio-controls {
+        grid-template-columns: 1fr;
+        gap: 23px;
+        margin-top: 25px;
+    }
+
     .placard-inner {
         padding:
             max(35px, env(safe-area-inset-top) + 20px)
@@ -665,6 +717,52 @@ body {
                 aria-live="polite"
             >
                 Choose a camera to grant access. USB webcams are supported.
+            </div>
+
+        </div>
+
+
+        <!-- AUDIO VOLUME CONTROLS -->
+
+        <div class="audio-controls">
+
+            <div class="audio-control">
+
+                <div class="audio-label">
+                    <label for="ambience-volume">Ambience</label>
+                    <span id="ambience-volume-value">70%</span>
+                </div>
+
+                <input
+                    type="range"
+                    id="ambience-volume"
+                    min="0"
+                    max="100"
+                    value="70"
+                    step="1"
+                    aria-label="Ambience volume"
+                >
+
+            </div>
+
+
+            <div class="audio-control">
+
+                <div class="audio-label">
+                    <label for="music-volume">Music</label>
+                    <span id="music-volume-value">45%</span>
+                </div>
+
+                <input
+                    type="range"
+                    id="music-volume"
+                    min="0"
+                    max="100"
+                    value="45"
+                    step="1"
+                    aria-label="Music volume"
+                >
+
             </div>
 
         </div>
@@ -1414,21 +1512,6 @@ const placardPortrait = document.getElementById("placard-portrait");
 
 /* =========================================================
    CLOCK-BASED ARTWORK SCHEDULING
-
-   There are exactly 60 artworks.
-
-   The minute within the hour determines the artwork:
-
-       09:00 = Artwork 1
-       09:01 = Artwork 2
-       ...
-       09:59 = Artwork 60
-       10:00 = Artwork 1
-
-   The hour does not affect the sequence.
-
-   This makes all devices follow the same schedule as long
-   as their local clocks are accurate.
 ========================================================= */
 
 function getArtworkIndex(date = new Date()) {
@@ -1758,15 +1841,16 @@ const IGNORE_MOTION_MS = 1500;
 
 const MOTION_SAMPLE_STEP = 1;
 
-// MIDI is sent only when at least this proportion of sampled
-// webcam pixels changes significantly in a single frame.
-const MOTION_MIDI_MIN_PERCENT = 0.005; // 0.5%
+const MOTION_MIDI_MIN_PERCENT = 0.005;
 const MOTION_MIDI_COOLDOWN_MS = 2000;
 
 
 /* =========================================================
-   MIDI OUTPUT — IAC DRIVER BUS 1, CHANNEL 16
+   MIDI OUTPUT — IAC DRIVER BUS 1, CHANNEL 2
 ========================================================= */
+
+const MIDI_CHANNEL = 2;
+const MIDI_VELOCITY = 127;
 
 let midiAccess = null;
 let midiAccessPromise = null;
@@ -1787,7 +1871,7 @@ function findMidiOutput(access) {
     if (midiOutput) {
 
         console.info(
-            `[Impressionism MIDI] Connected to ${midiOutput.name} (channel 16).`
+            `[Impressionism MIDI] Connected to ${midiOutput.name} (channel ${MIDI_CHANNEL}).`
         );
 
     } else {
@@ -1822,8 +1906,6 @@ async function initializeMidi() {
         return midiAccessPromise;
     }
 
-    // This function is first called directly from a display-button
-    // interaction, allowing the browser to request MIDI permission.
     midiAccessPromise = navigator.requestMIDIAccess({ sysex: false })
         .then(access => {
 
@@ -1856,9 +1938,7 @@ async function initializeMidi() {
 }
 
 
-// MIDI channels are zero-based in the status byte.
-// 0x9F = Note On, channel 16. 0x8F = Note Off, channel 16.
-function sendMidiNote(note, velocity = 100) {
+function sendMidiNote(note) {
 
     if (
         !midiOutput ||
@@ -1872,16 +1952,19 @@ function sendMidiNote(note, velocity = 100) {
 
         const noteOffTime = performance.now() + 150;
 
-        midiOutput.send([0x9F, note, velocity]);
-        midiOutput.send([0x8F, note, 0], noteOffTime);
+        midiOutput.send([
+            0x90 | (MIDI_CHANNEL - 1),
+            note,
+            MIDI_VELOCITY
+        ]);
 
-        // console.info(`[Impressionism MIDI] Note ${note} — channel 16`);
+        midiOutput.send([
+            0x80 | (MIDI_CHANNEL - 1),
+            note,
+            0
+        ], noteOffTime);
 
-    } catch (error) {
-
-        // console.warn("[Impressionism MIDI] Could not send note:", error);
-
-    }
+    } catch (error) {}
 
 }
 
@@ -1927,8 +2010,6 @@ function triggerMotionMidi() {
 
     sendMidiNote(61);
 
-    // Read the artwork index after the delay so the follow-up note
-    // always identifies the work still on display at that moment.
     setTimeout(() => {
 
         if (currentMode === "main" && currentArtworkIndex >= 0) {
@@ -1978,9 +2059,6 @@ let openRequestId = 0;
 
 /* =========================================================
    DEFERRED RIPPLE INITIALIZATION
-
-   Nothing expensive is allocated until Main Display is opened.
-   Placard never initializes the ripple engine.
 ========================================================= */
 
 function initializeRippleEngine() {
@@ -2135,9 +2213,6 @@ function logCurrentArtwork(index, mode) {
 
 /* =========================================================
    IMAGE LOADING HELPER
-
-   Waits for an image to be downloaded and decoded before
-   allowing it to be used by the display.
 ========================================================= */
 
 async function loadImageAsset(path, description) {
@@ -2178,9 +2253,6 @@ async function loadImageAsset(path, description) {
 
 /* =========================================================
    LOAD AN ARTWORK
-
-   The new painting is fully loaded and decoded before it
-   replaces the currently displayed painting.
 ========================================================= */
 
 async function loadArtwork(index) {
@@ -2199,7 +2271,6 @@ async function loadArtwork(index) {
         `Artwork "${art.title}"`
     );
 
-    // Only replace the existing painting after the new one is ready.
     activeImage = image;
 
     logCurrentArtwork(index, "Main Display");
@@ -2213,9 +2284,6 @@ async function loadArtwork(index) {
 
 /* =========================================================
    UPDATE PLACARD
-
-   Load the new artist portrait first. Only after it is
-   successfully decoded do we update the text and portrait.
 ========================================================= */
 
 async function updatePlacard(index) {
@@ -2234,7 +2302,6 @@ async function updatePlacard(index) {
         `Artist portrait for ${art.artist}`
     );
 
-    // Commit all the new content together.
     document.getElementById("placard-artist").textContent =
         art.artist;
 
@@ -2318,179 +2385,6 @@ function exitDisplayFullscreen() {
 
 
 /* =========================================================
-   MAIN DISPLAY TRANSITIONS
-========================================================= */
-
-async function transitionMainDisplay(index) {
-
-    if (
-        !mainDisplay.classList.contains("active") ||
-        displayTransitioning
-    ) return;
-
-    if (index === currentArtworkIndex) return;
-
-    displayTransitioning = true;
-
-    // Fade the existing painting to black.
-    sendMidiNote(0);
-    displayFade.classList.remove("visible");
-
-    await new Promise(resolve => {
-        setTimeout(resolve, 1500);
-    });
-
-    try {
-
-        // Wait until the new painting has fully loaded and decoded.
-        await loadArtwork(index);
-
-        currentArtworkIndex = index;
-
-        // Only now reveal the new painting.
-        displayFade.classList.add("visible");
-
-        await new Promise(resolve => {
-            setTimeout(resolve, 1500);
-        });
-
-        sendArtworkMidiNote(currentArtworkIndex);
-
-    } catch (error) {
-
-        // If the new painting fails, remain black.
-        console.error(
-            `[Impressionism] Artwork transition to schedule index ${index} was not completed.`,
-            error
-        );
-
-    } finally {
-
-        displayTransitioning = false;
-
-    }
-
-}
-
-
-/* =========================================================
-   PLACARD TRANSITIONS
-========================================================= */
-
-async function transitionPlacard(index) {
-
-    if (
-        !placard.classList.contains("active") ||
-        placardTransitioning
-    ) return;
-
-    if (index === currentArtworkIndex) return;
-
-    placardTransitioning = true;
-
-    // Fade out the artist and artwork information.
-    sendMidiNote(0);
-    placardContent.classList.add("fading");
-
-    await new Promise(resolve => {
-        setTimeout(resolve, 1500);
-    });
-
-    try {
-
-        // Wait for the new portrait to load before changing anything.
-        await updatePlacard(index);
-
-        currentArtworkIndex = index;
-
-        // Reveal the new text and portrait together.
-        placardContent.classList.remove("fading");
-
-        await new Promise(resolve => {
-            setTimeout(resolve, 1500);
-        });
-
-        sendArtworkMidiNote(currentArtworkIndex);
-
-    } catch (error) {
-
-        // If loading fails, leave the placard content hidden.
-        console.error(
-            `[Impressionism] Placard transition to schedule index ${index} was not completed.`,
-            error
-        );
-
-    } finally {
-
-        placardTransitioning = false;
-
-    }
-
-}
-
-
-/* =========================================================
-   SYNCHRONIZED CLOCK SCHEDULER
-
-   Both displays use this same scheduler.
-
-   The next transition begins at the next minute boundary.
-
-   Each transition:
-       1.5 seconds: fade to black
-       1.5 seconds: fade back in
-
-   The target painting is always calculated from the clock,
-   not from a counter that could drift between devices.
-========================================================= */
-
-function clearScheduledTransition() {
-
-    if (scheduledTimer !== null) {
-        clearTimeout(scheduledTimer);
-    }
-
-    if (transitionTimer !== null) {
-        clearTimeout(transitionTimer);
-    }
-
-    scheduledTimer = null;
-    transitionTimer = null;
-
-}
-
-
-function scheduleNextArtwork() {
-
-    clearScheduledTransition();
-
-    if (currentMode === "home") return;
-
-    const delay = getNextMinuteDelay();
-
-    scheduledTimer = setTimeout(async () => {
-
-        const nextIndex = getArtworkIndex(new Date());
-
-        if (currentMode === "main") {
-
-            await transitionMainDisplay(nextIndex);
-
-        } else if (currentMode === "placard") {
-
-            await transitionPlacard(nextIndex);
-
-        }
-
-        // Calculate the next boundary from the actual clock again.
-        scheduleNextArtwork();
-
-    }, delay);
-
-}
-
-
-/* =========================================================
    BACKGROUND MUSIC — MAIN DISPLAY ONLY
 
    Static hosting cannot automatically list the contents
@@ -2518,6 +2412,442 @@ backgroundMusic.preload = "auto";
 let musicTrackIndex = 0;
 let musicPlaybackActive = false;
 let musicFailedTracks = new Set();
+
+
+/* =========================================================
+   AUDIO VOLUME CONTROLS
+========================================================= */
+
+const ambienceVolumeSlider =
+    document.getElementById("ambience-volume");
+
+const musicVolumeSlider =
+    document.getElementById("music-volume");
+
+const ambienceVolumeValue =
+    document.getElementById("ambience-volume-value");
+
+const musicVolumeValue =
+    document.getElementById("music-volume-value");
+
+
+function getAmbienceVolume() {
+
+    return Number(ambienceVolumeSlider.value) / 100;
+
+}
+
+
+function getMusicVolume() {
+
+    return Number(musicVolumeSlider.value) / 100;
+
+}
+
+
+// Apply the initial music volume.
+backgroundMusic.volume = getMusicVolume();
+
+
+/* =========================================================
+   AUDIO FADE ENGINE
+
+   Each audio element can have only one active fade.
+
+   If a fade is replaced, its animation is cancelled and
+   its Promise is resolved. This prevents interrupted
+   transitions from leaving unfinished asynchronous tasks.
+========================================================= */
+
+const audioFadeStates = new WeakMap();
+
+
+function cancelAudioFade(audio) {
+
+    const previous = audioFadeStates.get(audio);
+
+    if (!previous) return;
+
+    if (previous.animationId !== null) {
+        cancelAnimationFrame(previous.animationId);
+    }
+
+    audioFadeStates.delete(audio);
+
+    // Resolve the previous Promise so callers don't remain waiting.
+    previous.resolve();
+
+}
+
+
+function fadeAudio(audio, targetVolume, duration = 1500) {
+
+    cancelAudioFade(audio);
+
+    return new Promise(resolve => {
+
+        const startVolume = audio.volume;
+        const startTime = performance.now();
+
+        const state = {
+            animationId: null,
+            resolve
+        };
+
+        audioFadeStates.set(audio, state);
+
+
+        if (duration <= 0) {
+
+            audio.volume = targetVolume;
+
+            audioFadeStates.delete(audio);
+
+            resolve();
+
+            return;
+
+        }
+
+
+        function animate(now) {
+
+            // A newer fade may have replaced this one.
+            if (audioFadeStates.get(audio) !== state) {
+                resolve();
+                return;
+            }
+
+            const progress = Math.min(
+                (now - startTime) / duration,
+                1
+            );
+
+            // Smoothstep easing.
+            const eased =
+                progress * progress * (3 - 2 * progress);
+
+            audio.volume =
+                startVolume +
+                (targetVolume - startVolume) * eased;
+
+
+            if (progress < 1) {
+
+                state.animationId =
+                    requestAnimationFrame(animate);
+
+            } else {
+
+                audio.volume = targetVolume;
+
+                audioFadeStates.delete(audio);
+
+                resolve();
+
+            }
+
+        }
+
+
+        state.animationId =
+            requestAnimationFrame(animate);
+
+    });
+
+}
+
+
+/* =========================================================
+   AMBIENCE PLAYER
+
+   Each ambience track is matched to the artwork filename.
+
+   Example:
+       piece37.jpg -> ambience/ambience37.mp3
+
+   The ambience tracks do not loop.
+========================================================= */
+
+const ambienceAudio = new Audio();
+
+ambienceAudio.preload = "auto";
+ambienceAudio.loop = false;
+ambienceAudio.volume = 0;
+
+let currentAmbienceIndex = -1;
+let ambienceRequestId = 0;
+
+let ambienceFadeOutInProgress = false;
+let ambienceHasEnded = false;
+
+
+/* =========================================================
+   FIND THE CORRECT AMBIENCE FILE
+========================================================= */
+
+function getAmbienceTrackPath(index) {
+
+    const art = artworks[index];
+
+    if (!art) return null;
+
+    const match = art.file.match(/^piece(\d+)\.jpg$/i);
+
+    if (!match) return null;
+
+    const pieceNumber = Number(match[1]);
+
+    return `ambience/ambience${pieceNumber}.mp3`;
+
+}
+
+
+/* =========================================================
+   PLAY THE AMBIENCE FOR AN ARTWORK
+
+   Starts at silence and fades up to the selected volume.
+
+   The request ID prevents an older asynchronous play()
+   operation from interfering with a newer artwork.
+========================================================= */
+
+async function playArtworkAmbience(index, duration = 1500) {
+
+    const trackPath = getAmbienceTrackPath(index);
+
+    if (!trackPath) {
+
+        console.warn(
+            `[Impressionism Ambience] No ambience track found for artwork index ${index}.`
+        );
+
+        return;
+
+    }
+
+    const requestId = ++ambienceRequestId;
+
+    currentAmbienceIndex = index;
+
+    ambienceFadeOutInProgress = false;
+    ambienceHasEnded = false;
+
+    cancelAudioFade(ambienceAudio);
+
+    ambienceAudio.pause();
+
+    ambienceAudio.volume = 0;
+    ambienceAudio.currentTime = 0;
+
+    ambienceAudio.src = trackPath;
+    ambienceAudio.load();
+
+
+    // Zero volume means the ambience stays silent.
+    // The track is still selected and can be started later
+    // if the user raises the slider.
+    if (getAmbienceVolume() <= 0) {
+        return;
+    }
+
+
+    try {
+
+        await ambienceAudio.play();
+
+        // A newer artwork request may have happened while
+        // the browser was processing the play() request.
+        if (
+            requestId !== ambienceRequestId ||
+            currentMode === "home"
+        ) {
+            return;
+        }
+
+        console.info(
+            `[Impressionism Ambience] Playing ${trackPath}`
+        );
+
+        await fadeAudio(
+            ambienceAudio,
+            getAmbienceVolume(),
+            duration
+        );
+
+    } catch (error) {
+
+        if (requestId === ambienceRequestId) {
+
+            console.warn(
+                `[Impressionism Ambience] Could not play ${trackPath}:`,
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   FADE OUT AND STOP THE CURRENT AMBIENCE
+========================================================= */
+
+async function stopArtworkAmbience(duration = 1500) {
+
+    const requestId = ++ambienceRequestId;
+
+    ambienceFadeOutInProgress = true;
+
+    if (
+        ambienceAudio.paused ||
+        !ambienceAudio.src
+    ) {
+
+        cancelAudioFade(ambienceAudio);
+
+        ambienceAudio.volume = 0;
+
+    } else {
+
+        await fadeAudio(
+            ambienceAudio,
+            0,
+            duration
+        );
+
+    }
+
+
+    // A new ambience track may have been requested while
+    // the fade was running. Don't stop that newer track.
+    if (requestId !== ambienceRequestId) {
+        return;
+    }
+
+    ambienceAudio.pause();
+    ambienceAudio.currentTime = 0;
+    ambienceAudio.volume = 0;
+
+    currentAmbienceIndex = -1;
+
+    ambienceFadeOutInProgress = false;
+
+}
+
+
+/* =========================================================
+   AMBIENCE TRACK COMPLETION
+
+   Tracks are intentionally not looped.
+========================================================= */
+
+ambienceAudio.addEventListener("ended", () => {
+
+    ambienceHasEnded = true;
+
+    ambienceAudio.volume = 0;
+
+    console.info(
+        "[Impressionism Ambience] Current ambience track finished."
+    );
+
+});
+
+
+/* =========================================================
+   AMBIENCE VOLUME SLIDER
+========================================================= */
+
+ambienceVolumeSlider.addEventListener("input", () => {
+
+    const volume = getAmbienceVolume();
+
+    ambienceVolumeValue.textContent =
+        `${ambienceVolumeSlider.value}%`;
+
+
+    // During a transition fade-out, the ambience must
+    // continue toward silence regardless of slider movement.
+    if (ambienceFadeOutInProgress) {
+        return;
+    }
+
+
+    if (volume <= 0) {
+
+        cancelAudioFade(ambienceAudio);
+
+        ambienceAudio.pause();
+
+        ambienceAudio.volume = 0;
+
+        ambienceAudio.currentTime = 0;
+
+        ambienceHasEnded = false;
+
+        return;
+
+    }
+
+
+    // If the current ambience is already playing, apply
+    // the new selected volume immediately.
+    if (!ambienceAudio.paused) {
+
+        cancelAudioFade(ambienceAudio);
+
+        ambienceAudio.volume = volume;
+
+        return;
+
+    }
+
+
+    // If the user raises the volume while an artwork is
+    // displayed, resume the currently selected ambience.
+    if (
+        currentMode !== "home" &&
+        currentAmbienceIndex >= 0 &&
+        ambienceAudio.src &&
+        !ambienceHasEnded
+    ) {
+
+        cancelAudioFade(ambienceAudio);
+
+        ambienceAudio.volume = volume;
+
+        ambienceAudio.play().catch(error => {
+
+            console.warn(
+                "[Impressionism Ambience] Could not resume playback:",
+                error
+            );
+
+        });
+
+    }
+
+});
+
+
+/* =========================================================
+   MUSIC VOLUME SLIDER
+========================================================= */
+
+musicVolumeSlider.addEventListener("input", () => {
+
+    const volume = getMusicVolume();
+
+    musicVolumeValue.textContent =
+        `${musicVolumeSlider.value}%`;
+
+    // Music volume is independent of ambience volume.
+    backgroundMusic.volume = volume;
+
+});
 
 
 /* =========================================================
@@ -2591,6 +2921,7 @@ function playCurrentMusicTrack() {
 
 }
 
+
 /* =========================================================
    START MUSIC
 ========================================================= */
@@ -2607,12 +2938,16 @@ function startBackgroundMusic() {
     }
 
     musicPlaybackActive = true;
-    musicTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+
+    musicTrackIndex =
+        Math.floor(Math.random() * MUSIC_TRACKS.length);
 
     musicFailedTracks.clear();
 
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
+
+    backgroundMusic.volume = getMusicVolume();
 
     console.warn(
         `[MUSIC TEST] Starting playlist with ${MUSIC_TRACKS.length} tracks.`
@@ -2650,7 +2985,6 @@ function advanceBackgroundMusic() {
 
     if (!musicPlaybackActive || currentMode !== "main") return;
 
-    // Stop if every track has failed.
     if (musicFailedTracks.size >= MUSIC_TRACKS.length) {
 
         console.error(
@@ -2662,7 +2996,6 @@ function advanceBackgroundMusic() {
 
     }
 
-    // Find the next track that has not already failed.
     let checked = 0;
 
     do {
@@ -2686,8 +3019,6 @@ function advanceBackgroundMusic() {
    MUSIC EVENT LISTENERS
 ========================================================= */
 
-// This is the most useful diagnostic:
-// it confirms that playback has actually begun.
 backgroundMusic.addEventListener("playing", () => {
 
     if (!musicPlaybackActive || currentMode !== "main") return;
@@ -2701,7 +3032,6 @@ backgroundMusic.addEventListener("playing", () => {
 });
 
 
-// Confirms that the browser has enough data to begin playback.
 backgroundMusic.addEventListener("canplay", () => {
 
     if (!musicPlaybackActive || currentMode !== "main") return;
@@ -2713,7 +3043,6 @@ backgroundMusic.addEventListener("canplay", () => {
 });
 
 
-// If a file cannot be loaded, report it and skip to the next.
 backgroundMusic.addEventListener("error", () => {
 
     if (!musicPlaybackActive || currentMode !== "main") return;
@@ -2742,7 +3071,6 @@ backgroundMusic.addEventListener("error", () => {
 });
 
 
-// When a track finishes normally, play the next one.
 backgroundMusic.addEventListener("ended", () => {
 
     if (!musicPlaybackActive || currentMode !== "main") return;
@@ -2754,6 +3082,197 @@ backgroundMusic.addEventListener("ended", () => {
     advanceBackgroundMusic();
 
 });
+
+
+/* =========================================================
+   MAIN DISPLAY TRANSITIONS
+========================================================= */
+
+async function transitionMainDisplay(index) {
+
+    if (
+        !mainDisplay.classList.contains("active") ||
+        displayTransitioning
+    ) return;
+
+    if (index === currentArtworkIndex) return;
+
+    displayTransitioning = true;
+
+    // Send the blackout MIDI note.
+    sendMidiNote(0);
+
+    // Begin both visual and ambience fade-outs together.
+    displayFade.classList.remove("visible");
+
+    const ambienceFadeOut =
+        stopArtworkAmbience(1500);
+
+
+    await new Promise(resolve => {
+        setTimeout(resolve, 1500);
+    });
+
+
+    try {
+
+        // Load and decode the new painting.
+        await loadArtwork(index);
+
+        currentArtworkIndex = index;
+
+        // Make sure the previous ambience has finished fading.
+        await ambienceFadeOut;
+
+        // Start the new ambience from silence.
+        const ambienceFadeIn =
+            playArtworkAmbience(index, 1500);
+
+        // Reveal the new painting at the same time.
+        displayFade.classList.add("visible");
+
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        await ambienceFadeIn;
+
+        sendArtworkMidiNote(currentArtworkIndex);
+
+    } catch (error) {
+
+        console.error(
+            `[Impressionism] Artwork transition to schedule index ${index} was not completed.`,
+            error
+        );
+
+    } finally {
+
+        displayTransitioning = false;
+
+    }
+
+}
+
+
+/* =========================================================
+   PLACARD TRANSITIONS
+========================================================= */
+
+async function transitionPlacard(index) {
+
+    if (
+        !placard.classList.contains("active") ||
+        placardTransitioning
+    ) return;
+
+    if (index === currentArtworkIndex) return;
+
+    placardTransitioning = true;
+
+    sendMidiNote(0);
+
+    // Fade the existing placard and ambience together.
+    placardContent.classList.add("fading");
+
+    const ambienceFadeOut =
+        stopArtworkAmbience(1500);
+
+
+    await new Promise(resolve => {
+        setTimeout(resolve, 1500);
+    });
+
+
+    try {
+
+        // Load the new portrait and update the information.
+        await updatePlacard(index);
+
+        currentArtworkIndex = index;
+
+        await ambienceFadeOut;
+
+        // Begin the new ambience fade-in.
+        const ambienceFadeIn =
+            playArtworkAmbience(index, 1500);
+
+        // Reveal the new placard at the same time.
+        placardContent.classList.remove("fading");
+
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+        await ambienceFadeIn;
+
+        sendArtworkMidiNote(currentArtworkIndex);
+
+    } catch (error) {
+
+        console.error(
+            `[Impressionism] Placard transition to schedule index ${index} was not completed.`,
+            error
+        );
+
+    } finally {
+
+        placardTransitioning = false;
+
+    }
+
+}
+
+
+/* =========================================================
+   SYNCHRONIZED CLOCK SCHEDULER
+========================================================= */
+
+function clearScheduledTransition() {
+
+    if (scheduledTimer !== null) {
+        clearTimeout(scheduledTimer);
+    }
+
+    if (transitionTimer !== null) {
+        clearTimeout(transitionTimer);
+    }
+
+    scheduledTimer = null;
+    transitionTimer = null;
+
+}
+
+
+function scheduleNextArtwork() {
+
+    clearScheduledTransition();
+
+    if (currentMode === "home") return;
+
+    const delay = getNextMinuteDelay();
+
+    scheduledTimer = setTimeout(async () => {
+
+        const nextIndex = getArtworkIndex(new Date());
+
+        if (currentMode === "main") {
+
+            await transitionMainDisplay(nextIndex);
+
+        } else if (currentMode === "placard") {
+
+            await transitionPlacard(nextIndex);
+
+        }
+
+        scheduleNextArtwork();
+
+    }, delay);
+
+}
 
 
 /* =========================================================
@@ -2784,6 +3303,7 @@ async function startMainDisplay() {
 
     requestDisplayFullscreen(mainDisplay);
 
+
     try {
 
         initializeRippleEngine();
@@ -2805,7 +3325,6 @@ async function startMainDisplay() {
 
     try {
 
-        // Wait for the painting to fully load and decode.
         await loadArtwork(initialIndex);
 
         currentArtworkIndex = initialIndex;
@@ -2822,8 +3341,11 @@ async function startMainDisplay() {
     }
 
 
-    // Only reveal the painting after successful loading.
     if (initialArtworkLoaded) {
+
+        // Begin ambience and visual fade-in together.
+        const ambienceFadeIn =
+            playArtworkAmbience(initialIndex, 1500);
 
         displayFade.classList.add("visible");
 
@@ -2831,18 +3353,19 @@ async function startMainDisplay() {
             setTimeout(resolve, 1500);
         });
 
+        await ambienceFadeIn;
+
         midiReadyPromise.then(() => {
-            sendArtworkMidiNote(currentArtworkIndex);
+            if (currentMode === "main") {
+                sendArtworkMidiNote(currentArtworkIndex);
+            }
         });
 
     }
 
 
-    // Start the webcam independently.
     startCamera();
 
-
-    // Begin the clock-aligned schedule.
     scheduleNextArtwork();
 
 }
@@ -2851,7 +3374,6 @@ async function startMainDisplay() {
 /* =========================================================
    START PLACARD
 ========================================================= */
-
 
 async function startPlacard() {
 
@@ -2865,7 +3387,6 @@ async function startPlacard() {
 
     placard.classList.add("active");
 
-    // Keep the placard content hidden until it is ready.
     placardContent.classList.add("fading");
 
     currentArtworkIndex = getArtworkIndex(new Date());
@@ -2874,8 +3395,13 @@ async function startPlacard() {
 
         await updatePlacard(currentArtworkIndex);
 
-        // The new portrait and all text are now ready.
+        // Start ambience as the placard fades into view.
+        const ambienceFadeIn =
+            playArtworkAmbience(currentArtworkIndex, 1500);
+
         placardContent.classList.remove("fading");
+
+        await ambienceFadeIn;
 
     } catch (error) {
 
@@ -2898,7 +3424,9 @@ async function startPlacard() {
 
 
     midiReadyPromise.then(() => {
-        sendArtworkMidiNote(currentArtworkIndex);
+        if (currentMode === "placard") {
+            sendArtworkMidiNote(currentArtworkIndex);
+        }
     });
 
     placardTransitioning = false;
@@ -2987,7 +3515,6 @@ async function startCamera() {
 
         console.warn("Could not start camera:", error);
 
-        // The painting remains visible without ripple effects.
         started = false;
 
         if (stream) {
@@ -3011,8 +3538,23 @@ function closeDisplay() {
 
     if (currentMode === "home") return;
 
-    // Music belongs exclusively to Main Display.
+    // Stop the music.
     stopBackgroundMusic();
+
+    // Invalidate any pending ambience operations.
+    ambienceRequestId++;
+
+    cancelAudioFade(ambienceAudio);
+
+    ambienceAudio.pause();
+    ambienceAudio.currentTime = 0;
+    ambienceAudio.volume = 0;
+
+    currentAmbienceIndex = -1;
+
+    ambienceFadeOutInProgress = false;
+    ambienceHasEnded = false;
+
 
     clearScheduledTransition();
 
@@ -3290,7 +3832,6 @@ function loop(timeMs) {
     if (!video.videoWidth || !video.videoHeight) return;
 
 
-    // Mirror the webcam frame.
     bufferCtx.save();
 
     bufferCtx.translate(w, 0);
@@ -3420,9 +3961,8 @@ document
 /* =========================================================
    CLOCK CHANGE / TAB RESUMPTION
 
-   If the page is backgrounded, suspended, or the device clock
-   changes, recalculate the correct artwork when it becomes
-   visible again.
+   Recalculate the correct artwork when the page becomes
+   visible again, including the matching ambience track.
 ========================================================= */
 
 document.addEventListener("visibilitychange", async () => {
@@ -3436,12 +3976,20 @@ document.addEventListener("visibilitychange", async () => {
         return;
     }
 
+
     if (currentMode === "main") {
 
         displayTransitioning = false;
 
         sendMidiNote(0);
+
         displayFade.classList.remove("visible");
+
+        // Fade out the previous ambience while the painting
+        // fades to black.
+        const ambienceFadeOut =
+            stopArtworkAmbience(1500);
+
 
         try {
 
@@ -3449,44 +3997,77 @@ document.addEventListener("visibilitychange", async () => {
 
             currentArtworkIndex = correctIndex;
 
+            await ambienceFadeOut;
+
+            // Start the new ambience as the painting returns.
+            const ambienceFadeIn =
+                playArtworkAmbience(correctIndex, 1500);
+
+            displayFade.classList.add("visible");
+
+
+            await new Promise(resolve => {
+                setTimeout(resolve, 1500);
+            });
+
+            await ambienceFadeIn;
+
+            sendArtworkMidiNote(currentArtworkIndex);
+
         } catch (error) {
 
             console.error(error);
 
         }
 
-        displayFade.classList.add("visible");
-
-        await new Promise(resolve => {
-            setTimeout(resolve, 1500);
-        });
-
-        sendArtworkMidiNote(currentArtworkIndex);
 
     } else if (currentMode === "placard") {
 
         placardTransitioning = false;
 
         sendMidiNote(0);
+
         placardContent.classList.add("fading");
 
-        setTimeout(async () => {
+        const ambienceFadeOut =
+            stopArtworkAmbience(1500);
 
-            updatePlacard(correctIndex);
+
+        await new Promise(resolve => {
+            setTimeout(resolve, 1500);
+        });
+
+
+        try {
+
+            await updatePlacard(correctIndex);
 
             currentArtworkIndex = correctIndex;
 
+            await ambienceFadeOut;
+
+            const ambienceFadeIn =
+                playArtworkAmbience(correctIndex, 1500);
+
             placardContent.classList.remove("fading");
+
 
             await new Promise(resolve => {
                 setTimeout(resolve, 1500);
             });
 
+            await ambienceFadeIn;
+
             sendArtworkMidiNote(currentArtworkIndex);
 
-        }, 1500);
+        } catch (error) {
+
+            console.error(error);
+
+        }
 
     }
+
 
     scheduleNextArtwork();
 
