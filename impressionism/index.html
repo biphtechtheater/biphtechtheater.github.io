@@ -516,6 +516,44 @@ body {
 }
 
 
+#main-music-credit {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 23px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 25px;
+
+  background: rgba(0, 0, 0, 0.92);
+  color: rgba(255, 255, 255, 0.85);
+
+  font-size: 10px;
+  letter-spacing: 0.02em;
+
+  z-index: 9999;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#main-music-credit .music-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+#main-music-track {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
 /* =========================================================
    RESPONSIVE LAYOUT
 ========================================================= */
@@ -783,6 +821,11 @@ body {
     <video id="camera" autoplay playsinline muted></video>
 
     <div id="display-fade"></div>
+
+    <div id="main-music-credit">
+        <span class="music-label">NOW PLAYING</span>
+        <span id="main-music-track"></span>
+    </div>
 
 </section>
 
@@ -2413,6 +2456,30 @@ let musicTrackIndex = 0;
 let musicPlaybackActive = false;
 let musicFailedTracks = new Set();
 
+function updateMainMusicCredit() {
+    const display = document.getElementById("main-music-track");
+
+    if (!display || !MUSIC_TRACKS.length) return;
+
+    const filename = MUSIC_TRACKS[musicTrackIndex];
+    if (!filename) return;
+
+    const cleanName = filename.replace(/\.mp3$/i, "");
+    const separator = cleanName.indexOf(" - ");
+
+    const composer = separator >= 0
+        ? cleanName.slice(0, separator)
+        : "";
+
+    const title = separator >= 0
+        ? cleanName.slice(separator + 3)
+        : cleanName;
+
+    display.textContent = composer
+        ? `${title} — ${composer}`
+        : title;
+}
+
 
 /* =========================================================
    AUDIO VOLUME CONTROLS
@@ -2885,6 +2952,7 @@ function playCurrentMusicTrack() {
     if (!MUSIC_TRACKS.length) return;
 
     const filename = MUSIC_TRACKS[musicTrackIndex];
+    updateMainMusicCredit();
     const trackPath = getMusicTrackPath(filename);
 
     console.warn(
