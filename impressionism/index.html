@@ -525,7 +525,8 @@ body {
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  /* justify-content: flex-start; */
+  justify-content: center;
   gap: 10px;
   padding: 0 25px;
 
@@ -2186,7 +2187,7 @@ function initBuffers() {
    IMAGE DRAWING
 ========================================================= */
 
-function drawCover(targetCtx, source, targetW, targetH) {
+function getCoverBounds(source, targetW, targetH) {
 
     const sw =
         source.naturalWidth ||
@@ -2198,9 +2199,16 @@ function drawCover(targetCtx, source, targetW, targetH) {
         source.videoHeight ||
         source.height;
 
-    if (!sw || !sh) return;
+    if (!sw || !sh) return null;
 
-    const scale = Math.max(
+    // SCALE TO FILL (crops artwork to cover the entire display)
+    // const scale = Math.max(
+    //     targetW / sw,
+    //     targetH / sh
+    // );
+
+    // SCALE TO FIT (shows the entire artwork)
+    const scale = Math.min(
         targetW / sw,
         targetH / sh
     );
@@ -2208,13 +2216,61 @@ function drawCover(targetCtx, source, targetW, targetH) {
     const drawW = sw * scale;
     const drawH = sh * scale;
 
+    const drawX = (targetW - drawW) / 2;
+    const drawY = (targetH - drawH) / 2;
+
+    return {
+        x: drawX,
+        y: drawY,
+        width: drawW,
+        height: drawH
+    };
+
+}
+
+
+function drawCover(targetCtx, source, targetW, targetH) {
+
+    const bounds = getCoverBounds(
+        source,
+        targetW,
+        targetH
+    );
+
+    if (!bounds) return null;
+
     targetCtx.drawImage(
         source,
-        (targetW - drawW) / 2,
-        (targetH - drawH) / 2,
-        drawW,
-        drawH
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height
     );
+
+    return bounds;
+
+}
+
+
+function getArtworkPixelBounds() {
+
+    if (!activeImage) return null;
+
+    const bounds = getCoverBounds(
+        activeImage,
+        w,
+        h
+    );
+
+    if (!bounds) return null;
+
+    return {
+        left: Math.max(2, Math.ceil(bounds.x)),
+        right: Math.min(w - 2, Math.ceil(bounds.x + bounds.width)),
+
+        top: Math.max(2, Math.ceil(bounds.y)),
+        bottom: Math.min(h - 2, Math.ceil(bounds.y + bounds.height))
+    };
 
 }
 
@@ -2456,13 +2512,67 @@ let musicTrackIndex = 0;
 let musicPlaybackActive = false;
 let musicFailedTracks = new Set();
 
+// DISPLAY NAMES FOR MUSIC FILES
+// These names are only used on screen.
+// The actual filenames remain unchanged.
+
+const MUSIC_DISPLAY_NAMES = {
+    "Maurice Ravel - Pavane pour une infante defunte.mp3":
+        "Pavane pour une infante défunte — Maurice Ravel",
+
+    "Claude Debussy - Arabesque No 1.mp3":
+        "Arabesque No. 1 — Claude Debussy",
+
+    "Claude Debussy - Clair de Lune.mp3":
+        "Clair de Lune — Claude Debussy",
+
+    "Claude Debussy - Girl With Flaxen Hair.mp3":
+        "The Girl with the Flaxen Hair — Claude Debussy",
+
+    "Claude Debussy - La fille aux cheveux de lin.mp3":
+        "La fille aux cheveux de lin — Claude Debussy",
+
+    "Claude Debussy - Petite Suite En Bateau.mp3":
+        "Petite Suite: En bateau — Claude Debussy",
+
+    "Claude Debussy - Pour invoquer Pan, dieu du vent dete.mp3":
+        "Pour invoquer Pan, dieu du vent d'été — Claude Debussy",
+
+    "Claude Debussy - Reverie.mp3":
+        "Rêverie — Claude Debussy",
+
+    "Claude Debussy - Sarabande.mp3":
+        "Sarabande — Claude Debussy",
+
+    "Erik Satie - Gymnopedie No. 1.mp3":
+        "Gymnopédie No. 1 — Erik Satie",
+
+    "Gabriel Faure - Pavane.mp3":
+        "Pavane — Gabriel Fauré"
+};
+
+
 function updateMainMusicCredit() {
+
     const display = document.getElementById("main-music-track");
 
     if (!display || !MUSIC_TRACKS.length) return;
 
     const filename = MUSIC_TRACKS[musicTrackIndex];
+
     if (!filename) return;
+
+    // Use the specially formatted display name if available.
+    // Otherwise, fall back to the filename.
+
+    const displayName = MUSIC_DISPLAY_NAMES[filename];
+
+    if (displayName) {
+        display.textContent = displayName;
+        return;
+    }
+
+    // Fallback for any tracks not included in the lookup.
 
     const cleanName = filename.replace(/\.mp3$/i, "");
     const separator = cleanName.indexOf(" - ");
@@ -3780,40 +3890,74 @@ window.addEventListener("keydown", event => {
    RIPPLE CALCULATIONS
 ========================================================= */
 
-function addRipple(x, y, strength = 60) {
+function addRipple(x, y, strength = 60, bounds = null) {
+
+    bounds = bounds || getArtworkPixelBounds();
+
+    if (!bounds) return;
 
     if (
-        x < 2 ||
-        x >= w - 2 ||
-        y < 2 ||
-        y >= h - 2
+        x < bounds.left ||
+        x >= bounds.right ||
+        y < bounds.top ||
+        y >= bounds.bottom
     ) return;
 
-    const idx = y * w + x;
+    function add(x, y, amount) {
 
-    rippleMap1[idx] += strength;
+        if (
+            x < bounds.left ||
+            x >= bounds.right ||
+            y < bounds.top ||
+            y >= bounds.bottom
+        ) return;
 
-    rippleMap1[idx - 1] += strength * 0.6;
-    rippleMap1[idx + 1] += strength * 0.6;
+        rippleMap1[y * w + x] += amount;
 
-    rippleMap1[idx - w] += strength * 0.6;
-    rippleMap1[idx + w] += strength * 0.6;
+    }
+
+    add(x, y, strength);
+
+    add(x - 1, y, strength * 0.6);
+    add(x + 1, y, strength * 0.6);
+
+    add(x, y - 1, strength * 0.6);
+    add(x, y + 1, strength * 0.6);
 
 }
 
 
 function updateRipples() {
 
+    const bounds = getArtworkPixelBounds();
+
+    if (!bounds) return;
+
     let temp = rippleMap1;
 
     rippleMap1 = rippleMap2;
     rippleMap2 = temp;
 
-    for (let x = 2; x < w - 2; x++) {
+    for (let y = 0; y < h; y++) {
 
-        for (let y = 2; y < h - 2; y++) {
+        for (let x = 0; x < w; x++) {
 
             const idx = y * w + x;
+
+            // Outside the artwork: absolutely no ripple energy
+            if (
+                x < bounds.left ||
+                x >= bounds.right ||
+                y < bounds.top ||
+                y >= bounds.bottom
+            ) {
+
+                rippleMap1[idx] = 0;
+                rippleMap2[idx] = 0;
+
+                continue;
+
+            }
 
             const val = (
 
@@ -3835,6 +3979,10 @@ function updateRipples() {
 
 function applyDistortion() {
 
+    const bounds = getArtworkPixelBounds();
+
+    if (!bounds) return;
+
     const src = ctx.getImageData(0, 0, w, h).data;
 
     const out = ctx.createImageData(w, h);
@@ -3847,6 +3995,23 @@ function applyDistortion() {
 
             const idx = (y * w + x) * 4;
 
+            // Keep everything outside the artwork completely black
+            if (
+                x < bounds.left ||
+                x >= bounds.right ||
+                y < bounds.top ||
+                y >= bounds.bottom
+            ) {
+
+                dst[idx] = 0;
+                dst[idx + 1] = 0;
+                dst[idx + 2] = 0;
+                dst[idx + 3] = 255;
+
+                continue;
+
+            }
+
             const height =
                 rippleMap2[y * w + x] * 0.08;
 
@@ -3858,14 +4023,15 @@ function applyDistortion() {
                 y + height * RIPPLE_STRENGTH * 0.7
             );
 
+            // Never sample outside the artwork
             const sx = Math.max(
-                0,
-                Math.min(w - 1, ox)
+                bounds.left,
+                Math.min(bounds.right - 1, ox)
             );
 
             const sy = Math.max(
-                0,
-                Math.min(h - 1, oy)
+                bounds.top,
+                Math.min(bounds.bottom - 1, oy)
             );
 
             const sidx = (sy * w + sx) * 4;
@@ -3935,12 +4101,24 @@ function loop(timeMs) {
     let changedPixelCount = 0;
     let sampledPixelCount = 0;
 
-    const step = MOTION_SAMPLE_STEP;
+const step = MOTION_SAMPLE_STEP;
+
+const artworkBounds = getArtworkPixelBounds();
+
+if (!artworkBounds) return;
 
 
-    for (let y = 2; y < h - 2; y += step) {
+for (
+    let y = artworkBounds.top;
+    y < artworkBounds.bottom;
+    y += step
+) {
 
-        for (let x = 2; x < w - 2; x += step) {
+    for (
+        let x = artworkBounds.left;
+        x < artworkBounds.right;
+        x += step
+    ) {
 
             sampledPixelCount++;
 
@@ -3953,7 +4131,7 @@ function loop(timeMs) {
 
             if (diff > SENSITIVITY * 3) {
 
-                addRipple(x, y, 80);
+                addRipple(x, y, 80, artworkBounds);
 
                 motionFound = true;
                 changedPixelCount++;
