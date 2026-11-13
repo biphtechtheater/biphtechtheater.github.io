@@ -3622,8 +3622,6 @@ async function startPlacard() {
 
     if (currentMode !== "home") return;
 
-    await initializeAmbienceAudio();
-
     const midiReadyPromise = initializeMidi();
 
     currentMode = "placard";
@@ -3636,17 +3634,11 @@ async function startPlacard() {
 
     currentArtworkIndex = getArtworkIndex(new Date());
 
+
+    // Load the placard independently of audio and camera access.
     try {
 
         await updatePlacard(currentArtworkIndex);
-
-        // Start ambience as the placard fades into view.
-        const ambienceFadeIn =
-            playArtworkAmbience(currentArtworkIndex, 1500);
-
-        placardContent.classList.remove("fading");
-
-        await ambienceFadeIn;
 
     } catch (error) {
 
@@ -3668,11 +3660,42 @@ async function startPlacard() {
     }
 
 
+    // Reveal the placard regardless of whether audio is available.
+    placardContent.classList.remove("fading");
+
+
+    // Ambience is optional. Audio failures must not close the placard.
+    try {
+
+        Promise.resolve(
+            playArtworkAmbience(currentArtworkIndex, 1500)
+        ).catch(error => {
+
+            console.warn(
+                "[Impressionism] Placard ambience unavailable:",
+                error
+            );
+
+        });
+
+    } catch (error) {
+
+        console.warn(
+            "[Impressionism] Could not start placard ambience:",
+            error
+        );
+
+    }
+
+
     midiReadyPromise.then(() => {
+
         if (currentMode === "placard") {
             sendArtworkMidiNote(currentArtworkIndex);
         }
+
     });
+
 
     placardTransitioning = false;
 
