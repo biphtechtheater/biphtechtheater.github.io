@@ -3557,6 +3557,8 @@ async function startPlacard() {
 
     if (currentMode !== "home") return;
 
+    await initializeAmbienceAudio();
+
     const midiReadyPromise = initializeMidi();
 
     currentMode = "placard";
