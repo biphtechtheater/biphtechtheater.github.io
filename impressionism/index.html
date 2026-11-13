@@ -391,7 +391,7 @@ body {
 
 .placard-heading {
     text-align: center;
-    margin: 0 auto 65px;
+    margin: -150px auto 65px;
     width: 100%;
     max-width: 100%;
 }
@@ -2684,11 +2684,18 @@ function cancelAudioFade(audio) {
 
 function fadeAudio(audio, targetVolume, duration = 1500) {
 
+    // Ambience is routed through Web Audio, so changing
+    // audio.volume does not control its audible output.
+    // All ambience fades must control the GainNode instead.
+    if (audio !== ambienceAudio || !ambienceGain) {
+        return Promise.resolve();
+    }
+
     cancelAudioFade(audio);
 
     return new Promise(resolve => {
 
-        const startVolume = audio.volume;
+        const startVolume = ambienceGain.gain.value;
         const startTime = performance.now();
 
         const state = {
@@ -2701,7 +2708,10 @@ function fadeAudio(audio, targetVolume, duration = 1500) {
 
         if (duration <= 0) {
 
-            audio.volume = targetVolume;
+            ambienceGain.gain.setValueAtTime(
+                targetVolume,
+                ambienceAudioContext.currentTime
+            );
 
             audioFadeStates.delete(audio);
 
@@ -2729,9 +2739,14 @@ function fadeAudio(audio, targetVolume, duration = 1500) {
             const eased =
                 progress * progress * (3 - 2 * progress);
 
-            audio.volume =
+            const nextGain =
                 startVolume +
                 (targetVolume - startVolume) * eased;
+
+            ambienceGain.gain.setValueAtTime(
+                nextGain,
+                ambienceAudioContext.currentTime
+            );
 
 
             if (progress < 1) {
@@ -2741,7 +2756,10 @@ function fadeAudio(audio, targetVolume, duration = 1500) {
 
             } else {
 
-                audio.volume = targetVolume;
+                ambienceGain.gain.setValueAtTime(
+                    targetVolume,
+                    ambienceAudioContext.currentTime
+                );
 
                 audioFadeStates.delete(audio);
 
@@ -2781,31 +2799,33 @@ let ambienceAudioContext = null;
 let ambienceGain = null;
 let ambienceSource = null;
 
-
 function initializeAmbienceAudio() {
 
     if (!ambienceAudioContext) {
 
         const AudioContextClass =
-            window.AudioContext ||
-            window.webkitAudioContext;
+            window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            return Promise.reject(
+                new Error("Web Audio API is not supported in this browser.")
+            );
+        }
 
         ambienceAudioContext = new AudioContextClass();
 
         ambienceSource =
-            ambienceAudioContext.createMediaElementSource(
-                ambienceAudio
-            );
+            ambienceAudioContext.createMediaElementSource(ambienceAudio);
 
-        ambienceGain =
-            ambienceAudioContext.createGain();
+        ambienceGain = ambienceAudioContext.createGain();
 
+        // Keep the HTML audio element at unity volume.
+        // The GainNode is the single volume/fade control.
+        ambienceAudio.volume = 1;
         ambienceGain.gain.value = 0;
 
         ambienceSource.connect(ambienceGain);
-        ambienceGain.connect(
-            ambienceAudioContext.destination
-        );
+        ambienceGain.connect(ambienceAudioContext.destination);
 
     }
 
@@ -2814,7 +2834,6 @@ function initializeAmbienceAudio() {
     }
 
     return Promise.resolve();
-
 }
 
 let currentAmbienceIndex = -1;
@@ -2855,6 +2874,16 @@ function getAmbienceTrackPath(index) {
 ========================================================= */
 
 async function playArtworkAmbience(index, duration = 1500) {
+
+    try {
+        await initializeAmbienceAudio();
+    } catch (error) {
+        console.warn(
+            "[Impressionism Ambience] Web Audio could not be initialized:",
+            error
+        );
+        return;
+    }
 
     const trackPath = getAmbienceTrackPath(index);
 
@@ -3024,7 +3053,11 @@ ambienceVolumeSlider.addEventListener("input", () => {
 
         ambienceAudio.pause();
 
-        ambienceGain.gain.value = 0;
+        // The slider is available on the home screen, before the
+        // Web Audio graph has been created.
+        if (ambienceGain) {
+            ambienceGain.gain.value = 0;
+        }
 
         ambienceAudio.currentTime = 0;
 
@@ -3528,6 +3561,16 @@ async function startMainDisplay() {
 
     currentMode = "main";
 
+    // Initialize/resume Web Audio immediately during the button gesture.
+    // iPad Safari may block audio contexts that are first resumed later,
+    // after asynchronous artwork loading has completed.
+    const ambienceReadyPromise = initializeAmbienceAudio().catch(error => {
+        console.warn(
+            "[Impressionism Ambience] Audio initialization failed:",
+            error
+        );
+    });
+
     console.warn("[MUSIC TEST] Main Display was selected.");
 
     startBackgroundMusic();
@@ -3586,6 +3629,10 @@ async function startMainDisplay() {
 
     if (initialArtworkLoaded) {
 
+        // Ensure the AudioContext resume requested by the button gesture
+        // has settled before starting the first ambience track.
+        await ambienceReadyPromise;
+
         // Begin ambience and visual fade-in together.
         const ambienceFadeIn =
             playArtworkAmbience(initialIndex, 1500);
@@ -3621,6 +3668,13 @@ async function startMainDisplay() {
 async function startPlacard() {
 
     if (currentMode !== "home") return;
+
+    const ambienceReadyPromise = initializeAmbienceAudio().catch(error => {
+        console.warn(
+            "[Impressionism Ambience] Audio initialization failed:",
+            error
+        );
+    });
 
     const midiReadyPromise = initializeMidi();
 
@@ -3666,6 +3720,8 @@ async function startPlacard() {
 
     // Ambience is optional. Audio failures must not close the placard.
     try {
+
+        await ambienceReadyPromise;
 
         Promise.resolve(
             playArtworkAmbience(currentArtworkIndex, 1500)
