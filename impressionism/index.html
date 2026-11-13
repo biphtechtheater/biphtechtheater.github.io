@@ -555,6 +555,25 @@ body {
 }
 
 
+#placard-logo {
+    position: fixed;
+
+    right: max(10px, env(safe-area-inset-right) + 0px);
+    bottom: max(10px, env(safe-area-inset-bottom) + 0px);
+
+    width: clamp(300px, 11vw, 145px);
+    height: auto;
+
+    aspect-ratio: 3520 / 985;
+    object-fit: contain;
+
+    opacity: 0.85;
+
+    pointer-events: none;
+    z-index: 20;
+}
+
+
 /* =========================================================
    RESPONSIVE LAYOUT
 ========================================================= */
@@ -891,6 +910,12 @@ body {
         </div>
 
     </div>
+
+    <img
+    id="placard-logo"
+    src="whitelogo.png"
+    alt="Exhibition logo"
+>
 
 </section>
 
@@ -2750,7 +2775,47 @@ const ambienceAudio = new Audio();
 
 ambienceAudio.preload = "auto";
 ambienceAudio.loop = false;
-ambienceAudio.volume = 0;
+ambienceAudio.volume = 1;
+
+let ambienceAudioContext = null;
+let ambienceGain = null;
+let ambienceSource = null;
+
+
+function initializeAmbienceAudio() {
+
+    if (!ambienceAudioContext) {
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        ambienceAudioContext = new AudioContextClass();
+
+        ambienceSource =
+            ambienceAudioContext.createMediaElementSource(
+                ambienceAudio
+            );
+
+        ambienceGain =
+            ambienceAudioContext.createGain();
+
+        ambienceGain.gain.value = 0;
+
+        ambienceSource.connect(ambienceGain);
+        ambienceGain.connect(
+            ambienceAudioContext.destination
+        );
+
+    }
+
+    if (ambienceAudioContext.state === "suspended") {
+        return ambienceAudioContext.resume();
+    }
+
+    return Promise.resolve();
+
+}
 
 let currentAmbienceIndex = -1;
 let ambienceRequestId = 0;
@@ -2814,7 +2879,7 @@ async function playArtworkAmbience(index, duration = 1500) {
 
     ambienceAudio.pause();
 
-    ambienceAudio.volume = 0;
+    ambienceGain.gain.value = 0;
     ambienceAudio.currentTime = 0;
 
     ambienceAudio.src = trackPath;
@@ -2885,7 +2950,7 @@ async function stopArtworkAmbience(duration = 1500) {
 
         cancelAudioFade(ambienceAudio);
 
-        ambienceAudio.volume = 0;
+        ambienceGain.gain.value = 0;
 
     } else {
 
@@ -2906,7 +2971,7 @@ async function stopArtworkAmbience(duration = 1500) {
 
     ambienceAudio.pause();
     ambienceAudio.currentTime = 0;
-    ambienceAudio.volume = 0;
+    ambienceGain.gain.value = 0;
 
     currentAmbienceIndex = -1;
 
@@ -2925,7 +2990,7 @@ ambienceAudio.addEventListener("ended", () => {
 
     ambienceHasEnded = true;
 
-    ambienceAudio.volume = 0;
+    ambienceGain.gain.value = 0;
 
     console.info(
         "[Impressionism Ambience] Current ambience track finished."
@@ -2959,7 +3024,7 @@ ambienceVolumeSlider.addEventListener("input", () => {
 
         ambienceAudio.pause();
 
-        ambienceAudio.volume = 0;
+        ambienceGain.gain.value = 0;
 
         ambienceAudio.currentTime = 0;
 
@@ -2976,7 +3041,7 @@ ambienceVolumeSlider.addEventListener("input", () => {
 
         cancelAudioFade(ambienceAudio);
 
-        ambienceAudio.volume = volume;
+        ambienceGain.gain.value = volume;
 
         return;
 
@@ -2994,7 +3059,7 @@ ambienceVolumeSlider.addEventListener("input", () => {
 
         cancelAudioFade(ambienceAudio);
 
-        ambienceAudio.volume = volume;
+        ambienceGain.gain.value = volume;
 
         ambienceAudio.play().catch(error => {
 
@@ -3728,7 +3793,7 @@ function closeDisplay() {
 
     ambienceAudio.pause();
     ambienceAudio.currentTime = 0;
-    ambienceAudio.volume = 0;
+    ambienceGain.gain.value = 0;
 
     currentAmbienceIndex = -1;
 
