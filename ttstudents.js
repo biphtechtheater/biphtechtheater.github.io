@@ -36,6 +36,6 @@ const students = {
     Rachelle: ["Drama Showcase", "Hamilton"],
     Kevin: ["Voice of BIPH", "Choir Spring Concert"],
     Sophie: ["DSOTM", "Devised Theater"],
-    Ricky: ["Drama Showcase", "Choir Spring Concert"]
+    Ricky: ["Drama Showcase", "Choir Spring Concert"],
 
 };

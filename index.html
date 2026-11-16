@@ -452,6 +452,217 @@
             font-style: italic;
         }
 
+
+        /* ==========================================
+        TEACHER PROJECT TIMELINE
+        ========================================== */
+
+        #teacherDashboard {
+            display: none;
+            max-width: 1050px;
+            margin: 0 auto 70px;
+            opacity: 0;
+            animation: dashboardEnter 0.7s ease forwards;
+        }
+
+        .teacher-heading {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+
+        .teacher-heading h2 {
+            font-size: 2rem;
+            font-weight: 400;
+        }
+
+        .teacher-heading span {
+            color: var(--accent);
+        }
+
+        .teacher-heading p {
+            color: var(--muted-text);
+        }
+
+        .teacher-timeline {
+            position: relative;
+            padding: 10px 0 10px 35px;
+        }
+
+        .teacher-timeline::before {
+            content: "";
+            position: absolute;
+            left: 10px;
+            top: 15px;
+            bottom: 15px;
+            width: 2px;
+            background: #444;
+        }
+
+        .teacher-timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .teacher-timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -31px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--project-color, var(--accent));
+            border: 3px solid #0a0a0a;
+            box-shadow: 0 0 0 1px var(--project-color, var(--accent));
+        }
+
+        .teacher-project-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 22px 25px;
+            border-radius: 13px;
+            border: 1px solid #383838;
+            border-left: 5px solid var(--project-color, var(--accent));
+            background: #17191c;
+            color: white;
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .teacher-project-button:hover {
+            background: #22272b;
+            transform: translateX(5px);
+            border-color: var(--project-color, var(--accent));
+        }
+
+        .teacher-project-date {
+            color: var(--project-color, var(--accent));
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        .teacher-project-button h3 {
+            font-size: 1.4rem;
+            margin: 0 0 12px;
+        }
+
+        .teacher-project-students {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .teacher-project-students strong {
+            color: #ddd;
+        }
+
+        .teacher-project-arrow {
+            float: right;
+            color: #888;
+            font-size: 1.4rem;
+            margin-left: 10px;
+        }
+
+        .teacher-detail {
+            display: none;
+        }
+
+        .teacher-detail-header {
+            margin-bottom: 30px;
+        }
+
+        .teacher-back-button {
+            padding: 11px 22px;
+            border: 1px solid #555;
+            border-radius: 999px;
+            background: transparent;
+            color: #eee;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 25px;
+        }
+
+        .teacher-back-button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .teacher-detail-card {
+            background: #17191c;
+            border: 1px solid #383838;
+            border-radius: 15px;
+            padding: 28px;
+            border-left: 5px solid var(--project-color, var(--accent));
+        }
+
+        .teacher-detail-card h2 {
+            font-size: 2rem;
+            margin: 0 0 8px;
+        }
+
+        .teacher-detail-date {
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+
+        .teacher-detail-students {
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .teacher-detail-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+
+        .teacher-detail-task {
+            padding: 13px 16px;
+            margin-bottom: 9px;
+            border: 1px solid #383838;
+            border-radius: 8px;
+            background: #222528;
+            line-height: 1.5;
+        }
+
+        .teacher-detail-empty {
+            color: #888;
+            font-style: italic;
+        }
+
+        @media(max-width: 600px) {
+            .teacher-timeline {
+                padding-left: 27px;
+            }
+
+            .teacher-timeline::before {
+                left: 7px;
+            }
+
+            .teacher-timeline-item::before {
+                left: -26px;
+            }
+
+            .teacher-project-button {
+                padding: 18px;
+            }
+
+            .teacher-project-button h3 {
+                font-size: 1.2rem;
+            }
+
+            .teacher-detail-card {
+                padding: 20px;
+            }
+        }
+
+
         /* ==========================================
            UPLOAD SECTIONS
         ========================================== */
@@ -1033,6 +1244,7 @@
             </section>
 
 
+
             <!-- EXPORT -->
 
             <section class="export-area">
@@ -1057,6 +1269,43 @@
             </section>
 
         </section>
+
+
+         <!-- ======================================
+                TEACHER DASHBOARD
+            ======================================= -->
+
+            <section id="teacherDashboard">
+
+                <!-- TIMELINE VIEW -->
+
+                <div id="teacherTimelineView">
+
+                    <div class="teacher-heading">
+                        <h2>Project <span>Overview</span></h2>
+                        <p>2026–2027 Technical Theatre Production Timeline</p>
+                    </div>
+
+                    <div class="teacher-timeline" id="teacherTimeline"></div>
+
+                </div>
+
+
+                <!-- INDIVIDUAL PROJECT VIEW -->
+
+                <div class="teacher-detail" id="teacherDetailView">
+
+                    <button
+                        class="teacher-back-button"
+                        onclick="teacherBackToTimeline()">
+                        ← Back to Project Timeline
+                    </button>
+
+                    <div id="teacherProjectDetail"></div>
+
+                </div>
+
+            </section>
 
 
         <!-- ======================================
@@ -1144,14 +1393,14 @@
 
     const projects = {
 
-        "Impressionism Gallery": {
-            date: "Dec 9, 2026",
-            color: "#D5E9E3",
-            tasks: [
-                "Practice setting up the whole setup on your own",
-                "Troubleshooting issues",
-            ]
-        },
+        // "Impressionism Gallery": {
+        //     date: "Dec 9, 2026",
+        //     color: "#D5E9E3",
+        //     tasks: [
+        //         "Practice setting up the whole setup on your own",
+        //         "Troubleshooting issues",
+        //     ]
+        // },
 
         "Winter Concert": {
             date: "Dec 17, 2026",
@@ -1331,14 +1580,19 @@
 
         const error = document.getElementById("nameError");
 
-        const matchedName = Object.keys(students).find(
-            student =>
-                student.toLowerCase() === enteredName.toLowerCase()
-        );
+        const isTeacher =
+            enteredName.toLowerCase() === "mr. tubbs";
+
+        const matchedName = isTeacher
+            ? "Mr. Tubbs"
+            : Object.keys(students).find(
+                student =>
+                    student.toLowerCase() === enteredName.toLowerCase()
+            );
 
         if (!matchedName) {
             error.textContent =
-                "Student not found. Please check your name.";
+                "Student not found. First name only, please.";
             return;
         }
 
@@ -1383,14 +1637,29 @@
             // Hide the decorative homepage logo
             logo.style.display = "none";
 
-            renderProjects();
-            updateExportButton();
+            const teacherDashboard =
+                document.getElementById("teacherDashboard");
 
-            dashboard.style.display = "block";
+            if (matchedName.toLowerCase() === "mr. tubbs") {
 
-            requestAnimationFrame(() => {
-                dashboard.classList.add("dashboard-entering");
-            });
+                // Teacher login
+                renderTeacherTimeline();
+
+                teacherDashboard.style.display = "block";
+
+            } else {
+
+                // Normal student login
+                renderProjects();
+                updateExportButton();
+
+                dashboard.style.display = "block";
+
+                requestAnimationFrame(() => {
+                    dashboard.classList.add("dashboard-entering");
+                });
+
+            }
 
             transitionTimer = null;
 
@@ -1482,6 +1751,233 @@
         });
 
     }
+
+
+    /* ==========================================
+    TEACHER PROJECT TIMELINE
+    ========================================== */
+
+    let teacherDetailOpen = false;
+
+
+    /* BUILD TIMELINE */
+
+    function renderTeacherTimeline() {
+
+        const timeline = document.getElementById("teacherTimeline");
+
+        timeline.innerHTML = "";
+
+        // Include every project and sort chronologically.
+        const sortedProjects = Object.entries(projects).sort(
+            ([nameA, projectA], [nameB, projectB]) => {
+
+                const dateA = Date.parse(projectA.date);
+                const dateB = Date.parse(projectB.date);
+
+                // Projects with TBD dates appear last.
+                if (isNaN(dateA) && isNaN(dateB)) {
+                    return nameA.localeCompare(nameB);
+                }
+
+                if (isNaN(dateA)) return 1;
+                if (isNaN(dateB)) return -1;
+
+                return dateA - dateB;
+            }
+        );
+
+        sortedProjects.forEach(([projectName, project]) => {
+
+            // Find every student assigned to this project.
+            const assignedStudents = Object.entries(students)
+                .filter(([studentName, assignedProjects]) =>
+                    Array.isArray(assignedProjects) &&
+                    assignedProjects.includes(projectName)
+                )
+                .map(([studentName]) => studentName)
+                .sort((a, b) => a.localeCompare(b));
+
+            const item = document.createElement("div");
+            item.className = "teacher-timeline-item";
+
+            item.style.setProperty(
+                "--project-color",
+                project.color
+            );
+
+            const button = document.createElement("button");
+            button.className = "teacher-project-button";
+
+            const date = document.createElement("div");
+            date.className = "teacher-project-date";
+            date.textContent = project.date;
+
+            const heading = document.createElement("h3");
+            heading.textContent = projectName;
+
+            const arrow = document.createElement("span");
+            arrow.className = "teacher-project-arrow";
+            arrow.textContent = "→";
+
+            heading.appendChild(arrow);
+
+            const studentList = document.createElement("div");
+            studentList.className = "teacher-project-students";
+
+            const studentLabel = document.createElement("strong");
+            studentLabel.textContent =
+                assignedStudents.length +
+                (assignedStudents.length === 1
+                    ? " student assigned"
+                    : " students assigned");
+
+            const studentNames = document.createElement("div");
+
+            studentNames.textContent =
+                assignedStudents.length
+                    ? assignedStudents.join(" • ")
+                    : "No students assigned";
+
+            studentList.append(studentLabel, studentNames);
+
+            button.append(date, heading, studentList);
+
+            button.addEventListener("click", () => {
+                openTeacherProject(projectName);
+            });
+
+            item.appendChild(button);
+            timeline.appendChild(item);
+
+        });
+
+        // Always start with the timeline visible.
+        document.getElementById("teacherTimelineView").style.display =
+            "block";
+
+        document.getElementById("teacherDetailView").style.display =
+            "none";
+
+        teacherDetailOpen = false;
+
+    }
+
+
+    /* OPEN INDIVIDUAL PROJECT */
+
+    function openTeacherProject(projectName) {
+
+        const project = projects[projectName];
+
+        if (!project) return;
+
+        const assignedStudents = Object.entries(students)
+            .filter(([studentName, assignedProjects]) =>
+                Array.isArray(assignedProjects) &&
+                assignedProjects.includes(projectName)
+            )
+            .map(([studentName]) => studentName)
+            .sort((a, b) => a.localeCompare(b));
+
+        const detail = document.getElementById("teacherProjectDetail");
+
+        detail.innerHTML = "";
+
+        const card = document.createElement("div");
+        card.className = "teacher-detail-card";
+
+        card.style.setProperty(
+            "--project-color",
+            project.color
+        );
+
+        const heading = document.createElement("h2");
+        heading.textContent = projectName;
+
+        const date = document.createElement("div");
+        date.className = "teacher-detail-date";
+        date.textContent = "Event date: " + project.date;
+
+        const studentsHeading = document.createElement("h3");
+        studentsHeading.textContent =
+            "Students Involved (" + assignedStudents.length + ")";
+
+        const studentList = document.createElement("div");
+        studentList.className = "teacher-detail-students";
+
+        studentList.textContent = assignedStudents.length
+            ? assignedStudents.join(" • ")
+            : "No students currently assigned.";
+
+        const tasksHeading = document.createElement("h3");
+        tasksHeading.textContent = "Project Tasks";
+
+        card.append(
+            heading,
+            date,
+            studentsHeading,
+            studentList,
+            tasksHeading
+        );
+
+        if (project.tasks.length) {
+
+            project.tasks.forEach(task => {
+
+                const taskItem = document.createElement("div");
+                taskItem.className = "teacher-detail-task";
+                taskItem.textContent = task;
+
+                card.appendChild(taskItem);
+
+            });
+
+        } else {
+
+            const empty = document.createElement("div");
+            empty.className = "teacher-detail-empty";
+            empty.textContent = "No tasks added yet.";
+
+            card.appendChild(empty);
+
+        }
+
+        detail.appendChild(card);
+
+        // Create a browser history entry for this project.
+        history.pushState(
+            { page: "teacher-project", project: projectName },
+            "",
+            location.href
+        );
+
+        document.getElementById("teacherTimelineView").style.display =
+            "none";
+
+        document.getElementById("teacherDetailView").style.display =
+            "block";
+
+        teacherDetailOpen = true;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    /* BACK TO TIMELINE */
+
+    function teacherBackToTimeline() {
+
+        if (teacherDetailOpen) {
+            history.back();
+        }
+
+    }
+
 
 
     /* ==========================================
@@ -1763,6 +2259,12 @@
         const dashboard = document.getElementById("dashboard");
         const logo = document.getElementById("biphLogo");
 
+        const teacherDashboard =
+            document.getElementById("teacherDashboard");
+
+        teacherDashboard.style.display = "none";
+        teacherDetailOpen = false;
+
         // Hide dashboard
         dashboard.classList.remove("dashboard-entering");
         dashboard.style.display = "none";
@@ -1810,14 +2312,40 @@
 
     window.addEventListener("popstate", () => {
 
-        if (
-            document.getElementById("dashboard").style.display !== "none"
-            || transitionTimer !== null
-        ) {
-            returnToNameEntry();
-        }
+    // Teacher: project details → timeline
+    if (
+        document.getElementById("teacherDashboard").style.display !== "none"
+        && teacherDetailOpen
+    ) {
 
-    });
+        document.getElementById("teacherTimelineView").style.display =
+            "block";
+
+        document.getElementById("teacherDetailView").style.display =
+            "none";
+
+        teacherDetailOpen = false;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    // Student or teacher: dashboard → homepage
+    if (
+        document.getElementById("dashboard").style.display !== "none"
+        || document.getElementById("teacherDashboard").style.display !== "none"
+        || transitionTimer !== null
+    ) {
+
+        returnToNameEntry();
+
+    }
+
+});
 
     </script>
 
