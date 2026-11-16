@@ -1,15 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>BIPH Tech Theater</title>
+
     <link rel="icon" href="icons/light-icon.png">
     <link rel="stylesheet" href="common-styles.css">
+
     <style>
         :root {
             --accent: #4bdbff;
             --accent-dark: #3b7ccc;
+            --panel: #17191c;
+            --muted-text: #aaa;
         }
 
         body {
@@ -17,17 +23,30 @@
             color: #eee;
         }
 
+        /* ==========================================
+           ORIGINAL HOMEPAGE HERO
+        ========================================== */
+
         .hero {
             height: 520px;
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), 
-                        url('images/backstage.jpg') center/cover no-repeat;
+
+            background:
+                linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
+                url('images/backstage.jpg') center/cover no-repeat;
+
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             position: relative;
+
             margin: -20px -20px 60px;
             border-bottom: 1px solid var(--border);
+
+            transition:
+                opacity 0.9s ease,
+                filter 0.9s ease,
+                transform 0.9s ease;
         }
 
         .hero-content {
@@ -91,12 +110,46 @@
             background: rgba(255,255,255,0.1);
         }
 
-        /* Logo */
+        .hero.leaving {
+            opacity: 0;
+            filter: blur(12px);
+            transform: scale(1.03);
+            pointer-events: none;
+        }
+
+        /* ==========================================
+           LOGO
+        ========================================== */
+
         .logo-icon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
+
+        .biph-logocontainer {
+            text-align: center;
+            margin: 50px auto;
+        }
+
+        .biph-logo {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ==========================================
+           MAIN LAYOUT
+        ========================================== */
+
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        /* ==========================================
+           TODAY'S PROGRESS CARD
+        ========================================== */
 
         .quick-links {
             display: grid;
@@ -104,6 +157,11 @@
             gap: 24px;
             margin-bottom: 80px;
             justify-items: center;
+
+            transition:
+                opacity 0.8s ease,
+                filter 0.8s ease,
+                transform 0.8s ease;
         }
 
         .link-card {
@@ -111,14 +169,18 @@
             max-width: 1000px;
             min-width: 500px;
             margin: 0 auto;
+
             background: var(--card);
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 16px;
             padding: 32px 28px;
+
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
             text-decoration: none;
             color: inherit;
             overflow: hidden;
+
             box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.10);
             z-index: 10;
         }
@@ -126,6 +188,15 @@
         .link-card:hover {
             box-shadow: 0 2px 50px 5px rgba(75, 204, 255, 0.3);
             border-color: var(--accent);
+        }
+
+        .progress-card {
+            text-align: center;
+            cursor: default;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-2px);
         }
 
         .link-card .icon {
@@ -136,7 +207,7 @@
             display: block;
         }
 
-        .link-card:hover .icon {
+        .progress-card:hover .icon {
             transform: rotate(0.2deg);
             color: var(--accent);
         }
@@ -146,31 +217,28 @@
             margin-bottom: 12px;
             color: white;
             transition: color 0.3s ease;
-        }
-
-        .link-card:hover h3 {
-            color: var(--accent);
-        }
-
-        .link-card h3 {
             position: relative;
             display: inline-block;
         }
 
-        .link-card h3::after {
+        .progress-card h3 {
+            font-size: 2rem;
+        }
+
+        .progress-card h3::after {
             content: '';
             position: absolute;
-            bottom: 6px; 
+            bottom: 6px;
             left: 0;
             width: 100%;
             height: 1.5px;
             background: var(--accent);
             opacity: 0;
-            transform: scaleX(0.95); 
+            transform: scaleX(0.95);
             transition: all 0.35s ease;
         }
 
-        .link-card h3:hover::after {
+        .progress-card:hover h3::after {
             opacity: 1;
             transform: scaleX(1);
         }
@@ -179,48 +247,1532 @@
             color: var(--muted);
             line-height: 1.6;
         }
+
+        .progress-card > p {
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+        }
+
+        .quick-links.leaving {
+            opacity: 0;
+            filter: blur(12px);
+            transform: translateY(-35px);
+            pointer-events: none;
+        }
+
+        /* ==========================================
+           NAME ENTRY
+        ========================================== */
+
+        .name-entry {
+            max-width: 430px;
+            margin: 28px auto 0;
+            text-align: center;
+        }
+
+        .name-entry input {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+
+            padding: 15px 18px;
+
+            background: #090a0b;
+            border: 1px solid #444;
+            border-radius: 9px;
+
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .name-entry input:focus {
+            border-color: var(--accent);
+        }
+
+        .primary-button {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 13px 30px;
+
+            border: none;
+            border-radius: 999px;
+
+            background: var(--accent);
+            color: #000;
+
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .primary-button:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .error {
+            color: #ff8585;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* ==========================================
+           STUDENT DASHBOARD
+        ========================================== */
+
+        #dashboard {
+            display: none;
+            opacity: 0;
+            transform: translateY(35px);
+        }
+
+        #dashboard.dashboard-entering {
+            animation: dashboardEnter 0.9s ease forwards;
+        }
+
+        @keyframes dashboardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(35px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .student-heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .student-heading h2 {
+            font-size: 1.8rem;
+            font-weight: 400;
+        }
+
+        .student-heading span {
+            color: var(--accent);
+        }
+
+        .student-heading p {
+            color: var(--muted-text);
+        }
+
+        /* ==========================================
+           PROJECT COLUMNS
+        ========================================== */
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            align-items: start;
+        }
+
+        .project-column {
+            background: #17191c;
+            border: 1px solid #333;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .project-header {
+            padding: 22px 20px;
+            color: #111;
+            text-align: center;
+        }
+
+        .project-header h3 {
+            font-size: 1.55rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .project-header p {
+            margin: 6px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.75;
+        }
+
+        .task-list {
+            padding: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 9px;
+            padding: 15px;
+            border-radius: 9px;
+            border: 1px solid #3a3a3a;
+            background: #222528;
+            color: #eee;
+            font-size: 1rem;
+            line-height: 1.45;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .task-item:hover {
+            border-color: var(--accent);
+            background: #292f32;
+        }
+
+        .task-item:has(input:checked) {
+            border-color: var(--accent);
+            background: #18333b;
+        }
+
+        .task-item input {
+            flex: 0 0 auto;
+            width: 19px;
+            height: 19px;
+            margin: 1px 0 0;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .task-item span {
+            flex: 1;
+        }
+
+        .task-empty {
+            padding: 20px 12px;
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* ==========================================
+           UPLOAD SECTIONS
+        ========================================== */
+
+        .upload-section {
+            margin-top: 35px;
+        }
+
+        .upload-section h2 {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .upload-section > p {
+            text-align: center;
+            color: var(--muted-text);
+            margin-bottom: 22px;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .upload-card {
+            background: var(--panel);
+            border: 1px solid #353535;
+            border-radius: 14px;
+            padding: 22px;
+            min-width: 0;
+        }
+
+        .upload-card h3 {
+            margin: 0 0 8px;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .upload-card p {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 17px;
+        }
+
+        .drop-zone {
+            min-height: 190px;
+            border: 2px dashed #555;
+            border-radius: 12px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+
+            padding: 15px;
+            box-sizing: border-box;
+
+            cursor: pointer;
+            transition: 0.2s;
+            overflow: hidden;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(75,219,255,0.07);
+        }
+
+        .drop-zone .upload-icon {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone span {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .drop-zone input {
+            display: none;
+        }
+
+        .preview {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .preview img {
+            display: block;
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin: 0 auto;
+            border-radius: 8px;
+            background: #080808;
+        }
+
+        .preview button {
+            margin-top: 12px;
+            padding: 8px 17px;
+            background: transparent;
+            border: 1px solid #777;
+            color: #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .preview button:hover {
+            border-color: #ff7777;
+            color: #ff9999;
+        }
+
+        /* ==========================================
+           EXPORT
+        ========================================== */
+
+        .export-area {
+            display: none;
+            text-align: center;
+            margin-top: 45px;
+            padding: 30px 15px;
+            border-top: 1px solid #333;
+        }
+
+        .export-area p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .export-button {
+            padding: 16px 42px;
+            border: none;
+            border-radius: 999px;
+
+            background: var(--accent);
+            color: #000;
+
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .export-button:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .export-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ==========================================
+           PRINTABLE REPORT
+        ========================================== */
+
+        .export-report {
+            display: none;
+        }
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media(max-width: 700px) {
+            .project-grid,
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 15px 12px 60px;
+            }
+
+            .project-header h3 {
+                font-size: 1.3rem;
+            }
+
+            .link-card {
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .progress-card {
+                padding: 28px 20px;
+            }
+        }
+
+        @media(max-width: 600px) {
+            .hero {
+                height: 400px;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+        }
+
+        /* ==========================================
+           PRINT / PDF EXPORT
+        ========================================== */
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 14mm;
+            }
+
+            body {
+                background: white !important;
+                color: #111 !important;
+            }
+
+            body * {
+                visibility: hidden !important;
+            }
+
+            .export-report,
+            .export-report * {
+                visibility: visible !important;
+            }
+
+            .export-report {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+
+                color: #111 !important;
+                background: white !important;
+                font-family: Arial, sans-serif;
+            }
+
+            .report-heading {
+                border-bottom: 3px solid #333;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+
+            .report-heading h1 {
+                font-size: 25px;
+                margin-bottom: 8px;
+            }
+
+            .report-heading p {
+                color: #555;
+                margin: 4px 0;
+            }
+
+            .report-tasks {
+                padding: 16px;
+                background: #eee !important;
+                border-left: 5px solid #3b7ccc;
+                margin: 20px 0;
+                break-inside: avoid;
+            }
+
+            .report-tasks h2 {
+                margin-top: 0;
+            }
+
+            .report-project {
+                margin: 14px 0;
+                break-inside: avoid;
+            }
+
+            .report-project h3 {
+                margin-bottom: 6px;
+            }
+
+            .report-project ul {
+                margin-top: 5px;
+            }
+
+            .report-images {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            .report-image {
+                break-inside: avoid;
+                min-width: 0;
+            }
+
+            .report-image h3 {
+                font-size: 14px;
+            }
+
+            .report-image img {
+                width: 100%;
+                max-height: 430px;
+                object-fit: contain;
+                border: 1px solid #ccc;
+            }
+
+            .report-footer {
+                margin-top: 25px;
+                font-size: 11px;
+                color: #777;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+            }
+        }
     </style>
 </head>
+
 <body>
+
+    <!-- SHARED MENU -->
+
     <div id="shared-menu"></div>
     <script src="menu.js"></script>
+    <script src="ttstudents.js"></script> 
+    <!-- const students is in ttstudents.js -->
 
-<header>
-    <div class="logo-container">
-        <div class="logo-icon" style="width: 90px; height: 78px; margin-top: 5px; margin-right: -18px;">
-            <img src="icons/TechTheaterLogo.png" style="height: 80px;" alt="BIPH Tech Theater Logo">
-        </div>
-        <div>
-            <div class="header-logo" style="line-height: 85%; margin-bottom: 18px; margin-left: -1px;">BIPH Technical Theatre</div>
-            <div class="header-subtitle">2026-2027</div>
-        </div>
-    </div>
-</header>
+    <!-- HEADER -->
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Find your crew</h1>
-            <p>Lighting • Sound • Video • Programming • Event Design</p>
-            <div class="cta-buttons">
-                <a href="https://biphtechtheater.github.io/tutorials/" class="btn btn-primary">Browse Tutorials</a>
-                <a href="https://biphtechtheater.github.io/files/" class="btn btn-secondary">Latest Files</a>
+    <header>
+        <div class="logo-container">
+
+            <div class="logo-icon"
+                 style="width:90px;height:78px;margin-top:5px;margin-right:-18px;">
+
+                <img src="icons/TechTheaterLogo.png"
+                     style="height:80px;"
+                     alt="BIPH Tech Theater Logo">
+
             </div>
+
+            <div>
+                <div class="header-logo"
+                     style="line-height:85%;margin-bottom:18px;margin-left:-1px;">
+                    BIPH Technical Theatre
+                </div>
+
+                <div class="header-subtitle">2026-2027</div>
+            </div>
+
         </div>
+    </header>
+
+
+    <!-- ORIGINAL HERO -->
+
+    <section class="hero" id="hero">
+
+        <div class="hero-content">
+
+            <h1>Find your crew</h1>
+
+            <p>
+                Lighting • Sound • Video • Programming • Event Design
+            </p>
+
+            <div class="cta-buttons">
+
+                <a href="https://biphtechtheater.github.io/tutorials/"
+                   class="btn btn-primary">
+                    Browse Tutorials
+                </a>
+
+                <a href="https://biphtechtheater.github.io/files/"
+                   class="btn btn-secondary">
+                    Latest Files
+                </a>
+
+            </div>
+
+        </div>
+
     </section>
 
-    <main style="max-width: 1280px; margin: 0 auto; padding: 0 20px;">
-        
-        <div class="quick-links">
-            <a href="https://biphtechtheater.github.io/events" class="link-card">
-                <div class="icon">📅</div>
-                <h3>Upcoming Events</h3>
-                <p>Concerts, drama shows, club outputs, sporting events, games, art installations, you name it!</p>
-            </a>
+
+    <main>
+
+        <!-- ======================================
+             TODAY'S PROGRESS ENTRY
+        ======================================= -->
+
+        <section class="quick-links" id="progressIntro">
+
+            <div class="link-card progress-card">
+
+                <div class="icon">🎯</div>
+
+                <h3>Today's Progress</h3>
+
+                <p>
+                    Choose a goal. Document your progress.
+                    Claim 10%!
+                </p>
+
+                <div class="name-entry" id="nameEntry">
+
+                    <input
+                        type="text"
+                        id="studentName"
+                        placeholder="Enter your name"
+                        autocomplete="off"
+                    >
+
+                    <button
+                        class="primary-button"
+                        onclick="loadStudent()">
+                        Let's get started
+                    </button>
+
+                    <div class="error" id="nameError"></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             STUDENT DASHBOARD
+        ======================================= -->
+
+        <section id="dashboard">
+
+            <div class="student-heading">
+
+                <h2>
+                    Welcome, <span id="displayName"></span>
+                </h2>
+
+                <p>Here are your two assigned projects.</p>
+
+            </div>
+
+
+            <div class="project-grid" id="projectGrid"></div>
+
+
+            <!-- SCREENSHOT UPLOADS -->
+
+            <section class="upload-section">
+
+                <h2>Document Your Progress</h2>
+
+                <p>
+                    Upload a screenshot at the beginning and end of class.
+                    Your two images will appear together in your final report.
+                </p>
+
+
+                <div class="upload-grid">
+
+                    <!-- STARTING SCREENSHOT -->
+
+                    <div class="upload-card">
+
+                        <h3>1. Starting Point</h3>
+
+                        <p>
+                            Where are you right now?
+                            Upload your initial screenshot.
+                        </p>
+
+                        <label class="drop-zone" id="startDrop">
+
+                            <input
+                                type="file"
+                                id="startFile"
+                                accept="image/*"
+                            >
+
+                            <div class="upload-icon">📷</div>
+
+                            <strong>Upload starting screenshot</strong>
+
+                            <span>Click or drag an image here</span>
+
+                        </label>
+
+
+                        <div class="preview" id="startPreview">
+
+                            <img id="startImage" alt="Starting screenshot">
+
+                            <button onclick="removeImage('start')">
+                                Remove image
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ENDING SCREENSHOT -->
+
+                    <div class="upload-card">
+
+                        <h3>2. Ending Point</h3>
+
+                        <p>
+                            What have you accomplished?
+                            Upload your final screenshot.
+                        </p>
+
+                        <label class="drop-zone" id="endDrop">
+
+                            <input
+                                type="file"
+                                id="endFile"
+                                accept="image/*"
+                            >
+
+                            <div class="upload-icon">✨</div>
+
+                            <strong>Upload ending screenshot</strong>
+
+                            <span>Click or drag an image here</span>
+
+                        </label>
+
+
+                        <div class="preview" id="endPreview">
+
+                            <img id="endImage" alt="Ending screenshot">
+
+                            <button onclick="removeImage('end')">
+                                Remove image
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- EXPORT -->
+
+            <section class="export-area">
+
+                <h2>Ready to show your progress?</h2>
+
+                <p>
+                    Your report will include your name, the tasks you checked,
+                    the date, and both screenshots.
+                </p>
+
+                <button
+                    class="export-button"
+                    id="exportButton"
+                    onclick="exportReport()"
+                    disabled>
+
+                    Export My Progress ↓
+
+                </button>
+
+            </section>
+
+        </section>
+
+
+        <!-- ======================================
+             PRINT-READY REPORT
+        ======================================= -->
+
+        <section class="export-report" id="exportReport">
+
+            <div class="report-heading">
+
+                <h1>BIPH Technical Theatre</h1>
+
+                <p>Daily Project Progress Report</p>
+
+                <p>
+                    <strong>Student:</strong>
+                    <span id="reportStudent"></span>
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    <span id="reportDate"></span>
+                </p>
+
+            </div>
+
+
+            <div class="report-tasks">
+
+                <h2>Tasks Worked On</h2>
+
+                <div id="reportTasks"></div>
+
+            </div>
+
+
+            <div class="report-images">
+
+                <div class="report-image">
+
+                    <h3>Starting Point</h3>
+
+                    <img id="reportStartImage" alt="Starting point">
+
+                </div>
+
+
+                <div class="report-image">
+
+                    <h3>Ending Point</h3>
+
+                    <img id="reportEndImage" alt="Ending point">
+
+                </div>
+
+            </div>
+
+
+            <div class="report-footer">
+                BIPH Technical Theatre • 2026-2027
+            </div>
+
+        </section>
+
+
+        <!-- ORIGINAL BIPH LOGO -->
+
+        <div class="biph-logocontainer" id="biphLogo">
+
+            <img
+                src="icons/Full Logo White on Transparent.png"
+                class="biph-logo"
+                alt="BIPH">
+
         </div>
-        
-        <div class="biph-logocontainer">        
-            <img src="icons/Full Logo White on Transparent.png" class="biph-logo">
-        </div>
+
     </main>
+
+
+    <script>
+
+    /* ==========================================
+       PROJECT DATABASE
+    ========================================== */
+
+    const projects = {
+
+        "Impressionism Gallery": {
+            date: "Dec 9, 2026",
+            color: "#D5E9E3",
+            tasks: [
+                "Practice setting up the whole setup on your own",
+                "Troubleshooting issues",
+            ]
+        },
+
+        "Winter Concert": {
+            date: "Dec 17, 2026",
+            color: "#B7DDF7",
+            tasks: [
+                "Edit together clips from Elf",
+                "Edit together clips from The Grinch",
+                "Edit together clips from A Christmas Carol"
+            ]
+        },
+
+        "Drama Showcase": {
+            date: "Jan 21, 2027",
+            color: "#D7D7D7",
+            tasks: [
+                "Put together a QLab project",
+                "Put together lighting scenes",
+                "Connect QLab with control site",
+                "Enter in mic cues for performances",
+            ]
+        },
+
+        "Chinese Drama": {
+            date: "Feb 24, 2027",
+            color: "#FFF8C8",
+            tasks: [
+                "Integrate backdrops into QLab",
+                "Pull subtitles into QLab project",
+                "Program Lights",
+                "Add Microphone cues"
+            ]
+        },
+
+        "Chinese Comedy": {
+            date: "Mar 1, 2027",
+            color: "#F7B6BA",
+            tasks: [
+                "Pull bilingual script into Qlab",
+                "Program Lights",
+                "Add Microphone cues"
+            ]
+        },
+
+        "Women's Day": {
+            date: "Mar 7, 2027",
+            color: "#F2D5E5",
+            tasks: [
+                "Determine which performances there will be",
+                "Build or adapt an existing website interface",
+                "Connect said website interface to QLab",
+            ]
+        },
+
+        "DSOTM": {
+            date: "Mar 10, 2027",
+            color: "#D9B9F4",
+            tasks: [
+                "Add more MIDI notes to existing Logic project",
+                "Program corresponding lighting scenes on DMXIS",
+                "Edit a laser show for an existing DTOSM song",
+                "Program Sound Design samples",
+                "Edit background video(s) and add to QLab",
+                "Add microphone cues",
+            ]
+        },
+
+        "Voice of BIPH": {
+            date: "Mar 14, 2027",
+            color: "#F6C8F4",
+            tasks: [
+                "Determine which performances there will be",
+                "Build or adapt an existing website interface",
+                "Connect said website interface to QLab",
+            ]
+        },
+
+        "Devised Theater": {
+            date: "Mar 18, 2027",
+            color: "#E8D3C2",
+            tasks: [
+                "Determind which live camera feeds are needed",
+                "Devise a plan for connecting them to screens",
+                "Program some lighting scenes"
+            ]
+        },
+
+        "Choir Spring Concert": {
+            date: "Mar 25, 2027",
+            color: "#C7F2C5",
+            tasks: [
+                "Get a list of songs from Ms. Rodica",
+                "Edit together Background videos",
+                "Work with IT on using the feedback supressor",
+                "Input microphone cues to QLab"
+            ]
+        },
+
+        "Hamilton": {
+            date: "Apr 14, 2027",
+            color: "#FFD080",
+            tasks: [
+                "Program lights",
+                "Put backdrops in QLab with fades",
+                "Make sure Subtitles are in time",
+                "Make a list of any missing cues"
+            ]
+        },
+
+        "Chinese Debate": {
+            date: "Mar 3, 2027",
+            color: "#FADBD5",
+            tasks: [
+                "Build or adapt an existing website interface",
+                "Connect said website interface to QLab",
+            ]
+        },
+
+
+        "Senior Prom": {
+            date: "TBD",
+            color: "#F0D2E8",
+            tasks: [
+                "Determine which performances there will be",
+                "Build or adapt an existing website interface",
+                "Connect said website interface to QLab",                
+            ]
+        },
+
+        "Aquatic Soundscape": {
+            date: "TBD",
+            color: "#B9E6E8",
+            tasks: [
+                "Determine which performances there will be",
+                "Build or adapt an existing website interface",
+                "Connect said website interface to QLab",                
+            ]
+        }
+
+    };
+
+
+
+    /* ==========================================
+       CURRENT SESSION
+    ========================================== */
+
+    let currentStudent = "";
+    const selectedTasks = new Map();
+
+    function toggleTask(project, task, checkbox) {
+        const taskKey = JSON.stringify([project, task]);
+
+        if (checkbox.checked) {
+            selectedTasks.set(taskKey, { project, task });
+        } else {
+            selectedTasks.delete(taskKey);
+        }
+
+        updateExportButton();
+    }
+
+    let startImageURL = null;
+    let endImageURL = null;
+
+    let transitionTimer = null;
+
+
+    /* ==========================================
+       STUDENT LOGIN
+    ========================================== */
+
+    function loadStudent() {
+
+        const enteredName = document
+            .getElementById("studentName")
+            .value.trim();
+
+        const error = document.getElementById("nameError");
+
+        const matchedName = Object.keys(students).find(
+            student =>
+                student.toLowerCase() === enteredName.toLowerCase()
+        );
+
+        if (!matchedName) {
+            error.textContent =
+                "Student not found. Please check your name.";
+            return;
+        }
+
+        if (transitionTimer) {
+            clearTimeout(transitionTimer);
+        }
+
+        currentStudent = matchedName;
+        selectedTasks.clear();
+
+        document.getElementById("displayName").textContent =
+            matchedName;
+
+        history.pushState(
+            { page: "dashboard" },
+            "",
+            location.href
+        );
+
+        const hero = document.getElementById("hero");
+        const intro = document.getElementById("progressIntro");
+        const dashboard = document.getElementById("dashboard");
+        const logo = document.getElementById("biphLogo");
+
+        error.textContent = "";
+
+        // Fade out the homepage elements
+        hero.classList.add("leaving");
+        intro.classList.add("leaving");
+
+        // Scroll to the top
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        transitionTimer = setTimeout(() => {
+
+            hero.style.display = "none";
+            intro.style.display = "none";
+
+            // Hide the decorative homepage logo
+            logo.style.display = "none";
+
+            renderProjects();
+            updateExportButton();
+
+            dashboard.style.display = "block";
+
+            requestAnimationFrame(() => {
+                dashboard.classList.add("dashboard-entering");
+            });
+
+            transitionTimer = null;
+
+        }, 900);
+
+    }
+
+
+    /* ==========================================
+       RENDER PROJECTS
+    ========================================== */
+
+    function renderProjects() {
+
+        const grid = document.getElementById("projectGrid");
+
+        grid.innerHTML = "";
+
+        const assignedProjects = students[currentStudent] || [];
+
+        assignedProjects.forEach(projectName => {
+
+            const project = projects[projectName];
+
+            if (!project) {
+                console.warn(
+                    "Unknown project assigned to student:",
+                    projectName
+                );
+                return;
+            }
+
+            const column = document.createElement("div");
+            column.className = "project-column";
+
+            const header = document.createElement("div");
+            header.className = "project-header";
+            header.style.background = project.color;
+
+            const title = document.createElement("h3");
+            title.textContent = projectName;
+
+            const date = document.createElement("p");
+            date.textContent = "Event date: " + project.date;
+
+            header.append(title, date);
+
+            const taskList = document.createElement("div");
+            taskList.className = "task-list";
+
+            if (!project.tasks.length) {
+
+                const empty = document.createElement("div");
+                empty.className = "task-empty";
+                empty.textContent = "No tasks added yet.";
+
+                taskList.appendChild(empty);
+
+            } else {
+
+                project.tasks.forEach(task => {
+
+                    const label = document.createElement("label");
+                    label.className = "task-item";
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = selectedTasks.has(
+                        JSON.stringify([projectName, task])
+                    );
+                    checkbox.addEventListener("change", () => {
+                        toggleTask(projectName, task, checkbox);
+                    });
+
+                    const taskText = document.createElement("span");
+                    taskText.textContent = task;
+
+                    label.append(checkbox, taskText);
+                    taskList.appendChild(label);
+
+                });
+
+            }
+
+            column.append(header, taskList);
+
+            grid.appendChild(column);
+
+        });
+
+    }
+
+
+    /* ==========================================
+       IMAGE UPLOADS
+    ========================================== */
+
+    function setupUpload(type) {
+
+        const input = document.getElementById(type + "File");
+        const zone = document.getElementById(type + "Drop");
+
+        input.addEventListener("change", () => {
+
+            if (input.files.length) {
+                handleImage(type, input.files[0]);
+            }
+
+        });
+
+        zone.addEventListener("dragover", event => {
+
+            event.preventDefault();
+
+            zone.classList.add("dragover");
+
+        });
+
+        zone.addEventListener("dragleave", () => {
+
+            zone.classList.remove("dragover");
+
+        });
+
+        zone.addEventListener("drop", event => {
+
+            event.preventDefault();
+
+            zone.classList.remove("dragover");
+
+            const file = event.dataTransfer.files[0];
+
+            if (file) {
+                handleImage(type, file);
+            }
+
+        });
+
+    }
+
+
+    function handleImage(type, file) {
+
+        if (!file.type.startsWith("image/")) {
+            alert("Please upload an image file.");
+            return;
+        }
+
+        if (type === "start" && startImageURL) {
+            URL.revokeObjectURL(startImageURL);
+        }
+
+        if (type === "end" && endImageURL) {
+            URL.revokeObjectURL(endImageURL);
+        }
+
+        const url = URL.createObjectURL(file);
+
+        if (type === "start") {
+            startImageURL = url;
+        } else {
+            endImageURL = url;
+        }
+
+        document.getElementById(type + "Image").src = url;
+
+        document.getElementById(type + "Preview").style.display =
+            "block";
+
+        document.getElementById(type + "Drop").style.display =
+            "none";
+
+        updateExportButton();
+
+    }
+
+
+    function removeImage(type) {
+
+        if (type === "start") {
+
+            if (startImageURL) {
+                URL.revokeObjectURL(startImageURL);
+            }
+
+            startImageURL = null;
+
+        } else {
+
+            if (endImageURL) {
+                URL.revokeObjectURL(endImageURL);
+            }
+
+            endImageURL = null;
+
+        }
+
+        document.getElementById(type + "File").value = "";
+        document.getElementById(type + "Image").src = "";
+
+        document.getElementById(type + "Preview").style.display =
+            "none";
+
+        document.getElementById(type + "Drop").style.display =
+            "flex";
+
+        updateExportButton();
+
+    }
+
+
+    /* ==========================================
+       EXPORT VALIDATION
+    ========================================== */
+
+    function updateExportButton() {
+
+        const ready =
+            selectedTasks.size > 0 &&
+            startImageURL &&
+            endImageURL;
+
+        document.getElementById("exportButton").disabled = !ready;
+
+        document.querySelector(".export-area").style.display =
+            endImageURL ? "block" : "none";
+
+    }
+
+
+    /* ==========================================
+       EXPORT REPORT
+    ========================================== */
+
+    function exportReport() {
+
+        if (!selectedTasks.size || !startImageURL || !endImageURL) {
+            return;
+        }
+
+        const today = new Date();
+
+        const dateString = today.toLocaleDateString(
+            "en-US",
+            {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            }
+        );
+
+        document.getElementById("reportStudent").textContent =
+            currentStudent;
+
+        document.getElementById("reportDate").textContent =
+            dateString;
+
+        const reportTasks = document.getElementById("reportTasks");
+        reportTasks.innerHTML = "";
+
+        const tasksByProject = new Map();
+
+        selectedTasks.forEach(({ project, task }) => {
+            if (!tasksByProject.has(project)) {
+                tasksByProject.set(project, []);
+            }
+            tasksByProject.get(project).push(task);
+        });
+
+        tasksByProject.forEach((tasks, projectName) => {
+            const projectSection = document.createElement("div");
+            projectSection.className = "report-project";
+
+            const heading = document.createElement("h3");
+            heading.textContent = projectName;
+
+            const list = document.createElement("ul");
+
+            tasks.forEach(task => {
+                const item = document.createElement("li");
+                item.textContent = task;
+                list.appendChild(item);
+            });
+
+            projectSection.append(heading, list);
+            reportTasks.appendChild(projectSection);
+        });
+
+        document.getElementById("reportStartImage").src =
+            startImageURL;
+
+        document.getElementById("reportEndImage").src =
+            endImageURL;
+
+        window.print();
+
+    }
+
+    /* ==========================================
+       RESET IMAGE STATE
+    ========================================== */
+
+    function removeImageState() {
+
+        ["start", "end"].forEach(type => {
+
+            document.getElementById(type + "File").value = "";
+            document.getElementById(type + "Image").src = "";
+
+            document.getElementById(type + "Preview").style.display =
+                "none";
+
+            document.getElementById(type + "Drop").style.display =
+                "flex";
+
+        });
+
+        document.getElementById("nameError").textContent = "";
+
+        updateExportButton();
+
+    }
+
+
+    /* ==========================================
+       RETURN TO HOMEPAGE
+    ========================================== */
+
+    function returnToNameEntry() {
+
+        if (transitionTimer) {
+            clearTimeout(transitionTimer);
+            transitionTimer = null;
+        }
+
+        if (startImageURL) {
+            URL.revokeObjectURL(startImageURL);
+        }
+
+        if (endImageURL) {
+            URL.revokeObjectURL(endImageURL);
+        }
+
+        startImageURL = null;
+        endImageURL = null;
+
+        selectedTasks.clear();
+        currentStudent = "";
+
+        document.getElementById("studentName").value = "";
+
+        removeImageState();
+
+        const hero = document.getElementById("hero");
+        const intro = document.getElementById("progressIntro");
+        const dashboard = document.getElementById("dashboard");
+        const logo = document.getElementById("biphLogo");
+
+        // Hide dashboard
+        dashboard.classList.remove("dashboard-entering");
+        dashboard.style.display = "none";
+
+        // Restore homepage elements
+        hero.style.display = "flex";
+        intro.style.display = "grid";
+        logo.style.display = "block";
+
+        // Reset the exit animation
+        hero.classList.remove("leaving");
+        intro.classList.remove("leaving");
+
+        // Return to the top
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    /* ==========================================
+       INITIALIZATION
+    ========================================== */
+
+    setupUpload("start");
+    setupUpload("end");
+
+    document.getElementById("studentName").addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key === "Enter") {
+                loadStudent();
+            }
+
+        }
+    );
+
+
+    /* ==========================================
+       BROWSER BACK BUTTON
+    ========================================== */
+
+    window.addEventListener("popstate", () => {
+
+        if (
+            document.getElementById("dashboard").style.display !== "none"
+            || transitionTimer !== null
+        ) {
+            returnToNameEntry();
+        }
+
+    });
+
+    </script>
+
 </body>
 </html>

@@ -1,3 +1,10 @@
+// <a href="https://biphtechtheater.github.io/tutorials/qlab/">          • QLab</a>
+// <a href="https://biphtechtheater.github.io/tutorials/dmxis/">          • DMXIS</a>
+// <a href="https://biphtechtheater.github.io/tutorials/m32/">          • M32 Mixer</a>
+// <a href="https://biphtechtheater.github.io/tutorials/blackbox/">          • Black Box</a>
+// <a href="https://biphtechtheater.github.io/tutorials/auditorium/">          • Auditorium</a>
+// <a href="https://biphtechtheater.github.io/tutorials/mobile/">          • Mobile Setup</a>
+
 (function() {
     const studentMenuHTML = `
         <div class="hamburger-menu">
@@ -13,12 +20,6 @@
                 <a href="https://biphtechtheater.github.io/events/">📅   Events</a>
                 
                 <a href="https://biphtechtheater.github.io/tutorials/">⏯   Tutorials</a>
-                <a href="https://biphtechtheater.github.io/tutorials/qlab/">          • QLab</a>
-                <a href="https://biphtechtheater.github.io/tutorials/dmxis/">          • DMXIS</a>
-                <a href="https://biphtechtheater.github.io/tutorials/m32/">          • M32 Mixer</a>
-                <a href="https://biphtechtheater.github.io/tutorials/blackbox/">          • Black Box</a>
-                <a href="https://biphtechtheater.github.io/tutorials/auditorium/">          • Auditorium</a>
-                <a href="https://biphtechtheater.github.io/tutorials/mobile/">          • Mobile Setup</a>
                 
                 <a href="https://biphtechtheater.github.io/dmxis/">🎚   DMXIS Remote</a>
                 <a href="https://biphtechtheater.github.io/launchpad/">🚀   Launchpad</a>
@@ -28,6 +29,8 @@
         </div>
     `;
 
+
+    
     const teacherMenuHTML = `
         <div class="hamburger-menu">
             <button class="menu-toggle" id="menu-toggle" aria-label="Toggle teacher menu">
@@ -56,7 +59,7 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            z-index: 1000;
+            z-index: 5000;
         }
 
         .menu-toggle {

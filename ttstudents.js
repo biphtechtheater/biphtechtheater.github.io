@@ -17,3 +17,25 @@ const ttStudents = [
     {"name": "Ricky Z", "liveschoolName": "Ricky Zong", "house": "Blue", "birthdate": "", "altName": "Ricky Z"},
     {"name": "Eric", "liveschoolName": "Eric Yiru Zeng", "house": "Green", "birthdate": "", "altName": "Eric"},
 ]
+
+const students = {
+
+    Fiona: ["Chinese Drama", "Chinese Debate"],
+    Julius: ["Chinese Drama", "Devised Theater"],
+    Vlan: ["Chinese Drama", "Voice of BIPH"],
+    Beryl: ["DSOTM", "Devised Theater"],
+    Allen: ["Drama Showcase", "Choir Spring Concert"],
+    Yolanda: ["Winter Concert", "Hamilton"],
+    Stella: ["Winter Concert", "DSOTM"],
+    Cynthia: ["Winter Concert", "Hamilton"],
+    Yaffa: ["Chinese Comedy", "Hamilton"],
+    Kenny: ["Voice of BIPH", "Choir Spring Concert"],
+    Eric: ["DSOTM", "DSOTM"],
+    Harry: ["Chinese Comedy", "Devised Theater"],
+    Aaliyah: ["DSOTM", "Chinese Debate"],
+    Rachelle: ["Drama Showcase", "Hamilton"],
+    Kevin: ["Voice of BIPH", "Choir Spring Concert"],
+    Sophie: ["DSOTM", "Devised Theater"],
+    Ricky: ["Drama Showcase", "Choir Spring Concert"]
+
+};
