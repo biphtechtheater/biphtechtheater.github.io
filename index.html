@@ -1011,6 +1011,154 @@
                 padding-top: 10px;
             }
         }
+
+
+/* ==========================================
+   TEACHER TASK MANAGEMENT
+========================================== */
+
+.teacher-task-list {
+    margin-bottom: 28px;
+}
+
+.teacher-task-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    margin-bottom: 9px;
+    border: 1px solid #383838;
+    border-radius: 9px;
+    background: #222528;
+    transition: 0.2s;
+}
+
+.teacher-task-row:hover {
+    border-color: #555;
+}
+
+.teacher-task-row input {
+    flex: 0 0 auto;
+    width: 19px;
+    height: 19px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.teacher-task-text {
+    flex: 1;
+    line-height: 1.5;
+    color: #eee;
+}
+
+.teacher-task-row.completed .teacher-task-text {
+    color: #777;
+    text-decoration: line-through;
+}
+
+.teacher-task-delete {
+    flex: 0 0 auto;
+    border: none;
+    background: transparent;
+    color: #777;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 5px;
+    transition: 0.2s;
+}
+
+.teacher-task-delete:hover {
+    background: rgba(255, 100, 100, 0.12);
+    color: #ff8585;
+}
+
+.teacher-add-task {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.teacher-add-task input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 15px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #090a0b;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.teacher-add-task input:focus {
+    border-color: var(--accent);
+}
+
+.teacher-add-task button {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.teacher-add-task button:hover {
+    background: white;
+    transform: translateY(-1px);
+}
+
+.teacher-export-area {
+    margin: 55px 0 30px;
+    padding: 35px 20px;
+    border-top: 1px solid #333;
+    text-align: center;
+}
+
+.teacher-export-area h3 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 10px;
+}
+
+.teacher-export-area p {
+    color: #999;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.teacher-export-button {
+    margin-top: 15px;
+    padding: 15px 35px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #000;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.teacher-export-button:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+@media(max-width: 500px) {
+    .teacher-add-task {
+        flex-direction: column;
+    }
+
+    .teacher-add-task button {
+        align-self: flex-end;
+    }
+}
+
     </style>
 </head>
 
@@ -1020,8 +1168,8 @@
 
     <div id="shared-menu"></div>
     <script src="menu.js"></script>
-    <script src="ttstudents.js"></script> 
-    <!-- const students is in ttstudents.js -->
+    <script src="projects.js"></script> <!-- const projects is contained here -->
+    <script src="ttstudents.js"></script> <!-- const students is contained here -->
 
     <!-- HEADER -->
 
@@ -1288,6 +1436,27 @@
 
                     <div class="teacher-timeline" id="teacherTimeline"></div>
 
+
+<div class="teacher-export-area">
+
+    <h3>Ready to publish your updates?</h3>
+
+    <p>
+        Export an updated projects.js file containing all project tasks
+        and their completion statuses.
+    </p>
+
+    <button
+        class="teacher-export-button"
+        onclick="exportUpdatedProjects()">
+
+        Export Updated Projects ↓
+
+    </button>
+
+</div>
+
+
                 </div>
 
 
@@ -1386,162 +1555,6 @@
 
 
     <script>
-
-    /* ==========================================
-       PROJECT DATABASE
-    ========================================== */
-
-    const projects = {
-
-        // "Impressionism Gallery": {
-        //     date: "Dec 9, 2026",
-        //     color: "#D5E9E3",
-        //     tasks: [
-        //         "Practice setting up the whole setup on your own",
-        //         "Troubleshooting issues",
-        //     ]
-        // },
-
-        "Winter Concert": {
-            date: "Dec 17, 2026",
-            color: "#B7DDF7",
-            tasks: [
-                "Edit together clips from Elf",
-                "Edit together clips from The Grinch",
-                "Edit together clips from A Christmas Carol"
-            ]
-        },
-
-        "Drama Showcase": {
-            date: "Jan 21, 2027",
-            color: "#D7D7D7",
-            tasks: [
-                "Put together a QLab project",
-                "Put together lighting scenes",
-                "Connect QLab with control site",
-                "Enter in mic cues for performances",
-            ]
-        },
-
-        "Chinese Drama": {
-            date: "Feb 24, 2027",
-            color: "#FFF8C8",
-            tasks: [
-                "Integrate backdrops into QLab",
-                "Pull subtitles into QLab project",
-                "Program Lights",
-                "Add Microphone cues"
-            ]
-        },
-
-        "Chinese Comedy": {
-            date: "Mar 1, 2027",
-            color: "#F7B6BA",
-            tasks: [
-                "Pull bilingual script into Qlab",
-                "Program Lights",
-                "Add Microphone cues"
-            ]
-        },
-
-        "Women's Day": {
-            date: "Mar 7, 2027",
-            color: "#F2D5E5",
-            tasks: [
-                "Determine which performances there will be",
-                "Build or adapt an existing website interface",
-                "Connect said website interface to QLab",
-            ]
-        },
-
-        "DSOTM": {
-            date: "Mar 10, 2027",
-            color: "#D9B9F4",
-            tasks: [
-                "Add more MIDI notes to existing Logic project",
-                "Program corresponding lighting scenes on DMXIS",
-                "Edit a laser show for an existing DTOSM song",
-                "Program Sound Design samples",
-                "Edit background video(s) and add to QLab",
-                "Add microphone cues",
-            ]
-        },
-
-        "Voice of BIPH": {
-            date: "Mar 14, 2027",
-            color: "#F6C8F4",
-            tasks: [
-                "Determine which performances there will be",
-                "Build or adapt an existing website interface",
-                "Connect said website interface to QLab",
-            ]
-        },
-
-        "Devised Theater": {
-            date: "Mar 18, 2027",
-            color: "#E8D3C2",
-            tasks: [
-                "Determind which live camera feeds are needed",
-                "Devise a plan for connecting them to screens",
-                "Program some lighting scenes"
-            ]
-        },
-
-        "Choir Spring Concert": {
-            date: "Mar 25, 2027",
-            color: "#C7F2C5",
-            tasks: [
-                "Get a list of songs from Ms. Rodica",
-                "Edit together Background videos",
-                "Work with IT on using the feedback supressor",
-                "Input microphone cues to QLab"
-            ]
-        },
-
-        "Hamilton": {
-            date: "Apr 14, 2027",
-            color: "#FFD080",
-            tasks: [
-                "Program lights",
-                "Put backdrops in QLab with fades",
-                "Make sure Subtitles are in time",
-                "Make a list of any missing cues"
-            ]
-        },
-
-        "Chinese Debate": {
-            date: "Mar 3, 2027",
-            color: "#FADBD5",
-            tasks: [
-                "Build or adapt an existing website interface",
-                "Connect said website interface to QLab",
-            ]
-        },
-
-
-        "Senior Prom": {
-            date: "TBD",
-            color: "#F0D2E8",
-            tasks: [
-                "Determine which performances there will be",
-                "Build or adapt an existing website interface",
-                "Connect said website interface to QLab",                
-            ]
-        },
-
-        "Aquatic Soundscape": {
-            date: "TBD",
-            color: "#B9E6E8",
-            tasks: [
-                "Determine which performances there will be",
-                "Build or adapt an existing website interface",
-                "Connect said website interface to QLab",                
-            ]
-        }
-
-    };
-
-
 
     /* ==========================================
        CURRENT SESSION
@@ -1866,106 +1879,208 @@
 
     /* OPEN INDIVIDUAL PROJECT */
 
-    function openTeacherProject(projectName) {
+    
+function openTeacherProject(projectName) {
 
-        const project = projects[projectName];
+    const project = projects[projectName];
 
-        if (!project) return;
+    if (!project) return;
 
-        const assignedStudents = Object.entries(students)
-            .filter(([studentName, assignedProjects]) =>
-                Array.isArray(assignedProjects) &&
-                assignedProjects.includes(projectName)
-            )
-            .map(([studentName]) => studentName)
-            .sort((a, b) => a.localeCompare(b));
+    // Initialize completion tracking if it doesn't exist.
+    if (!Array.isArray(project.completedTasks)) {
+        project.completedTasks = [];
+    }
 
-        const detail = document.getElementById("teacherProjectDetail");
+    const assignedStudents = Object.entries(students)
+        .filter(([studentName, assignedProjects]) =>
+            Array.isArray(assignedProjects) &&
+            assignedProjects.includes(projectName)
+        )
+        .map(([studentName]) => studentName)
+        .sort((a, b) => a.localeCompare(b));
 
-        detail.innerHTML = "";
+    const detail = document.getElementById("teacherProjectDetail");
 
-        const card = document.createElement("div");
-        card.className = "teacher-detail-card";
+    detail.innerHTML = "";
 
-        card.style.setProperty(
-            "--project-color",
-            project.color
-        );
+    const card = document.createElement("div");
+    card.className = "teacher-detail-card";
 
-        const heading = document.createElement("h2");
-        heading.textContent = projectName;
+    card.style.setProperty("--project-color", project.color);
 
-        const date = document.createElement("div");
-        date.className = "teacher-detail-date";
-        date.textContent = "Event date: " + project.date;
+    const heading = document.createElement("h2");
+    heading.textContent = projectName;
 
-        const studentsHeading = document.createElement("h3");
-        studentsHeading.textContent =
-            "Students Involved (" + assignedStudents.length + ")";
+    const date = document.createElement("div");
+    date.className = "teacher-detail-date";
+    date.textContent = "Event date: " + project.date;
 
-        const studentList = document.createElement("div");
-        studentList.className = "teacher-detail-students";
+    const studentsHeading = document.createElement("h3");
+    studentsHeading.textContent =
+        "Students Involved (" + assignedStudents.length + ")";
 
-        studentList.textContent = assignedStudents.length
-            ? assignedStudents.join(" • ")
-            : "No students currently assigned.";
+    const studentList = document.createElement("div");
+    studentList.className = "teacher-detail-students";
 
-        const tasksHeading = document.createElement("h3");
-        tasksHeading.textContent = "Project Tasks";
+    studentList.textContent = assignedStudents.length
+        ? assignedStudents.join(" • ")
+        : "No students currently assigned.";
 
-        card.append(
-            heading,
-            date,
-            studentsHeading,
-            studentList,
-            tasksHeading
-        );
+    const tasksHeading = document.createElement("h3");
+    tasksHeading.textContent = "Project Tasks";
 
-        if (project.tasks.length) {
+    const taskList = document.createElement("div");
+    taskList.className = "teacher-task-list";
 
-            project.tasks.forEach(task => {
+    function renderTasks() {
 
-                const taskItem = document.createElement("div");
-                taskItem.className = "teacher-detail-task";
-                taskItem.textContent = task;
+        taskList.innerHTML = "";
 
-                card.appendChild(taskItem);
-
-            });
-
-        } else {
+        if (!project.tasks.length) {
 
             const empty = document.createElement("div");
             empty.className = "teacher-detail-empty";
             empty.textContent = "No tasks added yet.";
 
-            card.appendChild(empty);
+            taskList.appendChild(empty);
 
         }
 
-        detail.appendChild(card);
+        project.tasks.forEach((task, index) => {
 
-        // Create a browser history entry for this project.
-        history.pushState(
-            { page: "teacher-project", project: projectName },
-            "",
-            location.href
-        );
+            const completed = project.completedTasks.includes(task);
 
-        document.getElementById("teacherTimelineView").style.display =
-            "none";
+            const row = document.createElement("div");
+            row.className = "teacher-task-row";
 
-        document.getElementById("teacherDetailView").style.display =
-            "block";
+            if (completed) {
+                row.classList.add("completed");
+            }
 
-        teacherDetailOpen = true;
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = completed;
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
+            checkbox.addEventListener("change", () => {
+
+                if (checkbox.checked) {
+
+                    if (!project.completedTasks.includes(task)) {
+                        project.completedTasks.push(task);
+                    }
+
+                } else {
+
+                    project.completedTasks =
+                        project.completedTasks.filter(t => t !== task);
+
+                }
+
+                renderTasks();
+
+            });
+
+            const text = document.createElement("span");
+            text.className = "teacher-task-text";
+            text.textContent = task;
+
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "teacher-task-delete";
+            deleteButton.textContent = "×";
+            deleteButton.title = "Delete task";
+            deleteButton.setAttribute("aria-label", "Delete " + task);
+
+            deleteButton.addEventListener("click", () => {
+
+                if (!confirm("Delete this task?\n\n" + task)) {
+                    return;
+                }
+
+                project.tasks.splice(index, 1);
+
+                project.completedTasks =
+                    project.completedTasks.filter(t => t !== task);
+
+                renderTasks();
+
+            });
+
+            row.append(checkbox, text, deleteButton);
+
+            taskList.appendChild(row);
+
         });
 
     }
+
+    renderTasks();
+
+    // Add-task interface
+    const addTaskForm = document.createElement("form");
+    addTaskForm.className = "teacher-add-task";
+
+    const addTaskInput = document.createElement("input");
+    addTaskInput.type = "text";
+    addTaskInput.placeholder = "Enter a new project task...";
+    addTaskInput.autocomplete = "off";
+
+    const addTaskButton = document.createElement("button");
+    addTaskButton.type = "submit";
+    addTaskButton.textContent = "+ Add Task";
+
+    addTaskForm.append(addTaskInput, addTaskButton);
+
+    addTaskForm.addEventListener("submit", event => {
+
+        event.preventDefault();
+
+        const newTask = addTaskInput.value.trim();
+
+        if (!newTask) return;
+
+        project.tasks.push(newTask);
+
+        addTaskInput.value = "";
+
+        renderTasks();
+
+        addTaskInput.focus();
+
+    });
+
+    card.append(
+        heading,
+        date,
+        studentsHeading,
+        studentList,
+        tasksHeading,
+        taskList,
+        addTaskForm
+    );
+
+    detail.appendChild(card);
+
+    history.pushState(
+        { page: "teacher-project", project: projectName },
+        "",
+        location.href
+    );
+
+    document.getElementById("teacherTimelineView").style.display =
+        "none";
+
+    document.getElementById("teacherDetailView").style.display =
+        "block";
+
+    teacherDetailOpen = true;
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
 
 
     /* BACK TO TIMELINE */
@@ -2198,6 +2313,71 @@
         }, 1000);
 
     }
+
+
+/* ==========================================
+   EXPORT UPDATED PROJECTS.JS
+========================================== */
+
+function exportUpdatedProjects() {
+
+    // Create a clean copy of the current project data.
+    const exportData = {};
+
+    Object.entries(projects).forEach(([projectName, project]) => {
+
+        exportData[projectName] = {
+
+            date: project.date,
+
+            color: project.color,
+
+            tasks: [...project.tasks],
+
+            completedTasks: Array.isArray(project.completedTasks)
+                ? [...project.completedTasks]
+                : []
+
+        };
+
+    });
+
+    // Generate a valid JavaScript file.
+    const fileContents =
+        "const projects = " +
+        JSON.stringify(exportData, null, 4) +
+        ";\n";
+
+    const blob = new Blob(
+        [fileContents],
+        { type: "text/javascript;charset=utf-8" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "projects.js";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+
+    alert(
+        "Your updated projects.js file has been exported!\n\n" +
+        "Replace the existing projects.js in your website repository " +
+        "with this downloaded file."
+    );
+
+}
+
 
     /* ==========================================
        RESET IMAGE STATE
