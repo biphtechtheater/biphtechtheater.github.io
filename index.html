@@ -29,20 +29,16 @@
 
         .hero {
             height: 520px;
-
             background:
                 linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
                 url('images/backstage.jpg') center/cover no-repeat;
-
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             position: relative;
-
             margin: -20px -20px 60px;
             border-bottom: 1px solid var(--border);
-
             transition:
                 opacity 0.9s ease,
                 filter 0.9s ease,
@@ -157,7 +153,6 @@
             gap: 24px;
             margin-bottom: 80px;
             justify-items: center;
-
             transition:
                 opacity 0.8s ease,
                 filter 0.8s ease,
@@ -169,18 +164,14 @@
             max-width: 1000px;
             min-width: 500px;
             margin: 0 auto;
-
             background: var(--card);
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 16px;
             padding: 32px 28px;
-
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
             text-decoration: none;
             color: inherit;
             overflow: hidden;
-
             box-shadow: 0 2px 50px 0px rgba(75, 204, 255, 0.10);
             z-index: 10;
         }
@@ -274,13 +265,10 @@
             display: block;
             width: 100%;
             box-sizing: border-box;
-
             padding: 15px 18px;
-
             background: #090a0b;
             border: 1px solid #444;
             border-radius: 9px;
-
             color: white;
             font-size: 1.1rem;
             text-align: center;
@@ -295,17 +283,13 @@
             display: inline-block;
             margin-top: 18px;
             padding: 13px 30px;
-
             border: none;
             border-radius: 999px;
-
             background: var(--accent);
             color: #000;
-
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-
             transition: 0.2s;
         }
 
@@ -339,7 +323,6 @@
                 opacity: 0;
                 transform: translateY(35px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -452,9 +435,8 @@
             font-style: italic;
         }
 
-
         /* ==========================================
-        TEACHER PROJECT TIMELINE
+           TEACHER PROJECT TIMELINE
         ========================================== */
 
         #teacherDashboard {
@@ -662,7 +644,6 @@
             }
         }
 
-
         /* ==========================================
            UPLOAD SECTIONS
         ========================================== */
@@ -714,16 +695,13 @@
             min-height: 190px;
             border: 2px dashed #555;
             border-radius: 12px;
-
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-
             padding: 15px;
             box-sizing: border-box;
-
             cursor: pointer;
             transition: 0.2s;
             overflow: hidden;
@@ -753,10 +731,25 @@
             display: none;
             width: 100%;
             margin-top: 15px;
+        }
+
+        .preview-count {
+            color: var(--accent);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .preview-item {
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #222528;
+            border: 1px solid #383838;
+            border-radius: 10px;
             text-align: center;
         }
 
-        .preview img {
+        .preview-item img {
             display: block;
             max-width: 100%;
             max-height: 300px;
@@ -766,7 +759,14 @@
             background: #080808;
         }
 
-        .preview button {
+        .preview-filename {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .preview-item button {
             margin-top: 12px;
             padding: 8px 17px;
             background: transparent;
@@ -776,9 +776,58 @@
             cursor: pointer;
         }
 
-        .preview button:hover {
+        .preview-item button:hover {
             border-color: #ff7777;
             color: #ff9999;
+        }
+
+        /* ==========================================
+           COMPLETION PERCENTAGE
+        ========================================== */
+
+        .completion-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--panel);
+            border: 1px solid #353535;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .completion-section label {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .completion-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .completion-input input {
+            width: 110px;
+            padding: 12px;
+            box-sizing: border-box;
+            background: #090a0b;
+            border: 1px solid #555;
+            border-radius: 9px;
+            color: white;
+            font-size: 1.3rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .completion-input input:focus {
+            border-color: var(--accent);
+        }
+
+        .completion-input span {
+            font-size: 1.3rem;
+            color: var(--accent);
         }
 
         /* ==========================================
@@ -803,14 +852,11 @@
             border: none;
             border-radius: 999px;
             margin-top: 15px;
-
             background: var(--accent);
             color: #000;
-
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-
             transition: 0.2s;
         }
 
@@ -902,7 +948,6 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-
                 color: #111 !important;
                 background: white !important;
                 font-family: Arial, sans-serif;
@@ -941,34 +986,8 @@
                 margin-bottom: 6px;
             }
 
-            .report-project {
-                margin: 14px 0;
-                padding: 12px 16px;
-                background: #f5f5f597;
-                border-left: 5px solid #3b7ccc;
-                break-inside: avoid;
-            }
-
-            .report-project + .report-project {
-                margin-top: 30px;
-            }
-
-            .report-project h3 {
-                margin-top: 0;
-                margin-bottom: 6px;
-            }
-
             .report-tasks h2 {
                 margin-top: 0;
-            }
-
-            .report-project {
-                margin: 14px 0;
-                break-inside: avoid;
-            }
-
-            .report-project h3 {
-                margin-bottom: 6px;
             }
 
             .report-project ul {
@@ -988,19 +1007,22 @@
             }
 
             .report-image {
-                break-inside: avoid;
                 min-width: 0;
             }
 
             .report-image h3 {
                 font-size: 14px;
+                break-after: avoid;
             }
 
             .report-image img {
+                display: block;
                 width: 100%;
                 max-height: 430px;
                 object-fit: contain;
                 border: 1px solid #ccc;
+                margin-bottom: 12px;
+                break-inside: avoid;
             }
 
             .report-footer {
@@ -1012,152 +1034,151 @@
             }
         }
 
+        /* ==========================================
+           TEACHER TASK MANAGEMENT
+        ========================================== */
 
-/* ==========================================
-   TEACHER TASK MANAGEMENT
-========================================== */
+        .teacher-task-list {
+            margin-bottom: 28px;
+        }
 
-.teacher-task-list {
-    margin-bottom: 28px;
-}
+        .teacher-task-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 15px;
+            margin-bottom: 9px;
+            border: 1px solid #383838;
+            border-radius: 9px;
+            background: #222528;
+            transition: 0.2s;
+        }
 
-.teacher-task-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 15px;
-    margin-bottom: 9px;
-    border: 1px solid #383838;
-    border-radius: 9px;
-    background: #222528;
-    transition: 0.2s;
-}
+        .teacher-task-row:hover {
+            border-color: #555;
+        }
 
-.teacher-task-row:hover {
-    border-color: #555;
-}
+        .teacher-task-row input {
+            flex: 0 0 auto;
+            width: 19px;
+            height: 19px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
 
-.teacher-task-row input {
-    flex: 0 0 auto;
-    width: 19px;
-    height: 19px;
-    accent-color: var(--accent);
-    cursor: pointer;
-}
+        .teacher-task-text {
+            flex: 1;
+            line-height: 1.5;
+            color: #eee;
+        }
 
-.teacher-task-text {
-    flex: 1;
-    line-height: 1.5;
-    color: #eee;
-}
+        .teacher-task-row.completed .teacher-task-text {
+            color: #777;
+            text-decoration: line-through;
+        }
 
-.teacher-task-row.completed .teacher-task-text {
-    color: #777;
-    text-decoration: line-through;
-}
+        .teacher-task-delete {
+            flex: 0 0 auto;
+            border: none;
+            background: transparent;
+            color: #777;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 3px 7px;
+            border-radius: 5px;
+            transition: 0.2s;
+        }
 
-.teacher-task-delete {
-    flex: 0 0 auto;
-    border: none;
-    background: transparent;
-    color: #777;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 3px 7px;
-    border-radius: 5px;
-    transition: 0.2s;
-}
+        .teacher-task-delete:hover {
+            background: rgba(255, 100, 100, 0.12);
+            color: #ff8585;
+        }
 
-.teacher-task-delete:hover {
-    background: rgba(255, 100, 100, 0.12);
-    color: #ff8585;
-}
+        .teacher-add-task {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
 
-.teacher-add-task {
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-}
+        .teacher-add-task input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #090a0b;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
 
-.teacher-add-task input {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 15px;
-    border: 1px solid #444;
-    border-radius: 8px;
-    background: #090a0b;
-    color: white;
-    font-size: 0.95rem;
-    outline: none;
-}
+        .teacher-add-task input:focus {
+            border-color: var(--accent);
+        }
 
-.teacher-add-task input:focus {
-    border-color: var(--accent);
-}
+        .teacher-add-task button {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
 
-.teacher-add-task button {
-    padding: 11px 20px;
-    border: none;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #000;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: 0.2s;
-}
+        .teacher-add-task button:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
 
-.teacher-add-task button:hover {
-    background: white;
-    transform: translateY(-1px);
-}
+        .teacher-export-area {
+            margin: 55px 0 30px;
+            padding: 35px 20px;
+            border-top: 1px solid #333;
+            text-align: center;
+        }
 
-.teacher-export-area {
-    margin: 55px 0 30px;
-    padding: 35px 20px;
-    border-top: 1px solid #333;
-    text-align: center;
-}
+        .teacher-export-area h3 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
 
-.teacher-export-area h3 {
-    font-size: 1.5rem;
-    font-weight: 400;
-    margin-bottom: 10px;
-}
+        .teacher-export-area p {
+            color: #999;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
 
-.teacher-export-area p {
-    color: #999;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
+        .teacher-export-button {
+            margin-top: 15px;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-.teacher-export-button {
-    margin-top: 15px;
-    padding: 15px 35px;
-    border: none;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #000;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.2s;
-}
+        .teacher-export-button:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
 
-.teacher-export-button:hover {
-    background: white;
-    transform: translateY(-2px);
-}
+        @media(max-width: 500px) {
+            .teacher-add-task {
+                flex-direction: column;
+            }
 
-@media(max-width: 500px) {
-    .teacher-add-task {
-        flex-direction: column;
-    }
-
-    .teacher-add-task button {
-        align-self: flex-end;
-    }
-}
+            .teacher-add-task button {
+                align-self: flex-end;
+            }
+        }
 
     </style>
 </head>
@@ -1168,8 +1189,8 @@
 
     <div id="shared-menu"></div>
     <script src="menu.js"></script>
-    <script src="projects.js"></script> <!-- const projects is contained here -->
-    <script src="ttstudents.js"></script> <!-- const students is contained here -->
+    <script src="projects.js"></script>
+    <script src="ttstudents.js"></script>
 
     <!-- HEADER -->
 
@@ -1299,14 +1320,15 @@
                 <h2>Document Your Progress</h2>
 
                 <p>
-                    Upload a screenshot at the beginning and end of class.
-                    Your two images will appear together in your final report.
+                    Upload screenshots from the beginning and end of class.
+                    You can add one screenshot or multiple screenshots
+                    to each section.
                 </p>
 
 
                 <div class="upload-grid">
 
-                    <!-- STARTING SCREENSHOT -->
+                    <!-- STARTING SCREENSHOTS -->
 
                     <div class="upload-card">
 
@@ -1314,7 +1336,7 @@
 
                         <p>
                             Where are you right now?
-                            Upload your initial screenshot.
+                            Upload your initial screenshot(s).
                         </p>
 
                         <label class="drop-zone" id="startDrop">
@@ -1323,31 +1345,25 @@
                                 type="file"
                                 id="startFile"
                                 accept="image/*"
+                                multiple
                             >
 
                             <div class="upload-icon">📷</div>
 
-                            <strong>Upload starting screenshot</strong>
+                            <strong>Upload starting screenshot(s)</strong>
 
-                            <span>Click or drag an image here</span>
+                            <span>
+                                Click or drag one or more images here
+                            </span>
 
                         </label>
 
-
-                        <div class="preview" id="startPreview">
-
-                            <img id="startImage" alt="Starting screenshot">
-
-                            <button onclick="removeImage('start')">
-                                Remove image
-                            </button>
-
-                        </div>
+                        <div class="preview" id="startPreview"></div>
 
                     </div>
 
 
-                    <!-- ENDING SCREENSHOT -->
+                    <!-- ENDING SCREENSHOTS -->
 
                     <div class="upload-card">
 
@@ -1355,7 +1371,7 @@
 
                         <p>
                             What have you accomplished?
-                            Upload your final screenshot.
+                            Upload your final screenshot(s).
                         </p>
 
                         <label class="drop-zone" id="endDrop">
@@ -1364,26 +1380,20 @@
                                 type="file"
                                 id="endFile"
                                 accept="image/*"
+                                multiple
                             >
 
                             <div class="upload-icon">✨</div>
 
-                            <strong>Upload ending screenshot</strong>
+                            <strong>Upload ending screenshot(s)</strong>
 
-                            <span>Click or drag an image here</span>
+                            <span>
+                                Click or drag one or more images here
+                            </span>
 
                         </label>
 
-
-                        <div class="preview" id="endPreview">
-
-                            <img id="endImage" alt="Ending screenshot">
-
-                            <button onclick="removeImage('end')">
-                                Remove image
-                            </button>
-
-                        </div>
+                        <div class="preview" id="endPreview"></div>
 
                     </div>
 
@@ -1391,6 +1401,31 @@
 
             </section>
 
+
+            <!-- COMPLETION PERCENTAGE -->
+
+            <section class="completion-section">
+
+                <label for="completionPercentage">
+                    Is this completed? Give a %
+                </label>
+
+                <div class="completion-input">
+
+                    <input
+                        type="number"
+                        id="completionPercentage"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="0–100"
+                    >
+
+                    <span>%</span>
+
+                </div>
+
+            </section>
 
 
             <!-- EXPORT -->
@@ -1401,7 +1436,7 @@
 
                 <p>
                     Your report will include your name, the tasks you checked,
-                    the date, and both screenshots.
+                    the completion percentage, the date, and all screenshots.
                 </p>
 
                 <button
@@ -1419,62 +1454,61 @@
         </section>
 
 
-         <!-- ======================================
-                TEACHER DASHBOARD
-            ======================================= -->
+        <!-- ======================================
+             TEACHER DASHBOARD
+        ======================================= -->
 
-            <section id="teacherDashboard">
+        <section id="teacherDashboard">
 
-                <!-- TIMELINE VIEW -->
+            <!-- TIMELINE VIEW -->
 
-                <div id="teacherTimelineView">
+            <div id="teacherTimelineView">
 
-                    <div class="teacher-heading">
-                        <h2>Project <span>Overview</span></h2>
-                        <p>2026–2027 Technical Theatre Production Timeline</p>
-                    </div>
-
-                    <div class="teacher-timeline" id="teacherTimeline"></div>
-
-
-<div class="teacher-export-area">
-
-    <h3>Ready to publish your updates?</h3>
-
-    <p>
-        Export an updated projects.js file containing all project tasks
-        and their completion statuses.
-    </p>
-
-    <button
-        class="teacher-export-button"
-        onclick="exportUpdatedProjects()">
-
-        Export Updated Projects ↓
-
-    </button>
-
-</div>
-
-
+                <div class="teacher-heading">
+                    <h2>Project <span>Overview</span></h2>
+                    <p>2026–2027 Technical Theatre Production Timeline</p>
                 </div>
 
+                <div class="teacher-timeline" id="teacherTimeline"></div>
 
-                <!-- INDIVIDUAL PROJECT VIEW -->
 
-                <div class="teacher-detail" id="teacherDetailView">
+                <div class="teacher-export-area">
+
+                    <h3>Ready to publish your updates?</h3>
+
+                    <p>
+                        Export an updated projects.js file containing all project tasks
+                        and their completion statuses.
+                    </p>
 
                     <button
-                        class="teacher-back-button"
-                        onclick="teacherBackToTimeline()">
-                        ← Back to Project Timeline
-                    </button>
+                        class="teacher-export-button"
+                        onclick="exportUpdatedProjects()">
 
-                    <div id="teacherProjectDetail"></div>
+                        Export Updated Projects ↓
+
+                    </button>
 
                 </div>
 
-            </section>
+            </div>
+
+
+            <!-- INDIVIDUAL PROJECT VIEW -->
+
+            <div class="teacher-detail" id="teacherDetailView">
+
+                <button
+                    class="teacher-back-button"
+                    onclick="teacherBackToTimeline()">
+                    ← Back to Project Timeline
+                </button>
+
+                <div id="teacherProjectDetail"></div>
+
+            </div>
+
+        </section>
 
 
         <!-- ======================================
@@ -1499,6 +1533,11 @@
                     <span id="reportDate"></span>
                 </p>
 
+                <p>
+                    <strong>Completion:</strong>
+                    <span id="reportCompletion"></span>
+                </p>
+
             </div>
 
 
@@ -1517,7 +1556,7 @@
 
                     <h3>Starting Point</h3>
 
-                    <img id="reportStartImage" alt="Starting point">
+                    <div id="reportStartImages"></div>
 
                 </div>
 
@@ -1526,7 +1565,7 @@
 
                     <h3>Ending Point</h3>
 
-                    <img id="reportEndImage" alt="Ending point">
+                    <div id="reportEndImages"></div>
 
                 </div>
 
@@ -1564,6 +1603,7 @@
     const selectedTasks = new Map();
 
     function toggleTask(project, task, checkbox) {
+
         const taskKey = JSON.stringify([project, task]);
 
         if (checkbox.checked) {
@@ -1575,8 +1615,11 @@
         updateExportButton();
     }
 
-    let startImageURL = null;
-    let endImageURL = null;
+
+    // Each collection holds multiple screenshot URLs.
+
+    let startImages = [];
+    let endImages = [];
 
     let transitionTimer = null;
 
@@ -1632,11 +1675,9 @@
 
         error.textContent = "";
 
-        // Fade out the homepage elements
         hero.classList.add("leaving");
         intro.classList.add("leaving");
 
-        // Scroll to the top
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -1647,7 +1688,6 @@
             hero.style.display = "none";
             intro.style.display = "none";
 
-            // Hide the decorative homepage logo
             logo.style.display = "none";
 
             const teacherDashboard =
@@ -1655,14 +1695,12 @@
 
             if (matchedName.toLowerCase() === "mr. tubbs") {
 
-                // Teacher login
                 renderTeacherTimeline();
 
                 teacherDashboard.style.display = "block";
 
             } else {
 
-                // Normal student login
                 renderProjects();
                 updateExportButton();
 
@@ -1739,10 +1777,13 @@
                     label.className = "task-item";
 
                     const checkbox = document.createElement("input");
+
                     checkbox.type = "checkbox";
+
                     checkbox.checked = selectedTasks.has(
                         JSON.stringify([projectName, task])
                     );
+
                     checkbox.addEventListener("change", () => {
                         toggleTask(projectName, task, checkbox);
                     });
@@ -1767,13 +1808,11 @@
 
 
     /* ==========================================
-    TEACHER PROJECT TIMELINE
+       TEACHER PROJECT TIMELINE
     ========================================== */
 
     let teacherDetailOpen = false;
 
-
-    /* BUILD TIMELINE */
 
     function renderTeacherTimeline() {
 
@@ -1781,14 +1820,12 @@
 
         timeline.innerHTML = "";
 
-        // Include every project and sort chronologically.
         const sortedProjects = Object.entries(projects).sort(
             ([nameA, projectA], [nameB, projectB]) => {
 
                 const dateA = Date.parse(projectA.date);
                 const dateB = Date.parse(projectB.date);
 
-                // Projects with TBD dates appear last.
                 if (isNaN(dateA) && isNaN(dateB)) {
                     return nameA.localeCompare(nameB);
                 }
@@ -1802,7 +1839,6 @@
 
         sortedProjects.forEach(([projectName, project]) => {
 
-            // Find every student assigned to this project.
             const assignedStudents = Object.entries(students)
                 .filter(([studentName, assignedProjects]) =>
                     Array.isArray(assignedProjects) &&
@@ -1839,6 +1875,7 @@
             studentList.className = "teacher-project-students";
 
             const studentLabel = document.createElement("strong");
+
             studentLabel.textContent =
                 assignedStudents.length +
                 (assignedStudents.length === 1
@@ -1865,7 +1902,6 @@
 
         });
 
-        // Always start with the timeline visible.
         document.getElementById("teacherTimelineView").style.display =
             "block";
 
@@ -1879,208 +1915,209 @@
 
     /* OPEN INDIVIDUAL PROJECT */
 
-    
-function openTeacherProject(projectName) {
+    function openTeacherProject(projectName) {
 
-    const project = projects[projectName];
+        const project = projects[projectName];
 
-    if (!project) return;
+        if (!project) return;
 
-    // Initialize completion tracking if it doesn't exist.
-    if (!Array.isArray(project.completedTasks)) {
-        project.completedTasks = [];
-    }
-
-    const assignedStudents = Object.entries(students)
-        .filter(([studentName, assignedProjects]) =>
-            Array.isArray(assignedProjects) &&
-            assignedProjects.includes(projectName)
-        )
-        .map(([studentName]) => studentName)
-        .sort((a, b) => a.localeCompare(b));
-
-    const detail = document.getElementById("teacherProjectDetail");
-
-    detail.innerHTML = "";
-
-    const card = document.createElement("div");
-    card.className = "teacher-detail-card";
-
-    card.style.setProperty("--project-color", project.color);
-
-    const heading = document.createElement("h2");
-    heading.textContent = projectName;
-
-    const date = document.createElement("div");
-    date.className = "teacher-detail-date";
-    date.textContent = "Event date: " + project.date;
-
-    const studentsHeading = document.createElement("h3");
-    studentsHeading.textContent =
-        "Students Involved (" + assignedStudents.length + ")";
-
-    const studentList = document.createElement("div");
-    studentList.className = "teacher-detail-students";
-
-    studentList.textContent = assignedStudents.length
-        ? assignedStudents.join(" • ")
-        : "No students currently assigned.";
-
-    const tasksHeading = document.createElement("h3");
-    tasksHeading.textContent = "Project Tasks";
-
-    const taskList = document.createElement("div");
-    taskList.className = "teacher-task-list";
-
-    function renderTasks() {
-
-        taskList.innerHTML = "";
-
-        if (!project.tasks.length) {
-
-            const empty = document.createElement("div");
-            empty.className = "teacher-detail-empty";
-            empty.textContent = "No tasks added yet.";
-
-            taskList.appendChild(empty);
-
+        if (!Array.isArray(project.completedTasks)) {
+            project.completedTasks = [];
         }
 
-        project.tasks.forEach((task, index) => {
+        const assignedStudents = Object.entries(students)
+            .filter(([studentName, assignedProjects]) =>
+                Array.isArray(assignedProjects) &&
+                assignedProjects.includes(projectName)
+            )
+            .map(([studentName]) => studentName)
+            .sort((a, b) => a.localeCompare(b));
 
-            const completed = project.completedTasks.includes(task);
+        const detail = document.getElementById("teacherProjectDetail");
 
-            const row = document.createElement("div");
-            row.className = "teacher-task-row";
+        detail.innerHTML = "";
 
-            if (completed) {
-                row.classList.add("completed");
+        const card = document.createElement("div");
+        card.className = "teacher-detail-card";
+
+        card.style.setProperty("--project-color", project.color);
+
+        const heading = document.createElement("h2");
+        heading.textContent = projectName;
+
+        const date = document.createElement("div");
+        date.className = "teacher-detail-date";
+        date.textContent = "Event date: " + project.date;
+
+        const studentsHeading = document.createElement("h3");
+
+        studentsHeading.textContent =
+            "Students Involved (" + assignedStudents.length + ")";
+
+        const studentList = document.createElement("div");
+        studentList.className = "teacher-detail-students";
+
+        studentList.textContent = assignedStudents.length
+            ? assignedStudents.join(" • ")
+            : "No students currently assigned.";
+
+        const tasksHeading = document.createElement("h3");
+        tasksHeading.textContent = "Project Tasks";
+
+        const taskList = document.createElement("div");
+        taskList.className = "teacher-task-list";
+
+
+        function renderTasks() {
+
+            taskList.innerHTML = "";
+
+            if (!project.tasks.length) {
+
+                const empty = document.createElement("div");
+                empty.className = "teacher-detail-empty";
+                empty.textContent = "No tasks added yet.";
+
+                taskList.appendChild(empty);
+
             }
 
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = completed;
+            project.tasks.forEach((task, index) => {
 
-            checkbox.addEventListener("change", () => {
+                const completed = project.completedTasks.includes(task);
 
-                if (checkbox.checked) {
+                const row = document.createElement("div");
+                row.className = "teacher-task-row";
 
-                    if (!project.completedTasks.includes(task)) {
-                        project.completedTasks.push(task);
+                if (completed) {
+                    row.classList.add("completed");
+                }
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = completed;
+
+                checkbox.addEventListener("change", () => {
+
+                    if (checkbox.checked) {
+
+                        if (!project.completedTasks.includes(task)) {
+                            project.completedTasks.push(task);
+                        }
+
+                    } else {
+
+                        project.completedTasks =
+                            project.completedTasks.filter(t => t !== task);
+
                     }
 
-                } else {
+                    renderTasks();
+
+                });
+
+                const text = document.createElement("span");
+                text.className = "teacher-task-text";
+                text.textContent = task;
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "teacher-task-delete";
+                deleteButton.textContent = "×";
+                deleteButton.title = "Delete task";
+                deleteButton.setAttribute("aria-label", "Delete " + task);
+
+                deleteButton.addEventListener("click", () => {
+
+                    if (!confirm("Delete this task?\n\n" + task)) {
+                        return;
+                    }
+
+                    project.tasks.splice(index, 1);
 
                     project.completedTasks =
                         project.completedTasks.filter(t => t !== task);
 
-                }
+                    renderTasks();
 
-                renderTasks();
+                });
 
-            });
+                row.append(checkbox, text, deleteButton);
 
-            const text = document.createElement("span");
-            text.className = "teacher-task-text";
-            text.textContent = task;
-
-            const deleteButton = document.createElement("button");
-            deleteButton.className = "teacher-task-delete";
-            deleteButton.textContent = "×";
-            deleteButton.title = "Delete task";
-            deleteButton.setAttribute("aria-label", "Delete " + task);
-
-            deleteButton.addEventListener("click", () => {
-
-                if (!confirm("Delete this task?\n\n" + task)) {
-                    return;
-                }
-
-                project.tasks.splice(index, 1);
-
-                project.completedTasks =
-                    project.completedTasks.filter(t => t !== task);
-
-                renderTasks();
+                taskList.appendChild(row);
 
             });
 
-            row.append(checkbox, text, deleteButton);
-
-            taskList.appendChild(row);
-
-        });
-
-    }
-
-    renderTasks();
-
-    // Add-task interface
-    const addTaskForm = document.createElement("form");
-    addTaskForm.className = "teacher-add-task";
-
-    const addTaskInput = document.createElement("input");
-    addTaskInput.type = "text";
-    addTaskInput.placeholder = "Enter a new project task...";
-    addTaskInput.autocomplete = "off";
-
-    const addTaskButton = document.createElement("button");
-    addTaskButton.type = "submit";
-    addTaskButton.textContent = "+ Add Task";
-
-    addTaskForm.append(addTaskInput, addTaskButton);
-
-    addTaskForm.addEventListener("submit", event => {
-
-        event.preventDefault();
-
-        const newTask = addTaskInput.value.trim();
-
-        if (!newTask) return;
-
-        project.tasks.push(newTask);
-
-        addTaskInput.value = "";
+        }
 
         renderTasks();
 
-        addTaskInput.focus();
 
-    });
+        // Add-task interface
 
-    card.append(
-        heading,
-        date,
-        studentsHeading,
-        studentList,
-        tasksHeading,
-        taskList,
-        addTaskForm
-    );
+        const addTaskForm = document.createElement("form");
+        addTaskForm.className = "teacher-add-task";
 
-    detail.appendChild(card);
+        const addTaskInput = document.createElement("input");
+        addTaskInput.type = "text";
+        addTaskInput.placeholder = "Enter a new project task...";
+        addTaskInput.autocomplete = "off";
 
-    history.pushState(
-        { page: "teacher-project", project: projectName },
-        "",
-        location.href
-    );
+        const addTaskButton = document.createElement("button");
+        addTaskButton.type = "submit";
+        addTaskButton.textContent = "+ Add Task";
 
-    document.getElementById("teacherTimelineView").style.display =
-        "none";
+        addTaskForm.append(addTaskInput, addTaskButton);
 
-    document.getElementById("teacherDetailView").style.display =
-        "block";
+        addTaskForm.addEventListener("submit", event => {
 
-    teacherDetailOpen = true;
+            event.preventDefault();
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+            const newTask = addTaskInput.value.trim();
 
-}
+            if (!newTask) return;
 
+            project.tasks.push(newTask);
+
+            addTaskInput.value = "";
+
+            renderTasks();
+
+            addTaskInput.focus();
+
+        });
+
+        card.append(
+            heading,
+            date,
+            studentsHeading,
+            studentList,
+            tasksHeading,
+            taskList,
+            addTaskForm
+        );
+
+        detail.appendChild(card);
+
+        history.pushState(
+            { page: "teacher-project", project: projectName },
+            "",
+            location.href
+        );
+
+        document.getElementById("teacherTimelineView").style.display =
+            "none";
+
+        document.getElementById("teacherDetailView").style.display =
+            "block";
+
+        teacherDetailOpen = true;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
 
 
     /* BACK TO TIMELINE */
@@ -2094,10 +2131,14 @@ function openTeacherProject(projectName) {
     }
 
 
-
     /* ==========================================
        IMAGE UPLOADS
     ========================================== */
+
+    function getImageArray(type) {
+        return type === "start" ? startImages : endImages;
+    }
+
 
     function setupUpload(type) {
 
@@ -2106,9 +2147,12 @@ function openTeacherProject(projectName) {
 
         input.addEventListener("change", () => {
 
-            if (input.files.length) {
-                handleImage(type, input.files[0]);
-            }
+            Array.from(input.files).forEach(file => {
+                handleImage(type, file);
+            });
+
+            // Allows the same file to be selected again later.
+            input.value = "";
 
         });
 
@@ -2132,11 +2176,9 @@ function openTeacherProject(projectName) {
 
             zone.classList.remove("dragover");
 
-            const file = event.dataTransfer.files[0];
-
-            if (file) {
+            Array.from(event.dataTransfer.files).forEach(file => {
                 handleImage(type, file);
-            }
+            });
 
         });
 
@@ -2146,67 +2188,105 @@ function openTeacherProject(projectName) {
     function handleImage(type, file) {
 
         if (!file.type.startsWith("image/")) {
-            alert("Please upload an image file.");
+            alert("Please upload image files only.");
             return;
-        }
-
-        if (type === "start" && startImageURL) {
-            URL.revokeObjectURL(startImageURL);
-        }
-
-        if (type === "end" && endImageURL) {
-            URL.revokeObjectURL(endImageURL);
         }
 
         const url = URL.createObjectURL(file);
 
-        if (type === "start") {
-            startImageURL = url;
-        } else {
-            endImageURL = url;
-        }
+        const images = getImageArray(type);
 
-        document.getElementById(type + "Image").src = url;
+        images.push({
+            url: url,
+            name: file.name
+        });
 
-        document.getElementById(type + "Preview").style.display =
-            "block";
-
-        document.getElementById(type + "Drop").style.display =
-            "none";
+        renderImagePreviews(type);
 
         updateExportButton();
 
     }
 
 
-    function removeImage(type) {
+    /* RENDER IMAGE PREVIEWS */
 
-        if (type === "start") {
+    function renderImagePreviews(type) {
 
-            if (startImageURL) {
-                URL.revokeObjectURL(startImageURL);
-            }
+        const images = getImageArray(type);
 
-            startImageURL = null;
+        const preview =
+            document.getElementById(type + "Preview");
 
-        } else {
+        preview.innerHTML = "";
 
-            if (endImageURL) {
-                URL.revokeObjectURL(endImageURL);
-            }
+        if (!images.length) {
 
-            endImageURL = null;
+            preview.style.display = "none";
+
+            return;
 
         }
 
-        document.getElementById(type + "File").value = "";
-        document.getElementById(type + "Image").src = "";
+        preview.style.display = "block";
 
-        document.getElementById(type + "Preview").style.display =
-            "none";
+        const count = document.createElement("div");
+        count.className = "preview-count";
 
-        document.getElementById(type + "Drop").style.display =
-            "flex";
+        count.textContent =
+            images.length +
+            (images.length === 1
+                ? " screenshot uploaded"
+                : " screenshots uploaded");
+
+        preview.appendChild(count);
+
+        images.forEach((image, index) => {
+
+            const item = document.createElement("div");
+            item.className = "preview-item";
+
+            const img = document.createElement("img");
+            img.src = image.url;
+            img.alt = image.name;
+
+            const filename = document.createElement("div");
+            filename.className = "preview-filename";
+            filename.textContent = image.name;
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.textContent = "Remove image";
+
+            removeButton.addEventListener("click", () => {
+                removeImage(type, index);
+            });
+
+            item.append(
+                img,
+                filename,
+                removeButton
+            );
+
+            preview.appendChild(item);
+
+        });
+
+    }
+
+
+    /* REMOVE INDIVIDUAL IMAGE */
+
+    function removeImage(type, index) {
+
+        const images = getImageArray(type);
+
+        if (!images[index]) return;
+
+        URL.revokeObjectURL(images[index].url);
+
+        images.splice(index, 1);
+
+        renderImagePreviews(type);
 
         updateExportButton();
 
@@ -2219,15 +2299,27 @@ function openTeacherProject(projectName) {
 
     function updateExportButton() {
 
+        const percentageInput =
+            document.getElementById("completionPercentage");
+
+        const percentage = percentageInput.value.trim();
+
+        const validPercentage =
+            percentage !== "" &&
+            Number.isFinite(Number(percentage)) &&
+            Number(percentage) >= 0 &&
+            Number(percentage) <= 100;
+
         const ready =
             selectedTasks.size > 0 &&
-            startImageURL &&
-            endImageURL;
+            startImages.length > 0 &&
+            endImages.length > 0 &&
+            validPercentage;
 
         document.getElementById("exportButton").disabled = !ready;
 
         document.querySelector(".export-area").style.display =
-            endImageURL ? "block" : "none";
+            endImages.length > 0 ? "block" : "none";
 
     }
 
@@ -2238,7 +2330,26 @@ function openTeacherProject(projectName) {
 
     function exportReport() {
 
-        if (!selectedTasks.size || !startImageURL || !endImageURL) {
+        if (
+            !selectedTasks.size ||
+            !startImages.length ||
+            !endImages.length
+        ) {
+            return;
+        }
+
+        const percentageInput =
+            document.getElementById("completionPercentage");
+
+        const percentage = percentageInput.value.trim();
+
+        if (
+            percentage === "" ||
+            !Number.isFinite(Number(percentage)) ||
+            Number(percentage) < 0 ||
+            Number(percentage) > 100
+        ) {
+            alert("Please enter a completion percentage between 0 and 100.");
             return;
         }
 
@@ -2259,23 +2370,34 @@ function openTeacherProject(projectName) {
         document.getElementById("reportDate").textContent =
             dateString;
 
-        const reportTasks = document.getElementById("reportTasks");
+        document.getElementById("reportCompletion").textContent =
+            percentage + "%";
+
+
+        /* TASKS */
+
+        const reportTasks =
+            document.getElementById("reportTasks");
+
         reportTasks.innerHTML = "";
 
         const tasksByProject = new Map();
 
         selectedTasks.forEach(({ project, task }) => {
+
             if (!tasksByProject.has(project)) {
                 tasksByProject.set(project, []);
             }
+
             tasksByProject.get(project).push(task);
+
         });
 
         tasksByProject.forEach((tasks, projectName) => {
+
             const projectSection = document.createElement("div");
             projectSection.className = "report-project";
 
-            // Match the PDF's left border to the project's assigned color
             projectSection.style.borderLeftColor =
                 projects[projectName]?.color || "#3b7ccc";
 
@@ -2285,29 +2407,68 @@ function openTeacherProject(projectName) {
             const list = document.createElement("ul");
 
             tasks.forEach(task => {
+
                 const item = document.createElement("li");
                 item.textContent = task;
+
                 list.appendChild(item);
+
             });
 
             projectSection.append(heading, list);
+
             reportTasks.appendChild(projectSection);
+
         });
 
-        document.getElementById("reportStartImage").src =
-            startImageURL;
 
-        document.getElementById("reportEndImage").src =
-            endImageURL;
+        /* STARTING SCREENSHOTS */
 
-        // Set the suggested PDF filename
+        const reportStart =
+            document.getElementById("reportStartImages");
+
+        reportStart.innerHTML = "";
+
+        startImages.forEach((image, index) => {
+
+            const img = document.createElement("img");
+
+            img.src = image.url;
+            img.alt = "Starting screenshot " + (index + 1);
+
+            reportStart.appendChild(img);
+
+        });
+
+
+        /* ENDING SCREENSHOTS */
+
+        const reportEnd =
+            document.getElementById("reportEndImages");
+
+        reportEnd.innerHTML = "";
+
+        endImages.forEach((image, index) => {
+
+            const img = document.createElement("img");
+
+            img.src = image.url;
+            img.alt = "Ending screenshot " + (index + 1);
+
+            reportEnd.appendChild(img);
+
+        });
+
+
+        /* PRINT */
+
         const originalTitle = document.title;
 
-        document.title = `${currentStudent} Progress - ${dateString}`;
+        document.title =
+            `${currentStudent} Progress - ${dateString}`;
 
         window.print();
 
-        // Restore the original page title afterward
         setTimeout(() => {
             document.title = originalTitle;
         }, 1000);
@@ -2315,68 +2476,66 @@ function openTeacherProject(projectName) {
     }
 
 
-/* ==========================================
-   EXPORT UPDATED PROJECTS.JS
-========================================== */
+    /* ==========================================
+       EXPORT UPDATED PROJECTS.JS
+    ========================================== */
 
-function exportUpdatedProjects() {
+    function exportUpdatedProjects() {
 
-    // Create a clean copy of the current project data.
-    const exportData = {};
+        const exportData = {};
 
-    Object.entries(projects).forEach(([projectName, project]) => {
+        Object.entries(projects).forEach(([projectName, project]) => {
 
-        exportData[projectName] = {
+            exportData[projectName] = {
 
-            date: project.date,
+                date: project.date,
 
-            color: project.color,
+                color: project.color,
 
-            tasks: [...project.tasks],
+                tasks: [...project.tasks],
 
-            completedTasks: Array.isArray(project.completedTasks)
-                ? [...project.completedTasks]
-                : []
+                completedTasks: Array.isArray(project.completedTasks)
+                    ? [...project.completedTasks]
+                    : []
 
-        };
+            };
 
-    });
+        });
 
-    // Generate a valid JavaScript file.
-    const fileContents =
-        "const projects = " +
-        JSON.stringify(exportData, null, 4) +
-        ";\n";
+        const fileContents =
+            "const projects = " +
+            JSON.stringify(exportData, null, 4) +
+            ";\n";
 
-    const blob = new Blob(
-        [fileContents],
-        { type: "text/javascript;charset=utf-8" }
-    );
+        const blob = new Blob(
+            [fileContents],
+            { type: "text/javascript;charset=utf-8" }
+        );
 
-    const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
+        const link = document.createElement("a");
 
-    link.href = url;
-    link.download = "projects.js";
+        link.href = url;
+        link.download = "projects.js";
 
-    document.body.appendChild(link);
+        document.body.appendChild(link);
 
-    link.click();
+        link.click();
 
-    document.body.removeChild(link);
+        document.body.removeChild(link);
 
-    setTimeout(() => {
-        URL.revokeObjectURL(url);
-    }, 1000);
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
 
-    alert(
-        "Your updated projects.js file has been exported!\n\n" +
-        "Replace the existing projects.js in your website repository " +
-        "with this downloaded file."
-    );
+        alert(
+            "Your updated projects.js file has been exported!\n\n" +
+            "Replace the existing projects.js in your website repository " +
+            "with this downloaded file."
+        );
 
-}
+    }
 
 
     /* ==========================================
@@ -2387,16 +2546,24 @@ function exportUpdatedProjects() {
 
         ["start", "end"].forEach(type => {
 
+            const images = getImageArray(type);
+
+            images.forEach(image => {
+                URL.revokeObjectURL(image.url);
+            });
+
+            images.length = 0;
+
             document.getElementById(type + "File").value = "";
-            document.getElementById(type + "Image").src = "";
+
+            document.getElementById(type + "Preview").innerHTML = "";
 
             document.getElementById(type + "Preview").style.display =
                 "none";
 
-            document.getElementById(type + "Drop").style.display =
-                "flex";
-
         });
+
+        document.getElementById("completionPercentage").value = "";
 
         document.getElementById("nameError").textContent = "";
 
@@ -2416,16 +2583,16 @@ function exportUpdatedProjects() {
             transitionTimer = null;
         }
 
-        if (startImageURL) {
-            URL.revokeObjectURL(startImageURL);
-        }
+        startImages.forEach(image => {
+            URL.revokeObjectURL(image.url);
+        });
 
-        if (endImageURL) {
-            URL.revokeObjectURL(endImageURL);
-        }
+        endImages.forEach(image => {
+            URL.revokeObjectURL(image.url);
+        });
 
-        startImageURL = null;
-        endImageURL = null;
+        startImages = [];
+        endImages = [];
 
         selectedTasks.clear();
         currentStudent = "";
@@ -2445,20 +2612,16 @@ function exportUpdatedProjects() {
         teacherDashboard.style.display = "none";
         teacherDetailOpen = false;
 
-        // Hide dashboard
         dashboard.classList.remove("dashboard-entering");
         dashboard.style.display = "none";
 
-        // Restore homepage elements
         hero.style.display = "flex";
         intro.style.display = "grid";
         logo.style.display = "block";
 
-        // Reset the exit animation
         hero.classList.remove("leaving");
         intro.classList.remove("leaving");
 
-        // Return to the top
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -2473,6 +2636,11 @@ function exportUpdatedProjects() {
 
     setupUpload("start");
     setupUpload("end");
+
+    document.getElementById("completionPercentage").addEventListener(
+        "input",
+        updateExportButton
+    );
 
     document.getElementById("studentName").addEventListener(
         "keydown",
@@ -2492,40 +2660,43 @@ function exportUpdatedProjects() {
 
     window.addEventListener("popstate", () => {
 
-    // Teacher: project details → timeline
-    if (
-        document.getElementById("teacherDashboard").style.display !== "none"
-        && teacherDetailOpen
-    ) {
+        // Teacher: project details → timeline
 
-        document.getElementById("teacherTimelineView").style.display =
-            "block";
+        if (
+            document.getElementById("teacherDashboard").style.display !== "none"
+            && teacherDetailOpen
+        ) {
 
-        document.getElementById("teacherDetailView").style.display =
-            "none";
+            document.getElementById("teacherTimelineView").style.display =
+                "block";
 
-        teacherDetailOpen = false;
+            document.getElementById("teacherDetailView").style.display =
+                "none";
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+            teacherDetailOpen = false;
 
-        return;
-    }
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
 
-    // Student or teacher: dashboard → homepage
-    if (
-        document.getElementById("dashboard").style.display !== "none"
-        || document.getElementById("teacherDashboard").style.display !== "none"
-        || transitionTimer !== null
-    ) {
+            return;
+        }
 
-        returnToNameEntry();
 
-    }
+        // Student or teacher: dashboard → homepage
 
-});
+        if (
+            document.getElementById("dashboard").style.display !== "none"
+            || document.getElementById("teacherDashboard").style.display !== "none"
+            || transitionTimer !== null
+        ) {
+
+            returnToNameEntry();
+
+        }
+
+    });
 
     </script>
 
