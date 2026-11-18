@@ -941,12 +941,37 @@
                 visibility: visible !important;
             }
 
+            html,
+            body {
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* Remove the rest of the website from print layout entirely.
+               Visibility alone would leave large blank areas in the PDF. */
+            body > *:not(main) {
+                display: none !important;
+            }
+
+            main {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            main > *:not(.export-report) {
+                display: none !important;
+            }
+
             .export-report {
                 display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+                position: static !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 color: #111 !important;
                 background: white !important;
                 font-family: Arial, sans-serif;
@@ -1000,28 +1025,34 @@
             }
 
             .report-images {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
+                display: block;
+                width: 100%;
             }
 
             .report-image {
+                display: block;
+                width: 100%;
                 min-width: 0;
+                margin: 22px 0;
             }
 
             .report-image h3 {
                 font-size: 14px;
-                break-after: avoid;
+                break-after: avoid-page;
+                page-break-after: avoid;
             }
 
             .report-image img {
                 display: block;
                 width: 100%;
-                max-height: 430px;
+                max-width: 100%;
+                height: auto;
+                max-height: none;
                 object-fit: contain;
                 border: 1px solid #ccc;
-                margin-bottom: 12px;
-                break-inside: avoid;
+                margin: 0 0 16px;
+                break-inside: avoid-page;
+                page-break-inside: avoid;
             }
 
             .report-footer {
@@ -1181,7 +1212,11 @@
 
 
         .completion-section {
-    margin-top: 30px;
+    display: none;
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+    margin: 30px auto 0;
     padding: 24px;
     background: #f8fafc;
     border: 1px solid #dce5ee;
@@ -1229,6 +1264,73 @@
 
 .completion-input-wrap span {
     color: #000 !important;
+}
+
+.completion-task-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border: 1px solid #dce5ee;
+    border-radius: 8px;
+    background: #fff;
+    color: #24364b;
+}
+
+.completion-task-name {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.completion-task-input {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 0 0 auto;
+}
+
+.completion-task-input input {
+    width: 65px;
+    padding: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 16px;
+    text-align: center;
+    appearance: textfield;
+}
+
+.completion-empty {
+    color: #526174;
+    margin: 0;
+}
+
+.teacher-task-row[draggable="true"] {
+    cursor: grab;
+}
+
+.teacher-task-row.dragging {
+    opacity: 0.4;
+}
+
+.teacher-task-row.drag-over {
+    border-color: var(--accent);
+    background: #18333b;
+}
+
+.teacher-task-drag {
+    color: #888;
+    cursor: grab;
+    user-select: none;
+    font-size: 1.15rem;
+    padding: 0 3px;
+}
+
+.teacher-task-row:active {
+    cursor: grabbing;
 }
 
 .completion-section textarea {
@@ -1469,20 +1571,7 @@
             <!-- COMPLETION PERCENTAGE -->
 
             <section class="completion-section">
-    <label for="completionPercentage">
-        Is this task completed? How far did you get?
-    </label>
-    <div class="completion-input-wrap">
-        <input
-            type="number"
-            id="completionPercentage"
-            min="0"
-            max="100"
-            step="1"
-            placeholder=""
-        >
-        <span>%</span>
-    </div>
+    <div id="taskCompletionInputs"></div>
 
     <label for="studentThoughts">
         Thoughts
@@ -1603,11 +1692,6 @@ Is there anything you need clarification or help on?"
                     <span id="reportDate"></span>
                 </p>
 
-                <p>
-                    <strong>Completion:</strong>
-                    <span id="reportCompletion"></span>
-                </p>
-
             </div>
 
 
@@ -1665,6 +1749,17 @@ Is there anything you need clarification or help on?"
 
     <script>
 
+/* ==========================================
+   ORIGINAL PROJECT GOALS
+   Snapshot taken when the page loads.
+========================================== */
+
+const originalProjectGoals = {};
+
+Object.entries(projects).forEach(([projectName, project]) => {
+    originalProjectGoals[projectName] = [...project.tasks];
+});
+
     /* ==========================================
        CURRENT SESSION
     ========================================== */
@@ -1677,12 +1772,65 @@ Is there anything you need clarification or help on?"
         const taskKey = JSON.stringify([project, task]);
 
         if (checkbox.checked) {
-            selectedTasks.set(taskKey, { project, task });
+            selectedTasks.set(taskKey, { project, task, percentage: "" });
         } else {
             selectedTasks.delete(taskKey);
         }
 
+        renderTaskCompletionInputs();
         updateExportButton();
+    }
+
+    function renderTaskCompletionInputs() {
+        const container = document.getElementById("taskCompletionInputs");
+        const completionSection = document.querySelector(".completion-section");
+        container.innerHTML = "";
+
+        completionSection.style.display = selectedTasks.size > 0 ? "block" : "none";
+
+        if (!selectedTasks.size) {
+            return;
+        }
+
+        const heading = document.createElement("label");
+        heading.textContent = "How far along are you on each task?";
+        container.appendChild(heading);
+
+        selectedTasks.forEach((entry, taskKey) => {
+            const row = document.createElement("div");
+            row.className = "completion-task-row";
+
+            const name = document.createElement("span");
+            name.className = "completion-task-name";
+            name.textContent = entry.project + " — " + entry.task;
+
+            const inputWrap = document.createElement("div");
+            inputWrap.className = "completion-task-input";
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = "100";
+            input.step = "1";
+            input.placeholder = "";
+            input.value = entry.percentage;
+            input.setAttribute("aria-label", "Percent complete for " + entry.task);
+
+            input.addEventListener("input", () => {
+                if (input.value !== "") {
+                    input.value = Math.max(0, Math.min(100, Number(input.value)));
+                }
+                entry.percentage = input.value;
+                updateExportButton();
+            });
+
+            const percent = document.createElement("span");
+            percent.textContent = "%";
+
+            inputWrap.append(input, percent);
+            row.append(name, inputWrap);
+            container.appendChild(row);
+        });
     }
 
 
@@ -2052,16 +2200,63 @@ Is there anything you need clarification or help on?"
 
             }
 
+            let draggedTaskIndex = null;
+
             project.tasks.forEach((task, index) => {
 
                 const completed = project.completedTasks.includes(task);
 
                 const row = document.createElement("div");
                 row.className = "teacher-task-row";
+                row.draggable = true;
+                row.dataset.taskIndex = index;
+
+                row.addEventListener("dragstart", event => {
+                    draggedTaskIndex = index;
+                    row.classList.add("dragging");
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", String(index));
+                });
+
+                row.addEventListener("dragend", () => {
+                    row.classList.remove("dragging");
+                    taskList.querySelectorAll(".teacher-task-row").forEach(item =>
+                        item.classList.remove("drag-over")
+                    );
+                    draggedTaskIndex = null;
+                });
+
+                row.addEventListener("dragover", event => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                    row.classList.add("drag-over");
+                });
+
+                row.addEventListener("dragleave", () => {
+                    row.classList.remove("drag-over");
+                });
+
+                row.addEventListener("drop", event => {
+                    event.preventDefault();
+                    row.classList.remove("drag-over");
+                    const fromIndex = draggedTaskIndex;
+                    const toIndex = Number(row.dataset.taskIndex);
+                    if (fromIndex === null || fromIndex === toIndex) return;
+
+                    const [movedTask] = project.tasks.splice(fromIndex, 1);
+                    project.tasks.splice(toIndex, 0, movedTask);
+                    renderTasks();
+                });
 
                 if (completed) {
                     row.classList.add("completed");
                 }
+
+                const dragHandle = document.createElement("span");
+                dragHandle.className = "teacher-task-drag";
+                dragHandle.textContent = "⠿";
+                dragHandle.title = "Drag to reorder";
+                dragHandle.setAttribute("aria-hidden", "true");
 
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
@@ -2111,7 +2306,7 @@ Is there anything you need clarification or help on?"
 
                 });
 
-                row.append(checkbox, text, deleteButton);
+                row.append(dragHandle, checkbox, text, deleteButton);
 
                 taskList.appendChild(row);
 
@@ -2363,41 +2558,25 @@ Is there anything you need clarification or help on?"
     }
 
 
-    const completionInput = document.getElementById("completionPercentage");
-
-completionInput.addEventListener("input", function () {
-    if (this.value > 100) {
-        this.value = 100;
-    }
-
-    if (this.value < 0) {
-        this.value = 0;
-    }
-});
-
-
     /* ==========================================
        EXPORT VALIDATION
     ========================================== */
 
     function updateExportButton() {
 
-        const percentageInput =
-            document.getElementById("completionPercentage");
-
-        const percentage = percentageInput.value.trim();
-
-        const validPercentage =
-            percentage !== "" &&
-            Number.isFinite(Number(percentage)) &&
-            Number(percentage) >= 0 &&
-            Number(percentage) <= 100;
+        const validPercentages = selectedTasks.size > 0 &&
+            [...selectedTasks.values()].every(entry =>
+                entry.percentage !== "" &&
+                Number.isFinite(Number(entry.percentage)) &&
+                Number(entry.percentage) >= 0 &&
+                Number(entry.percentage) <= 100
+            );
 
         const ready =
             selectedTasks.size > 0 &&
             startImages.length > 0 &&
             endImages.length > 0 &&
-            validPercentage;
+            validPercentages;
 
         document.getElementById("exportButton").disabled = !ready;
 
@@ -2421,18 +2600,15 @@ completionInput.addEventListener("input", function () {
             return;
         }
 
-        const percentageInput =
-            document.getElementById("completionPercentage");
+        const incompletePercentage = [...selectedTasks.values()].some(entry =>
+            entry.percentage === "" ||
+            !Number.isFinite(Number(entry.percentage)) ||
+            Number(entry.percentage) < 0 ||
+            Number(entry.percentage) > 100
+        );
 
-        const percentage = percentageInput.value.trim();
-
-        if (
-            percentage === "" ||
-            !Number.isFinite(Number(percentage)) ||
-            Number(percentage) < 0 ||
-            Number(percentage) > 100
-        ) {
-            alert("Please enter a completion percentage between 0 and 100.");
+        if (incompletePercentage) {
+            alert("Please enter a completion percentage between 0 and 100 for every selected task.");
             return;
         }
 
@@ -2453,9 +2629,6 @@ completionInput.addEventListener("input", function () {
         document.getElementById("reportDate").textContent =
             dateString;
 
-        document.getElementById("reportCompletion").textContent =
-            percentage + "%";
-
 
         /* TASKS */
 
@@ -2472,7 +2645,11 @@ completionInput.addEventListener("input", function () {
                 tasksByProject.set(project, []);
             }
 
-            tasksByProject.get(project).push(task);
+            const entry = selectedTasks.get(JSON.stringify([project, task]));
+            tasksByProject.get(project).push({
+                task,
+                percentage: entry.percentage
+            });
 
         });
 
@@ -2489,10 +2666,10 @@ completionInput.addEventListener("input", function () {
 
             const list = document.createElement("ul");
 
-            tasks.forEach(task => {
+            tasks.forEach(({ task, percentage }) => {
 
                 const item = document.createElement("li");
-                item.textContent = task;
+                item.textContent = task + " — " + percentage + "% complete";
 
                 list.appendChild(item);
 
@@ -2565,60 +2742,184 @@ completionInput.addEventListener("input", function () {
 
     function exportUpdatedProjects() {
 
-        const exportData = {};
+    const exportData = {};
 
-        Object.entries(projects).forEach(([projectName, project]) => {
+    /* ==========================================
+       COMPARE ORIGINAL AND UPDATED GOALS
+    ========================================== */
 
-            exportData[projectName] = {
+    const addedGoals = [];
+    const removedGoals = [];
 
-                date: project.date,
+    const allProjectNames = new Set([
+        ...Object.keys(originalProjectGoals),
+        ...Object.keys(projects)
+    ]);
 
-                color: project.color,
+    allProjectNames.forEach(projectName => {
 
-                tasks: [...project.tasks],
+        const originalTasks =
+            originalProjectGoals[projectName] || [];
 
-                completedTasks: Array.isArray(project.completedTasks)
-                    ? [...project.completedTasks]
-                    : []
+        const updatedTasks =
+            projects[projectName]?.tasks || [];
 
-            };
+        const originalSet = new Set(originalTasks);
+        const updatedSet = new Set(updatedTasks);
+
+        updatedTasks.forEach(task => {
+
+            if (!originalSet.has(task)) {
+                addedGoals.push({
+                    project: projectName,
+                    task: task
+                });
+            }
 
         });
 
-        const fileContents =
-            "const projects = " +
-            JSON.stringify(exportData, null, 4) +
-            ";\n";
+        originalTasks.forEach(task => {
 
-        const blob = new Blob(
-            [fileContents],
-            { type: "text/javascript;charset=utf-8" }
-        );
+            if (!updatedSet.has(task)) {
+                removedGoals.push({
+                    project: projectName,
+                    task: task
+                });
+            }
 
-        const url = URL.createObjectURL(blob);
+        });
 
-        const link = document.createElement("a");
+    });
 
-        link.href = url;
-        link.download = "projects.js";
 
-        document.body.appendChild(link);
+    /* ==========================================
+       BUILD CHANGE LOG COMMENT
+    ========================================== */
 
-        link.click();
+    const safeComment = text =>
+        String(text).replace(/\*\//g, "* /");
 
-        document.body.removeChild(link);
+    let changeLog = "";
 
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
+    if (!addedGoals.length && !removedGoals.length) {
 
-        alert(
-            "Your updated projects.js file has been exported!\n\n" +
-            "Replace the existing projects.js in your website repository " +
-            "with this downloaded file."
-        );
+        changeLog =
+            "No project goals were added or removed.";
+
+    } else {
+
+        if (addedGoals.length) {
+
+            changeLog += "ADDED GOALS\n\n";
+
+            addedGoals.forEach(({ project, task }) => {
+
+                changeLog +=
+                    project + "\n" +
+                    "+ " + task + "\n\n";
+
+            });
+
+        }
+
+        if (removedGoals.length) {
+
+            changeLog += "REMOVED GOALS\n\n";
+
+            removedGoals.forEach(({ project, task }) => {
+
+                changeLog +=
+                    project + "\n" +
+                    "- " + task + "\n\n";
+
+            });
+
+        }
 
     }
+
+    const comment =
+`/*
+========================================
+PROJECT GOAL CHANGES
+Exported: ${new Date().toLocaleDateString("en-US")}
+========================================
+
+${safeComment(changeLog).trim()}
+
+========================================
+END OF CHANGE LOG
+========================================
+*/
+
+
+`;
+
+
+    /* ==========================================
+       BUILD UPDATED PROJECT DATA
+    ========================================== */
+
+    Object.entries(projects).forEach(([projectName, project]) => {
+
+        exportData[projectName] = {
+
+            date: project.date,
+
+            color: project.color,
+
+            tasks: [...project.tasks],
+
+            completedTasks: Array.isArray(project.completedTasks)
+                ? [...project.completedTasks]
+                : []
+
+        };
+
+    });
+
+
+    /* ==========================================
+       CREATE DOWNLOAD
+    ========================================== */
+
+    const fileContents =
+        comment +
+        "const projects = " +
+        JSON.stringify(exportData, null, 4) +
+        ";\n";
+
+    const blob = new Blob(
+        [fileContents],
+        { type: "text/javascript;charset=utf-8" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "projects.js";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+
+    alert(
+        "Your updated projects.js file has been exported!\n\n" +
+        "The file includes a change log showing which goals were added " +
+        "and removed.\n\n" +
+        "Replace the existing projects.js in your website repository " +
+        "with this downloaded file."
+    );
+
+}
 
 
     /* ==========================================
@@ -2646,7 +2947,7 @@ completionInput.addEventListener("input", function () {
 
         });
 
-        document.getElementById("completionPercentage").value = "";
+        renderTaskCompletionInputs();
 
         document.getElementById("nameError").textContent = "";
 
@@ -2720,10 +3021,18 @@ completionInput.addEventListener("input", function () {
     setupUpload("start");
     setupUpload("end");
 
-    document.getElementById("completionPercentage").addEventListener(
-        "input",
-        updateExportButton
-    );
+    // On the initial page load, the first Tab press goes directly to name entry.
+    let initialTabHandled = false;
+    document.addEventListener("keydown", event => {
+        if (event.key !== "Tab" || initialTabHandled) return;
+
+        // Override the browser's normal first-tab order, including links in the shared menu.
+        event.preventDefault();
+        document.getElementById("studentName").focus();
+        initialTabHandled = true;
+    }, true);
+
+    // Completion inputs are created dynamically for the selected tasks.
 
     document.getElementById("studentName").addEventListener(
         "keydown",
