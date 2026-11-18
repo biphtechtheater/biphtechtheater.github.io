@@ -786,12 +786,11 @@
         ========================================== */
 
         .completion-section {
-            margin-top: 30px;
-            padding: 25px;
-            background: var(--panel);
-            border: 1px solid #353535;
+            background-color: #ebebeb !important;
+            background-image: none !important;
+            border: 1px solid #aebfce;
             border-radius: 14px;
-            text-align: center;
+            padding: 24px;
         }
 
         .completion-section label {
@@ -1180,6 +1179,71 @@
             }
         }
 
+
+        .completion-section {
+    margin-top: 30px;
+    padding: 24px;
+    background: #f8fafc;
+    border: 1px solid #dce5ee;
+    border-radius: 14px;
+}
+
+.completion-section label {
+    display: block;
+    margin: 18px 0 8px;
+    font-weight: 700;
+    color: #24364b;
+}
+
+.completion-section label:first-child {
+    margin-top: 0;
+}
+
+.completion-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.completion-input-wrap input {
+    width: 65px;
+    padding: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Hide the number input's stepper controls */
+.completion-input-wrap input::-webkit-inner-spin-button,
+.completion-input-wrap input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.completion-input-wrap input {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.completion-input-wrap span {
+    color: #000 !important;
+}
+
+.completion-section textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 110px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 15px;
+    resize: vertical;
+}
+
     </style>
 </head>
 
@@ -1405,27 +1469,33 @@
             <!-- COMPLETION PERCENTAGE -->
 
             <section class="completion-section">
+    <label for="completionPercentage">
+        Is this task completed? How far did you get?
+    </label>
+    <div class="completion-input-wrap">
+        <input
+            type="number"
+            id="completionPercentage"
+            min="0"
+            max="100"
+            step="1"
+            placeholder=""
+        >
+        <span>%</span>
+    </div>
 
-                <label for="completionPercentage">
-                    Is this completed? Give a %
-                </label>
-
-                <div class="completion-input">
-
-                    <input
-                        type="number"
-                        id="completionPercentage"
-                        min="0"
-                        max="100"
-                        step="1"
-                        placeholder="0–100"
-                    >
-
-                    <span>%</span>
-
-                </div>
-
-            </section>
+    <label for="studentThoughts">
+        Thoughts
+    </label>
+    <textarea
+        id="studentThoughts"
+        rows="4"
+        placeholder="What is still left to be done? 
+Are there other tasks you still need to work on? 
+What will you work on tomorrow?
+Is there anything you need clarification or help on?"
+    ></textarea>
+</section>
 
 
             <!-- EXPORT -->
@@ -2291,6 +2361,19 @@
         updateExportButton();
 
     }
+
+
+    const completionInput = document.getElementById("completionPercentage");
+
+completionInput.addEventListener("input", function () {
+    if (this.value > 100) {
+        this.value = 100;
+    }
+
+    if (this.value < 0) {
+        this.value = 0;
+    }
+});
 
 
     /* ==========================================
