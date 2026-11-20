@@ -347,6 +347,18 @@
             color: var(--muted-text);
         }
 
+        .student-heading .heading-white {
+            color: white;
+        }
+
+        .student-heading .heading-blue {
+            color: var(--accent);
+        }
+
+        .student-heading p {
+            color: var(--muted-text);
+        }
+
         /* ==========================================
            PROJECT COLUMNS
         ========================================== */
@@ -1666,10 +1678,10 @@
                 </button>
 
                 <h2>
-                    Welcome, <span id="displayName"></span>
+                    <span id="dashboardGreeting" class="heading-white">Welcome, </span><span id="displayName" class="heading-blue"></span>
                 </h2>
 
-                <p>Here are your two assigned projects.</p>
+                <p id="dashboardSubheading">Here are your two assigned projects.</p>
 
             </div>
 
@@ -2127,6 +2139,7 @@ loadProjectEdits();
         currentStudent = matchedName;
         selectedTasks.clear();
 
+        document.getElementById("dashboardGreeting").textContent = "Welcome, ";
         document.getElementById("displayName").textContent =
             matchedName;
 
@@ -2504,7 +2517,10 @@ loadProjectEdits();
 
         currentStudent = studentName;
         selectedTasks.clear();
+        document.getElementById("dashboardGreeting").textContent = "Tasks for ";
         document.getElementById("displayName").textContent = studentName;
+        document.getElementById("dashboardSubheading").textContent =
+        `Here are ${studentName}'s two assigned projects.`;
         teacherStudentPreview = true;
         renderProjects();
         updateExportButton();
