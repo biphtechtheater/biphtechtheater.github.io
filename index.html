@@ -3603,7 +3603,14 @@ END OF CHANGE LOG
             if (event.key === "Tab") {
                 event.preventDefault();
                 event.stopImmediatePropagation();
+
                 studentNameInput.focus({ preventScroll: true });
+
+                studentNameInput.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
                 return;
             }
             if (event.key === "Escape" && document.activeElement === studentNameInput) {
