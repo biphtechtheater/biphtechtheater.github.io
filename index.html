@@ -618,6 +618,128 @@
             font-style: italic;
         }
 
+
+        /* ==========================================
+           TEACHER QUICK SEARCH
+        ========================================== */
+        .teacher-search {
+            position: relative;
+            width: min(100%, 760px);
+            margin: -22px auto 38px;
+            z-index: 30;
+        }
+
+        .teacher-search input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 15px 19px 15px 48px;
+            border: 1px solid #454b50;
+            border-radius: 12px;
+            background: rgba(23, 25, 28, 0.94);
+            color: #eee;
+            font: inherit;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .teacher-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(75,219,255,0.10), 0 8px 28px rgba(0,0,0,0.25);
+        }
+
+        .teacher-search::before {
+            content: "⌕";
+            position: absolute;
+            left: 17px;
+            top: 7px;
+            color: #8e969c;
+            font-size: 1.8rem;
+            pointer-events: none;
+        }
+
+        .teacher-search-results {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            max-height: min(420px, 60vh);
+            overflow-y: auto;
+            padding: 6px;
+            border: 1px solid #3c444a;
+            border-radius: 12px;
+            background: rgba(20, 23, 26, 0.98);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+            backdrop-filter: blur(14px);
+        }
+
+        .teacher-search-results.open { display: block; }
+
+        .teacher-search-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            color: #eee;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .teacher-search-option:hover,
+        .teacher-search-option.active {
+            border-color: rgba(75,219,255,0.35);
+            background: rgba(75,219,255,0.10);
+        }
+
+        .teacher-search-main { min-width: 0; }
+        .teacher-search-title { display: block; font-weight: 600; }
+        .teacher-search-meta {
+            display: block;
+            margin-top: 3px;
+            color: #9da5aa;
+            font-size: 0.84rem;
+        }
+        .teacher-search-kind {
+            flex: 0 0 auto;
+            color: var(--accent);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .teacher-search-empty {
+            padding: 14px;
+            color: #92999e;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .teacher-student-return {
+            display: none;
+            margin: 0 auto 22px;
+            padding: 10px 19px;
+            border: 1px solid #555;
+            border-radius: 999px;
+            background: transparent;
+            color: #eee;
+            cursor: pointer;
+        }
+        .teacher-student-return:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        @media(max-width: 600px) {
+            .teacher-search { margin: -18px auto 30px; }
+            .teacher-search input { padding-top: 13px; padding-bottom: 13px; }
+        }
+
         @media(max-width: 600px) {
             .teacher-timeline {
                 padding-left: 27px;
@@ -1308,6 +1430,55 @@
     margin: 0;
 }
 
+        .teacher-preview-task-tools {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 9px;
+            padding: 8px 10px;
+            border: 1px solid rgba(75, 219, 255, 0.24);
+            border-radius: 9px;
+            background: rgba(35, 75, 100, 0.24);
+        }
+        .teacher-preview-task-tools .preview-drag {
+            cursor: grab;
+            color: var(--accent);
+            font-size: 1.15rem;
+            user-select: none;
+        }
+        .teacher-preview-task-tools .preview-delete {
+            margin-left: auto;
+            border: 0;
+            border-radius: 6px;
+            padding: 2px 9px;
+            background: rgba(255, 90, 90, 0.16);
+            color: #ff9b9b;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .teacher-preview-add {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .teacher-preview-add input {
+            min-width: 0;
+            flex: 1;
+            border: 1px solid rgba(75, 219, 255, 0.28);
+            border-radius: 8px;
+            padding: 9px 11px;
+            background: rgba(15, 25, 32, 0.8);
+            color: #fff;
+        }
+        .teacher-preview-add button {
+            border: 1px solid rgba(75, 219, 255, 0.45);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: rgba(35, 110, 145, 0.45);
+            color: #fff;
+            cursor: pointer;
+        }
+
 .teacher-task-row[draggable="true"] {
     cursor: grab;
 }
@@ -1316,9 +1487,28 @@
     opacity: 0.4;
 }
 
-.teacher-task-row.drag-over {
-    border-color: var(--accent);
-    background: #18333b;
+/* The insertion marker shows the exact destination without highlighting the task. */
+.teacher-task-row {
+    position: relative;
+}
+.teacher-task-row.drop-before::before,
+.teacher-task-row.drop-after::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(75, 219, 255, 0.75);
+    pointer-events: none;
+    z-index: 2;
+}
+.teacher-task-row.drop-before::before {
+    top: -7px;
+}
+.teacher-task-row.drop-after::after {
+    bottom: -7px;
 }
 
 .teacher-task-drag {
@@ -1466,6 +1656,14 @@
         <section id="dashboard">
 
             <div class="student-heading">
+
+                <button
+                    type="button"
+                    class="teacher-student-return"
+                    id="teacherStudentReturn"
+                    onclick="returnFromTeacherStudent()">
+                    ← Back to Project Overview
+                </button>
 
                 <h2>
                     Welcome, <span id="displayName"></span>
@@ -1624,8 +1822,23 @@ Is there anything you need clarification or help on?"
             <div id="teacherTimelineView">
 
                 <div class="teacher-heading">
-                    <h2>Project <span>Overview</span></h2>
+                    <h2>Events Overview</h2>
                     <p>2026–2027 Technical Theatre Production Timeline</p>
+                </div>
+
+                <div class="teacher-search" id="teacherSearch">
+                    <input
+                        type="search"
+                        id="teacherSearchInput"
+                        placeholder="Search students, events, dates..."
+                        autocomplete="off"
+                        aria-label="Search students, events, and dates"
+                        aria-autocomplete="list"
+                        aria-controls="teacherSearchResults"
+                        aria-expanded="false"
+                    >
+                    <div class="teacher-search-results" id="teacherSearchResults"
+                         role="listbox" aria-label="Search suggestions"></div>
                 </div>
 
                 <div class="teacher-timeline" id="teacherTimeline"></div>
@@ -1754,11 +1967,48 @@ Is there anything you need clarification or help on?"
    Snapshot taken when the page loads.
 ========================================== */
 
+const PROJECT_EDITS_STORAGE_KEY = "biphTechTheaterProjectEdits_v1";
+
+function saveProjectEdits() {
+    try {
+        const saved = {};
+        Object.entries(projects).forEach(([name, project]) => {
+            saved[name] = { tasks: [...(project.tasks || [])], completedTasks: [...(project.completedTasks || [])] };
+        });
+        localStorage.setItem(PROJECT_EDITS_STORAGE_KEY, JSON.stringify(saved));
+    } catch (error) { console.warn("Unable to save project edits:", error); }
+}
+
+function loadProjectEdits() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(PROJECT_EDITS_STORAGE_KEY) || "{}");
+        Object.entries(saved).forEach(([name, data]) => {
+            if (!projects[name] || !Array.isArray(data.tasks)) return;
+            projects[name].tasks = [...data.tasks];
+            if (Array.isArray(data.completedTasks)) projects[name].completedTasks = [...data.completedTasks];
+        });
+    } catch (error) { console.warn("Unable to load saved project edits:", error); }
+}
+
+window.addEventListener("storage", event => {
+    if (event.key !== PROJECT_EDITS_STORAGE_KEY) return;
+    loadProjectEdits();
+    if (document.getElementById("dashboard").style.display !== "none") {
+        renderProjects();
+    }
+    if (teacherDetailOpen) {
+        const heading = document.querySelector("#teacherProjectDetail h2");
+        if (heading) openTeacherProject(heading.textContent);
+    }
+});
+
 const originalProjectGoals = {};
 
 Object.entries(projects).forEach(([projectName, project]) => {
     originalProjectGoals[projectName] = [...project.tasks];
 });
+
+loadProjectEdits();
 
     /* ==========================================
        CURRENT SESSION
@@ -1916,9 +2166,14 @@ Object.entries(projects).forEach(([projectName, project]) => {
                 renderTeacherTimeline();
 
                 teacherDashboard.style.display = "block";
+                document.getElementById("teacherSearchInput").value = "";
+                closeTeacherSearch();
+                teacherStudentPreview = false;
 
             } else {
 
+                document.querySelector("#dashboard .upload-section").style.display = "";
+                document.querySelector("#dashboard .export-area").style.display = "";
                 renderProjects();
                 updateExportButton();
 
@@ -1944,22 +2199,14 @@ Object.entries(projects).forEach(([projectName, project]) => {
     function renderProjects() {
 
         const grid = document.getElementById("projectGrid");
-
         grid.innerHTML = "";
 
         const assignedProjects = students[currentStudent] || [];
 
         assignedProjects.forEach(projectName => {
-
             const project = projects[projectName];
-
-            if (!project) {
-                console.warn(
-                    "Unknown project assigned to student:",
-                    projectName
-                );
-                return;
-            }
+            if (!project) return;
+            if (!Array.isArray(project.tasks)) project.tasks = [];
 
             const column = document.createElement("div");
             column.className = "project-column";
@@ -1967,61 +2214,147 @@ Object.entries(projects).forEach(([projectName, project]) => {
             const header = document.createElement("div");
             header.className = "project-header";
             header.style.background = project.color;
+            header.style.filter = "saturate(1.55)";
 
             const title = document.createElement("h3");
             title.textContent = projectName;
-
             const date = document.createElement("p");
             date.textContent = "Event date: " + project.date;
-
             header.append(title, date);
 
             const taskList = document.createElement("div");
             taskList.className = "task-list";
 
             if (!project.tasks.length) {
-
                 const empty = document.createElement("div");
                 empty.className = "task-empty";
                 empty.textContent = "No tasks added yet.";
-
                 taskList.appendChild(empty);
-
             } else {
+                let draggedIndex = null;
+                project.tasks.forEach((task, index) => {
+                    if (teacherStudentPreview) {
+                        const row = document.createElement("div");
+                        row.className = "teacher-task-row";
+                        row.draggable = true;
+                        row.dataset.taskIndex = String(index);
 
-                project.tasks.forEach(task => {
+                        const dragHandle = document.createElement("span");
+                        dragHandle.className = "teacher-task-drag";
+                        dragHandle.textContent = "⠿";
+                        dragHandle.title = "Drag to reorder";
+                        dragHandle.setAttribute("aria-hidden", "true");
 
-                    const label = document.createElement("label");
-                    label.className = "task-item";
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = selectedTasks.has(JSON.stringify([projectName, task]));
+                        checkbox.addEventListener("change", () => toggleTask(projectName, task, checkbox));
 
-                    const checkbox = document.createElement("input");
+                        const taskText = document.createElement("span");
+                        taskText.className = "teacher-task-text";
+                        taskText.textContent = task;
 
-                    checkbox.type = "checkbox";
+                        const remove = document.createElement("button");
+                        remove.type = "button";
+                        remove.className = "teacher-task-delete";
+                        remove.textContent = "×";
+                        remove.title = "Remove task";
+                        remove.setAttribute("aria-label", "Remove " + task);
+                        remove.addEventListener("click", () => {
+                            if (!confirm("Remove this task from " + projectName + "?\\n\\n" + task)) return;
+                            project.tasks.splice(index, 1);
+                            project.completedTasks = (project.completedTasks || []).filter(t => t !== task);
+                            selectedTasks.delete(JSON.stringify([projectName, task]));
+                            saveProjectEdits();
+                            renderProjects();
+                        });
 
-                    checkbox.checked = selectedTasks.has(
-                        JSON.stringify([projectName, task])
-                    );
-
-                    checkbox.addEventListener("change", () => {
-                        toggleTask(projectName, task, checkbox);
-                    });
-
-                    const taskText = document.createElement("span");
-                    taskText.textContent = task;
-
-                    label.append(checkbox, taskText);
-                    taskList.appendChild(label);
-
+                        row.append(dragHandle, checkbox, taskText, remove);
+                        row.addEventListener("dragstart", event => {
+                            draggedIndex = index;
+                            row.classList.add("dragging");
+                            event.dataTransfer.effectAllowed = "move";
+                            event.dataTransfer.setData("text/plain", String(index));
+                        });
+                        row.addEventListener("dragend", () => {
+                            row.classList.remove("dragging");
+                            taskList.querySelectorAll(".teacher-task-row").forEach(el =>
+                                el.classList.remove("drop-before", "drop-after")
+                            );
+                            draggedIndex = null;
+                        });
+                        row.addEventListener("dragover", event => {
+                            event.preventDefault();
+                            event.dataTransfer.dropEffect = "move";
+                            const rect = row.getBoundingClientRect();
+                            const before = event.clientY < rect.top + rect.height / 2;
+                            row.classList.toggle("drop-before", before);
+                            row.classList.toggle("drop-after", !before);
+                        });
+                        row.addEventListener("dragleave", event => {
+                            if (!row.contains(event.relatedTarget)) {
+                                row.classList.remove("drop-before", "drop-after");
+                            }
+                        });
+                        row.addEventListener("drop", event => {
+                            event.preventDefault();
+                            const from = draggedIndex;
+                            const rect = row.getBoundingClientRect();
+                            const insertAt = index + (event.clientY >= rect.top + rect.height / 2 ? 1 : 0);
+                            if (from === null) return;
+                            const [moved] = project.tasks.splice(from, 1);
+                            const destination = from < insertAt ? insertAt - 1 : insertAt;
+                            project.tasks.splice(destination, 0, moved);
+                            saveProjectEdits();
+                            renderProjects();
+                        });
+                        taskList.appendChild(row);
+                    } else {
+                        const label = document.createElement("label");
+                        label.className = "task-item";
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = selectedTasks.has(JSON.stringify([projectName, task]));
+                        checkbox.addEventListener("change", () => toggleTask(projectName, task, checkbox));
+                        const taskText = document.createElement("span");
+                        taskText.textContent = task;
+                        label.append(checkbox, taskText);
+                        taskList.appendChild(label);
+                    }
                 });
+            }
 
+            if (teacherStudentPreview) {
+                const addForm = document.createElement("form");
+                addForm.className = "teacher-preview-add";
+                const addInput = document.createElement("input");
+                addInput.type = "text";
+                addInput.placeholder = "Add a task to this project...";
+                addInput.autocomplete = "off";
+                const addButton = document.createElement("button");
+                addButton.type = "submit";
+                addButton.textContent = "+ Add Task";
+                addForm.append(addInput, addButton);
+                addForm.addEventListener("submit", event => {
+                    event.preventDefault();
+                    const newTask = addInput.value.trim();
+                    if (!newTask) return;
+                    if (project.tasks.includes(newTask)) {
+                        alert("That task is already in this project.");
+                        return;
+                    }
+                    project.tasks.push(newTask);
+                    saveProjectEdits();
+                    renderProjects();
+                    const inputs = document.querySelectorAll(".teacher-preview-add input");
+                    if (inputs.length) inputs[inputs.length - 1].focus();
+                });
+                taskList.appendChild(addForm);
             }
 
             column.append(header, taskList);
-
             grid.appendChild(column);
-
         });
-
     }
 
 
@@ -2030,12 +2363,195 @@ Object.entries(projects).forEach(([projectName, project]) => {
     ========================================== */
 
     let teacherDetailOpen = false;
+    let teacherStudentPreview = false;
 
+
+
+    /* ==========================================
+       TEACHER SEARCH / STUDENT PREVIEW
+    ========================================== */
+
+    let teacherSearchItems = [];
+    let teacherSearchActiveIndex = -1;
+
+    function buildTeacherSearchItems() {
+        teacherSearchItems = [];
+
+        Object.keys(students).sort((a, b) => a.localeCompare(b)).forEach(name => {
+            teacherSearchItems.push({
+                type: "student",
+                title: name,
+                meta: (students[name] || []).length + " assigned project" +
+                    ((students[name] || []).length === 1 ? "" : "s"),
+                searchText: name.toLowerCase(),
+                value: name
+            });
+        });
+
+        Object.entries(projects).forEach(([name, project]) => {
+            const date = String(project.date || "");
+            teacherSearchItems.push({
+                type: "event",
+                title: name,
+                meta: date ? "Event date: " + date : "Production event",
+                searchText: (name + " " + date + " event").toLowerCase(),
+                value: name
+            });
+        });
+    }
+
+    function closeTeacherSearch() {
+        const results = document.getElementById("teacherSearchResults");
+        const input = document.getElementById("teacherSearchInput");
+        if (!results || !input) return;
+        results.classList.remove("open");
+        results.innerHTML = "";
+        input.setAttribute("aria-expanded", "false");
+        teacherSearchActiveIndex = -1;
+    }
+
+    function renderTeacherSearchResults() {
+        const input = document.getElementById("teacherSearchInput");
+        const results = document.getElementById("teacherSearchResults");
+        if (!input || !results) return;
+
+        const query = input.value.trim().toLowerCase();
+        results.innerHTML = "";
+        teacherSearchActiveIndex = -1;
+
+        if (!query) {
+            closeTeacherSearch();
+            return;
+        }
+
+        const terms = query.split(/\s+/).filter(Boolean);
+        const matches = teacherSearchItems.filter(item =>
+            terms.every(term => item.searchText.includes(term))
+        ).slice(0, 12);
+
+        if (!matches.length) {
+            const empty = document.createElement("div");
+            empty.className = "teacher-search-empty";
+            empty.textContent = "No matching students, events, or dates.";
+            results.appendChild(empty);
+        } else {
+            matches.forEach((item, index) => {
+                const option = document.createElement("button");
+                option.type = "button";
+                option.className = "teacher-search-option";
+                option.setAttribute("role", "option");
+                option.setAttribute("aria-selected", "false");
+                option.dataset.index = String(index);
+
+                const main = document.createElement("span");
+                main.className = "teacher-search-main";
+
+                const title = document.createElement("span");
+                title.className = "teacher-search-title";
+                title.textContent = item.title;
+
+                const meta = document.createElement("span");
+                meta.className = "teacher-search-meta";
+                meta.textContent = item.meta;
+
+                const kind = document.createElement("span");
+                kind.className = "teacher-search-kind";
+                kind.textContent = item.type === "student" ? "Student" :
+                    (terms.some(term => String(projects[item.value].date || "").toLowerCase().includes(term))
+                        ? "Date" : "Event");
+
+                main.append(title, meta);
+                option.append(main, kind);
+                option.addEventListener("mousedown", event => event.preventDefault());
+                option.addEventListener("click", () => selectTeacherSearchItem(item));
+                results.appendChild(option);
+            });
+        }
+
+        results.classList.add("open");
+        input.setAttribute("aria-expanded", "true");
+        if (matches.length) setTeacherSearchActive(0);
+    }
+
+    function setTeacherSearchActive(index) {
+        const results = document.getElementById("teacherSearchResults");
+        const options = Array.from(results.querySelectorAll(".teacher-search-option"));
+        if (!options.length) return;
+
+        teacherSearchActiveIndex = (index + options.length) % options.length;
+        options.forEach((option, i) => {
+            const active = i === teacherSearchActiveIndex;
+            option.classList.toggle("active", active);
+            option.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        options[teacherSearchActiveIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    function selectTeacherSearchItem(item) {
+        closeTeacherSearch();
+        const input = document.getElementById("teacherSearchInput");
+        input.value = "";
+
+        if (item.type === "student") {
+            openTeacherStudent(item.value);
+        } else {
+            openTeacherProject(item.value);
+        }
+    }
+
+    function openTeacherStudent(studentName) {
+        if (!students[studentName]) return;
+
+        currentStudent = studentName;
+        selectedTasks.clear();
+        document.getElementById("displayName").textContent = studentName;
+        teacherStudentPreview = true;
+        renderProjects();
+        updateExportButton();
+
+        history.pushState(
+            { page: "teacher-student", student: studentName },
+            "",
+            location.href
+        );
+
+        document.getElementById("teacherDashboard").style.display = "none";
+        const studentDashboard = document.getElementById("dashboard");
+        studentDashboard.style.display = "block";
+        studentDashboard.style.opacity = "1";
+        studentDashboard.style.transform = "none";
+        studentDashboard.classList.remove("dashboard-entering");
+        document.querySelector("#dashboard .upload-section").style.display = "none";
+        document.querySelector("#dashboard .export-area").style.display = "none";
+        document.getElementById("teacherStudentReturn").style.display = "inline-block";
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function returnFromTeacherStudent() {
+        if (teacherStudentPreview) history.back();
+    }
+
+    function showTeacherOverviewAfterStudentPreview() {
+        teacherStudentPreview = false;
+        document.getElementById("dashboard").style.display = "none";
+        document.getElementById("dashboard").style.opacity = "0";
+        document.getElementById("dashboard").style.transform = "translateY(35px)";
+        document.getElementById("teacherStudentReturn").style.display = "none";
+        document.getElementById("teacherDashboard").style.display = "block";
+        document.getElementById("teacherTimelineView").style.display = "block";
+        document.getElementById("teacherDetailView").style.display = "none";
+        teacherDetailOpen = false;
+        currentStudent = "Mr. Tubbs";
+        selectedTasks.clear();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     function renderTeacherTimeline() {
 
         const timeline = document.getElementById("teacherTimeline");
 
+        buildTeacherSearchItems();
         timeline.innerHTML = "";
 
         const sortedProjects = Object.entries(projects).sort(
@@ -2072,6 +2588,7 @@ Object.entries(projects).forEach(([projectName, project]) => {
                 "--project-color",
                 project.color
             );
+            item.style.filter = "saturate(1.55)";
 
             const button = document.createElement("button");
             button.className = "teacher-project-button";
@@ -2159,6 +2676,7 @@ Object.entries(projects).forEach(([projectName, project]) => {
         card.className = "teacher-detail-card";
 
         card.style.setProperty("--project-color", project.color);
+        card.style.filter = "saturate(1.55)";
 
         const heading = document.createElement("h2");
         heading.textContent = projectName;
@@ -2221,7 +2739,7 @@ Object.entries(projects).forEach(([projectName, project]) => {
                 row.addEventListener("dragend", () => {
                     row.classList.remove("dragging");
                     taskList.querySelectorAll(".teacher-task-row").forEach(item =>
-                        item.classList.remove("drag-over")
+                        item.classList.remove("drop-before", "drop-after")
                     );
                     draggedTaskIndex = null;
                 });
@@ -2229,22 +2747,30 @@ Object.entries(projects).forEach(([projectName, project]) => {
                 row.addEventListener("dragover", event => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = "move";
-                    row.classList.add("drag-over");
+                    const rect = row.getBoundingClientRect();
+                    const before = event.clientY < rect.top + rect.height / 2;
+                    row.classList.toggle("drop-before", before);
+                    row.classList.toggle("drop-after", !before);
                 });
 
-                row.addEventListener("dragleave", () => {
-                    row.classList.remove("drag-over");
+                row.addEventListener("dragleave", event => {
+                    if (!row.contains(event.relatedTarget)) {
+                        row.classList.remove("drop-before", "drop-after");
+                    }
                 });
 
                 row.addEventListener("drop", event => {
                     event.preventDefault();
-                    row.classList.remove("drag-over");
                     const fromIndex = draggedTaskIndex;
-                    const toIndex = Number(row.dataset.taskIndex);
-                    if (fromIndex === null || fromIndex === toIndex) return;
+                    const targetIndex = Number(row.dataset.taskIndex);
+                    const rect = row.getBoundingClientRect();
+                    const insertAt = targetIndex + (event.clientY >= rect.top + rect.height / 2 ? 1 : 0);
+                    if (fromIndex === null) return;
 
                     const [movedTask] = project.tasks.splice(fromIndex, 1);
-                    project.tasks.splice(toIndex, 0, movedTask);
+                    const destination = fromIndex < insertAt ? insertAt - 1 : insertAt;
+                    project.tasks.splice(destination, 0, movedTask);
+                    saveProjectEdits();
                     renderTasks();
                 });
 
@@ -2277,6 +2803,7 @@ Object.entries(projects).forEach(([projectName, project]) => {
 
                     }
 
+                    saveProjectEdits();
                     renderTasks();
 
                 });
@@ -2302,6 +2829,7 @@ Object.entries(projects).forEach(([projectName, project]) => {
                     project.completedTasks =
                         project.completedTasks.filter(t => t !== task);
 
+                    saveProjectEdits();
                     renderTasks();
 
                 });
@@ -2341,7 +2869,12 @@ Object.entries(projects).forEach(([projectName, project]) => {
 
             if (!newTask) return;
 
+            if (project.tasks.includes(newTask)) {
+                alert("That task is already in this project.");
+                return;
+            }
             project.tasks.push(newTask);
+            saveProjectEdits();
 
             addTaskInput.value = "";
 
@@ -3006,9 +3539,20 @@ END OF CHANGE LOG
         hero.classList.remove("leaving");
         intro.classList.remove("leaving");
 
+        document.getElementById("teacherStudentReturn").style.display = "none";
+        document.querySelector("#dashboard .upload-section").style.display = "";
+        document.querySelector("#dashboard .export-area").style.display = "";
+        teacherStudentPreview = false;
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
+        });
+
+        const nameInput = document.getElementById("studentName");
+        requestAnimationFrame(() => {
+            nameInput.focus({ preventScroll: true });
+            nameInput.scrollIntoView({ block: "center", behavior: "smooth" });
         });
 
     }
@@ -3021,36 +3565,107 @@ END OF CHANGE LOG
     setupUpload("start");
     setupUpload("end");
 
-    // On the initial page load, the first Tab press goes directly to name entry.
-    let initialTabHandled = false;
-    document.addEventListener("keydown", event => {
-        if (event.key !== "Tab" || initialTabHandled) return;
+    // Keep keyboard navigation intentional on the two landing/overview screens.
+    const studentNameInput = document.getElementById("studentName");
+    const teacherSearchInput = document.getElementById("teacherSearchInput");
 
-        // Override the browser's normal first-tab order, including links in the shared menu.
-        event.preventDefault();
-        document.getElementById("studentName").focus();
-        initialTabHandled = true;
+    function isHomepageVisible() {
+        return document.getElementById("progressIntro").getClientRects().length > 0 &&
+            document.getElementById("dashboard").getClientRects().length === 0 &&
+            document.getElementById("teacherDashboard").getClientRects().length === 0;
+    }
+
+    function isTeacherOverviewVisible() {
+        return document.getElementById("teacherDashboard").getClientRects().length > 0 &&
+            document.getElementById("teacherTimelineView").getClientRects().length > 0 &&
+            document.getElementById("teacherDetailView").getClientRects().length === 0 &&
+            !teacherStudentPreview;
+    }
+
+    document.addEventListener("keydown", event => {
+        if (isHomepageVisible()) {
+            if (event.key === "Tab") {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                studentNameInput.focus({ preventScroll: true });
+                return;
+            }
+            if (event.key === "Escape" && document.activeElement === studentNameInput) {
+                event.preventDefault();
+                studentNameInput.blur();
+            }
+            return;
+        }
+
+        if (isTeacherOverviewVisible()) {
+            if (event.key === "Tab" && document.activeElement !== teacherSearchInput) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                teacherSearchInput.focus({ preventScroll: true });
+                return;
+            }
+            if (event.key === "/" && !event.ctrlKey && !event.metaKey &&
+                !event.altKey && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) &&
+                !document.activeElement.isContentEditable) {
+                event.preventDefault();
+                teacherSearchInput.focus({ preventScroll: true });
+                return;
+            }
+        }
+
+        // Escape from either teacher detail screen returns to Events Overview.
+        if (event.key === "Escape" &&
+            (teacherStudentPreview || (document.getElementById("teacherDashboard").style.display !== "none" && teacherDetailOpen))) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            history.back();
+        }
     }, true);
 
-    // Completion inputs are created dynamically for the selected tasks.
-
-    document.getElementById("studentName").addEventListener(
-        "keydown",
-        event => {
-
-            if (event.key === "Enter") {
-                loadStudent();
-            }
-
+    studentNameInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            loadStudent();
         }
-    );
+    });
 
+    // Search suggestions support typing, arrow-key navigation, Enter, and Escape.
+    teacherSearchInput.addEventListener("input", renderTeacherSearchResults);
+    teacherSearchInput.addEventListener("keydown", event => {
+        const options = document.querySelectorAll("#teacherSearchResults .teacher-search-option");
+
+        if (event.key === "ArrowDown" && options.length) {
+            event.preventDefault();
+            setTeacherSearchActive(teacherSearchActiveIndex + 1);
+        } else if (event.key === "ArrowUp" && options.length) {
+            event.preventDefault();
+            setTeacherSearchActive(teacherSearchActiveIndex < 0 ? options.length - 1 : teacherSearchActiveIndex - 1);
+        } else if (event.key === "Enter" && teacherSearchActiveIndex >= 0 && options[teacherSearchActiveIndex]) {
+            event.preventDefault();
+            options[teacherSearchActiveIndex].click();
+        } else if (event.key === "Escape") {
+            event.preventDefault();
+            closeTeacherSearch();
+            teacherSearchInput.blur();
+        }
+    });
+
+    document.addEventListener("pointerdown", event => {
+        const search = document.getElementById("teacherSearch");
+        if (search && !search.contains(event.target)) closeTeacherSearch();
+    });
 
     /* ==========================================
        BROWSER BACK BUTTON
     ========================================== */
 
     window.addEventListener("popstate", () => {
+
+        // Teacher viewing a student's task dashboard → teacher overview.
+        if (teacherStudentPreview) {
+            showTeacherOverviewAfterStudentPreview();
+            return;
+        }
 
         // Teacher: project details → timeline
 
